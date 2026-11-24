@@ -24,4 +24,14 @@ s+=ellipse(77,115,7,3.2,'#e3948d77')+ellipse(155,115,7,3.2,'#e3948d77')+detail('
 s+=`<g data-layer="hair-front">${path(hairFront,hair)}${path('M66 63Q78 29 108 29Q88 42 80 56Q102 38 121 33Q113 45 96 57Q79 65 70 74Z',light,'none')}${detail('M132 31Q151 38 162 56',light,3)}${detail('M72 70Q83 59 92 57',dark,1.4)}</g><g data-layer="hat"></g><g data-layer="accessory"></g></svg>`;return s;}
 /* New illustrated starter skins. Original editable vector renderer remains available separately. */
 function renderPreset(id){const p=preset(id)||presets[0];return `<img class="avatar-art" src="/images/avatars/${p.id}-472.webp" width="480" height="660" alt="${p.name} — KEKIP başlangıç karakteri" decoding="async" draggable="false">`;}
-return Object.freeze({renderPreset,defaults:Object.freeze(defaults),presets:Object.freeze(presets.map(p=>Object.freeze({...p,config:Object.freeze(p.config)}))),normalize,preset,render});});
+const appearanceOptions=Object.freeze([
+ {key:'hair',name:'Saç rengi',choices:['Orijinal','Bakır','Mavi'],swatches:['#9c80b9','#c58b55','#579bca']},
+ {key:'eye',name:'Göz rengi',choices:['Orijinal','Zümrüt','Gül'],swatches:['#9c80b9','#49bb75','#cc528d']},
+ {key:'skin',name:'Ten tonu',choices:['Orijinal','Koyu','Açık'],swatches:['#e4b48c','#b17c55','#ffe1c5']},
+ {key:'top',name:'Üst giyim rengi',choices:['Orijinal','Pembe','Mavi'],swatches:['#9c80b9','#c75a94','#528dc7']},
+ {key:'bottom',name:'Pantolon rengi',choices:['Orijinal','Lacivert','Kahve'],swatches:['#9c80b9','#456084','#9d7351']},
+ {key:'shoes',name:'Ayakkabı rengi',choices:['Orijinal','Mor','Altın'],swatches:['#9c80b9','#9b69d5','#c49448']}
+].map(o=>Object.freeze({...o,choices:Object.freeze(o.choices),swatches:Object.freeze(o.swatches)})));
+function normalizeAppearance(value){return Object.fromEntries(appearanceOptions.map(o=>[o.key,[0,1,2].includes(value?.[o.key])?value[o.key]:0]));}
+function renderAppearance(id,value){const p=preset(id)||presets[0],a=normalizeAppearance(value);let html=`<span class="avatar-composite" style="display:block;position:relative;width:100%;aspect-ratio:480/660;isolation:isolate;overflow:hidden" role="img" aria-label="${p.name} — KEKIP karakteri"><img src="/images/avatars/${p.id}-472.webp" alt="" draggable="false" style="position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:fill;filter:none;transform:none">`;for(let row=0;row<appearanceOptions.length;row++){const n=a[appearanceOptions[row].key];if(n)html+=`<span aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;background-image:url('/images/avatars/${p.id}-colors-473.webp');background-size:200% 600%;background-position:${(n-1)*100}% ${row*20}%;background-repeat:no-repeat"></span>`;}return html+'</span>';}
+return Object.freeze({appearanceOptions,normalizeAppearance,renderAppearance,renderPreset,defaults:Object.freeze(defaults),presets:Object.freeze(presets.map(p=>Object.freeze({...p,config:Object.freeze(p.config)}))),normalize,preset,render});});
