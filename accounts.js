@@ -292,12 +292,13 @@ const COSMETICS=Object.freeze([
  {id:'title_night',slot:'title',name:'Gece Oyuncusu',description:'Özel kozmetik oyuncu unvanı',price:100},
  {id:'effect_glow',slot:'effect',name:'Yıldız Işığı',description:'Profil kartında yumuşak ışık efekti',price:140},
  {id:'chat_violet',slot:'chat',name:'Mor Mürekkep',description:'Mor sohbet balonu ve renkli kenar',price:90},
- {id:'chat_gold',slot:'chat',name:'Altın Sohbet',description:'Altın çizgili sohbet balonu',price:130}
+ {id:'chat_gold',slot:'chat',name:'Altın Sohbet',description:'Altın çizgili sohbet balonu',price:130},
+ ...(Avatar.avatarCatalog||[])
 ]);
-const COSMETIC_SLOTS=['frame','cover','name','title','effect','chat'];
+const COSMETIC_SLOTS=[...new Set(COSMETICS.map(x=>x.slot))];
 async function equippedCosmetics(db,id){const q=await db.query('SELECT slot,item_id FROM kekip_cosmetic_equipped WHERE account_id=$1',[id]);return Object.fromEntries(q.rows.filter(r=>COSMETICS.some(c=>c.id===r.item_id&&c.slot===r.slot)).map(r=>[r.slot,r.item_id]));}
 async function shopList(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);return {username:a.username,balance:await coinBalance(db,a),catalog:COSMETICS,owned:q.rows.map(r=>r.item_id),equipped:await equippedCosmetics(db,a.id)};}
-async function shopAction(db,a,action,b){if(action==='shop')return shopList(db,a);if(!['shop-buy','shop-equip'].includes(action))fail('İşlem bulunamadı.',404);
+async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);if(action==='shop')return shopList(db,a);if(!['shop-buy','shop-equip'].includes(action))fail('İşlem bulunamadı.',404);
  const item=COSMETICS.find(x=>x.id===b.id);const slot=action==='shop-buy'?item?.slot:b.slot;
  if(!COSMETIC_SLOTS.includes(slot)||(action==='shop-buy'&&!item)||(action==='shop-equip'&&b.id!==''&&(!item||item.slot!==slot)))fail('Kozmetik geçersiz.');
  const c=await db.connect();try{await c.query('BEGIN');const lock=await c.query('SELECT id FROM kekip_football_accounts WHERE id=$1 AND blocked_at IS NULL FOR UPDATE',[a.id]);if(!lock.rows.length)fail('Hesap erişimi kapalı.',403);
@@ -326,7 +327,7 @@ if(action==='avatar'||action==='avatar-save'){
  }
  const q=await db.query('SELECT preset_id,appearance FROM kekip_player_avatars WHERE account_id=$1',[a.id]);
  const selected=Avatar.preset(q.rows[0]?.preset_id)||Avatar.presets[0];
- return res.json({username:a.username,preset:selected.id,config:selected.config,appearance:normalizeAppearance(q.rows[0]?.appearance),customized:!!q.rows.length});
+ return res.json({username:a.username,preset:selected.id,config:selected.config,appearance:normalizeAppearance(q.rows[0]?.appearance),customized:!!q.rows.length,outfit:await equippedCosmetics(db,a.id)});
 }
 if(action.startsWith('social-')){const a=await requireAccount(db,req);return res.json(await socialAction(db,req,a,action,b,options))}if(action.startsWith('friends-')){const a=await requireAccount(db,req);return res.json(await friendAction(db,a,action,b))}if(action==='profile'){const a=await requireAccount(db,req);const name=b.username===undefined?a.username:b.username;if(typeof name!=='string'||!/^[a-z0-9_]{3,24}$/.test(name))fail('Kullanıcı adı geçersiz.');return res.json(await readPlayerProfile(db,name))}if(action==='profile-save'){const a=await requireAccount(db,req);return res.json(await savePlayerProfile(db,a,b))}if(action==='missions'||action==='mission-claim'){const a=await requireAccount(db,req);return res.json(await missionAction(db,a,action,b))}if(['shop','shop-buy','shop-equip'].includes(action)){const a=await requireAccount(db,req);return res.json(await shopAction(db,a,action,b))}if(action==='wallet'){const a=await requireAccount(db,req);return res.json(await wallet(db,a))}if(action==='stats'){const a=await requireAccount(db,req);const stats=await profileStats(db,a);return res.json({...stats,coins:await coinBalance(db,a)})}if(action==='leaderboard'){const a=await requireAccount(db,req);return res.json(await leaderboardStats(db,a))}if(action==='period-leaderboard'){await requireAccount(db,req);return res.json(await periodLeaderboard(db))}fail('İşlem bulunamadı.',404)}catch(e){if(!e.status)console.error('KEKIP account:',e.code||e.message);res.status(e.status||503).json({error:e.status?e.message:'Hesap sunucusuna erişilemiyor. Tekrar dene.'})}})}
 module.exports={attachAccounts,database,getAccount,requireAccount,safeRequest,passwordHash,verifyPassword,socketAccount,recordBattle,recordGameResults,profileStats};
