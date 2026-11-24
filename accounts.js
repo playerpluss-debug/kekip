@@ -22,9 +22,23 @@ async function socketAccount(socket){const req={get:key=>socket.request.headers[
 // Internal server-only interface for future game modules. Never accepts game results directly from browsers.
 async function recordGameResults(game,matchId,rows){if(!/^[a-z0-9_-]{1,40}$/.test(game)||typeof matchId!=='string'||!matchId||matchId.length>100)throw Error('Invalid game/match identifier');if(!rows.length)return;const db=await database();const values=[],params=[];for(const row of rows){const i=params.length;values.push(`($${i+1},$${i+2},$${i+3},$${i+4}::jsonb)`);params.push(game,matchId,row.accountId,JSON.stringify(row.result));}await db.query(`INSERT INTO kekip_game_results(game,match_id,account_id,result) VALUES ${values.join(',')} ON CONFLICT DO NOTHING`,params)}
 async function recordBattle(matchId,players,winner){return recordGameResults('battleship',matchId,players.filter(p=>p.accountId).map(p=>({accountId:p.accountId,result:{win:p.id===winner,shots:p.shots.length,hits:p.shots.filter(s=>s.hit).length,shipsSunk:players.find(q=>q.id!==p.id)?.sunk.length||0}})))}
-async function profileStats(db,a){const rows=await db.query('SELECT result FROM kekip_game_results WHERE account_id=$1 AND game=$2',[a.id,'battleship']);const battle={games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0};for(const {result:r} of rows.rows){battle.games++;battle[r.win?'wins':'losses']++;battle.shots+=r.shots;battle.hits+=r.hits;battle.shipsSunk+=r.shipsSunk}const q=await db.query('SELECT code,data FROM kekip_football_rooms WHERE data @> $1::jsonb',[JSON.stringify({players:[{accountId:a.id}]})]);const football={careers:0,games:0,goals:0,assists:0};for(const row of q.rows){for(const p of row.data.players.filter(p=>p.accountId===a.id)){football.careers++;football.games+=p.save?.games||0;football.goals+=p.save?.goals||0;football.assists+=p.save?.assists||0;}}return {battle,football}}
+async function profileStats(db,a){const rows=await db.query('SELECT result FROM kekip_game_results WHERE account_id=$1 AND game=$2',[a.id,'battleship']);const battle={games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0};for(const {result:r} of rows.rows){battle.games++;battle[r.win===true?'wins':'losses']++;battle.shots+=statNumber(r.shots);battle.hits+=statNumber(r.hits);battle.shipsSunk+=statNumber(r.shipsSunk)}const q=await db.query('SELECT code,data FROM kekip_football_rooms WHERE data @> $1::jsonb',[JSON.stringify({players:[{accountId:a.id}]})]);const football={careers:0,games:0,goals:0,assists:0};for(const row of q.rows){for(const p of row.data.players.filter(p=>p.accountId===a.id)){football.careers++;football.games+=statNumber(p.save?.games);football.goals+=statNumber(p.save?.goals);football.assists+=statNumber(p.save?.assists);}}return {battle,football,progress:accountProgress(battle,football)}}
 // Read-only member leaderboard. Numeric values are sanitized and no private account or career identifiers leave the server.
 function statNumber(v){const n=Number(v);return Number.isSafeInteger(n)&&n>=0?n:0;}
+// Platform XP is derived from persisted match/career aggregates, not a client-submitted XP value.
+// To integrate another game, add its verified persisted stats and contribution here.
+function accountProgress(battle,football){
+  const battleXp=statNumber(battle.games)*20+Math.min(statNumber(battle.wins),statNumber(battle.games))*10;
+  const footballXp=statNumber(football.games)*20+statNumber(football.goals)*5+statNumber(football.assists)*5;
+  const xp=Math.min(Number.MAX_SAFE_INTEGER,battleXp+footballXp);
+  // Level 1 starts at 0. Cost to advance: 100, 125, 150, ...
+  const threshold=n=>100*n+25*n*(n-1)/2;
+  let n=Math.max(0,Math.floor((Math.sqrt(87.5**2+50*xp)-87.5)/25));
+  while(n>0&&threshold(n)>xp)n--;
+  while(threshold(n+1)<=xp)n++;
+  const level=n+1, levelXp=xp-threshold(n), nextLevelXp=100+25*n;
+  return {xp,level,levelXp,nextLevelXp,remainingXp:nextLevelXp-levelXp,percent:Math.floor(100*levelXp/nextLevelXp),battleXp,footballXp};
+}
 async function leaderboardStats(db, viewer){
   const q=await db.query(`WITH battle AS (
     SELECT account_id, count(*) AS games,
@@ -46,7 +60,8 @@ async function leaderboardStats(db, viewer){
     ORDER BY a.username`);
   return {viewer:viewer.username,players:q.rows.map(r=>{
     const games=statNumber(r.battle_games), wins=Math.min(games,statNumber(r.wins)), shots=statNumber(r.shots), hits=Math.min(shots,statNumber(r.hits));
-    return {username:r.username,battle:{games,wins,losses:games-wins,shots,hits,shipsSunk:statNumber(r.ships_sunk)},football:{careers:statNumber(r.careers),games:statNumber(r.football_games),goals:statNumber(r.goals),assists:statNumber(r.assists)}};
+    const battle={games,wins,losses:games-wins,shots,hits,shipsSunk:statNumber(r.ships_sunk)},football={careers:statNumber(r.careers),games:statNumber(r.football_games),goals:statNumber(r.goals),assists:statNumber(r.assists)};
+    return {username:r.username,battle,football,progress:accountProgress(battle,football)};
   })};
 }
 // Administrator key is configured only in the hosting environment, never in client files.
