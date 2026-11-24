@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 app.use(express.static(path.join(__dirname, 'public')));
-accounts.attachAccounts(app,{battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));}});
+accounts.attachAccounts(app,{disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id)io.sockets.sockets.get(p.id)?.disconnect(true);},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));}});
 require('./football-online').attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
