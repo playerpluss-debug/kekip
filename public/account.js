@@ -14,7 +14,7 @@ let badgeTimer;
 function achievementBlock(items){
   if(!Array.isArray(items))return block('🏅 Başarılar',['Rozet bilgisi şu anda alınamadı.']);
   const unlocked=items.filter(x=>x.unlocked),box=block('🏅 Başarılar ve rozetler',[`${unlocked.length} / ${items.length} rozet kazanıldı`,unlocked.length?unlocked.map(x=>x.icon+' '+x.name).join(' · '):'İlk rozetini kazanmak için bir maç tamamla.']);
-  const link=document.createElement('a');link.href='/stats.html#achievements';link.textContent='Rozet koleksiyonunu aç ↗';link.style.cssText='display:inline-block;color:#e1c9ff;font-weight:800;font-size:13px;margin-top:8px;';box.append(link);return box;
+  const edit=document.createElement('a');edit.href='/stats.html#edit-profile';edit.textContent='Profilimi özelleştir ↗';edit.style.cssText='display:block;color:#e1c9ff;font-weight:800;font-size:13px;margin-top:8px;';box.append(edit);const link=document.createElement('a');link.href='/stats.html#achievements';link.textContent='Rozet koleksiyonunu aç ↗';link.style.cssText='display:inline-block;color:#e1c9ff;font-weight:800;font-size:13px;margin-top:8px;';box.append(link);return box;
 }
 function notifyAchievements(items,username){
   if(!Array.isArray(items)||!username)return;
