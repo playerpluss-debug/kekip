@@ -2,11 +2,14 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const crypto = require('crypto');
+const accounts = require('./accounts');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 app.use(express.static(path.join(__dirname, 'public')));
+accounts.attachAccounts(app);
 require('./football-online').attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
@@ -70,20 +73,25 @@ function removePlayer(socket) {
   }
 }
 io.on('connection', socket => {
-  socket.on('createRoom', ({ name } = {}, cb = () => {}) => {
+  socket.on('createRoom', async ({ name } = {}, cb = () => {}) => {
+    let account; try { account = await accounts.socketAccount(socket); } catch { return cb({ok:false,error:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
+    if (!socket.connected) return;
     removePlayer(socket);
     const code = makeCode();
-    const room = { code, players: [{ id: socket.id, name: String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
+    const room = { code, players: [{ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
     rooms.set(code, room); socket.join(code); cb({ ok: true, code }); sendState(room);
   });
-  socket.on('joinRoom', ({ code, name } = {}, cb = () => {}) => {
+  socket.on('joinRoom', async ({ code, name } = {}, cb = () => {}) => {
+    let account; try { account = await accounts.socketAccount(socket); } catch { return cb({ok:false,error:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
+    if (!socket.connected) return;
     const room = rooms.get(String(code || '').toUpperCase().trim());
     if (!room) return cb({ ok: false, error: 'Bu oda koduyla açık bir oyun bulunamadı.' });
     if (room.players.some(p => p.id === socket.id)) return cb({ ok: true, code: room.code });
+    if (account && room.players.some(p => p.accountId === account.id)) return cb({ok:false,error:'Aynı hesapla iki oyuncu olarak katılamazsın.'});
     if (room.players.length >= 2) return cb({ ok: false, error: 'Bu oda zaten dolu.' });
     if (room.phase !== 'waiting') return cb({ ok: false, error: 'Bu oyun başlamış.' });
     removePlayer(socket);
-    room.players.push({ id: socket.id, name: String(name || 'Oyuncu 2').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] });
+    room.players.push({ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 2').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] });
     socket.join(room.code); cb({ ok: true, code: room.code }); sendState(room);
   });
   socket.on('ready', ({ ships } = {}, cb = () => {}) => {
@@ -93,7 +101,7 @@ io.on('connection', socket => {
     if (player.ready) return cb({ ok: false, error: 'Zaten hazırsın.' });
     if (!validFleet(ships)) return cb({ ok: false, error: 'Gemilerin yerleşimi geçersiz.' });
     player.ships = ships.map((cells, i) => ({ id: i, cells })); player.ready = true;
-    if (room.players.every(p => p.ready)) { room.phase = 'playing'; room.turn = room.players[0].id; }
+    if (room.players.every(p => p.ready)) { room.phase = 'playing'; room.turn = room.players[0].id; room.matchId = crypto.randomUUID(); }
     cb({ ok: true }); sendState(room);
   });
   socket.on('fire', ({ r, c } = {}, cb = () => {}) => {
@@ -116,7 +124,13 @@ io.on('connection', socket => {
     const allSunk = foe.ships.every(s => s.cells.every(cell => foe.hits.some(h => h.r === cell.r && h.c === cell.c)));
     const sunkNow = hit && foe.sunk.includes(ship.id);
     room.lastShot = { seq: room.shotCount, playerId: socket.id, playerName: me.name, r, c, hit, sunk: sunkNow };
-    if (allSunk) { room.phase = 'finished'; room.winner = socket.id; }
+    if (allSunk) { room.phase = 'finished'; room.winner = socket.id;
+      const players=JSON.parse(JSON.stringify(room.players)), matchId=room.matchId, winner=socket.id;
+      if(players.some(p=>p.accountId)) {
+        const persist=async()=>{try{await accounts.recordBattle(matchId,players,winner);for(const p of players)if(p.accountId)io.to(p.id).emit('statsSaved',{ok:true});}catch(e){console.error('Battle stats:',e.code||e.message);throw e}};
+        persist().catch(()=>setTimeout(()=>persist().catch(()=>{for(const p of players)if(p.accountId)io.to(p.id).emit('statsSaved',{ok:false});}),2000));
+      }
+    }
     else room.turn = foe.id;
     cb({ ok: true, hit, sunk: sunkNow }); sendState(room);
   });
