@@ -14,6 +14,7 @@ require('./football-online').attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 const rooms = new Map();
+require("./chat").attachChat(app,{battleRoom:(code,id)=>{const r=rooms.get(code);return r?.players.some(p=>p.accountId===id)?r.chatId:null;}});
 const SHIPS = [5, 4, 3, 3, 2];
 const makeCode = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -78,7 +79,7 @@ io.on('connection', socket => {
     if (!socket.connected) return;
     removePlayer(socket);
     const code = makeCode();
-    const room = { code, players: [{ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
+    const room = { code, chatId:crypto.randomUUID(), players: [{ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
     rooms.set(code, room); socket.join(code); cb({ ok: true, code }); sendState(room);
   });
   socket.on('joinRoom', async ({ code, name } = {}, cb = () => {}) => {
