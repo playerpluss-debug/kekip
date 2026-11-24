@@ -24,6 +24,7 @@ const publicState = room => ({
   phase: room.phase,
   turn: room.turn,
   winner: room.winner,
+  lastShot: room.lastShot || null,
   boards: room.players.map((p, i) => ({
     shots: p.shots,
     ownHits: p.hits,
@@ -70,7 +71,7 @@ io.on('connection', socket => {
   socket.on('createRoom', ({ name } = {}, cb = () => {}) => {
     removePlayer(socket);
     const code = makeCode();
-    const room = { code, players: [{ id: socket.id, name: String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null };
+    const room = { code, players: [{ id: socket.id, name: String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
     rooms.set(code, room); socket.join(code); cb({ ok: true, code }); sendState(room);
   });
   socket.on('joinRoom', ({ code, name } = {}, cb = () => {}) => {
@@ -102,15 +103,18 @@ io.on('connection', socket => {
     const ship = foe.ships.find(s => s.cells.some(cell => cell.r === r && cell.c === c));
     const hit = !!ship;
     me.shots.push({ r, c, hit });
+    room.shotCount += 1;
     if (hit) {
       foe.hits.push({ r, c });
       const sunk = ship.cells.every(cell => foe.hits.some(h => h.r === cell.r && h.c === cell.c));
       if (sunk && !foe.sunk.includes(ship.id)) foe.sunk.push(ship.id);
     }
     const allSunk = foe.ships.every(s => s.cells.every(cell => foe.hits.some(h => h.r === cell.r && h.c === cell.c)));
+    const sunkNow = hit && foe.sunk.includes(ship.id);
+    room.lastShot = { seq: room.shotCount, playerId: socket.id, playerName: me.name, r, c, hit, sunk: sunkNow };
     if (allSunk) { room.phase = 'finished'; room.winner = socket.id; }
     else room.turn = foe.id;
-    cb({ ok: true, hit, sunk: hit && foe.sunk.includes(ship.id) }); sendState(room);
+    cb({ ok: true, hit, sunk: sunkNow }); sendState(room);
   });
   socket.on('disconnect', () => removePlayer(socket));
 });
