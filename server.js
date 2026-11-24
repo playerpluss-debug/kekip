@@ -61,8 +61,9 @@ function removePlayer(socket) {
     const idx = room.players.findIndex(p => p.id === socket.id);
     if (idx !== -1) {
       room.players.splice(idx, 1);
+      socket.leave(code);
       if (room.players.length === 0) rooms.delete(code);
-      else { room.phase = 'waiting'; room.turn = null; room.players[0].ready = false; io.to(room.players[0].id).emit('opponentLeft'); sendState(room); }
+      else { room.phase = 'waiting'; room.turn = null; room.winner = null; room.lastShot = null; room.shotCount = 0; Object.assign(room.players[0], { ready: false, ships: [], shots: [], hits: [], sunk: [] }); io.to(room.players[0].id).emit('opponentLeft'); sendState(room); }
       break;
     }
   }
@@ -77,6 +78,7 @@ io.on('connection', socket => {
   socket.on('joinRoom', ({ code, name } = {}, cb = () => {}) => {
     const room = rooms.get(String(code || '').toUpperCase().trim());
     if (!room) return cb({ ok: false, error: 'Bu oda koduyla açık bir oyun bulunamadı.' });
+    if (room.players.some(p => p.id === socket.id)) return cb({ ok: true, code: room.code });
     if (room.players.length >= 2) return cb({ ok: false, error: 'Bu oda zaten dolu.' });
     if (room.phase !== 'waiting') return cb({ ok: false, error: 'Bu oyun başlamış.' });
     removePlayer(socket);
@@ -87,6 +89,7 @@ io.on('connection', socket => {
     const room = [...rooms.values()].find(r => r.players.some(p => p.id === socket.id));
     if (!room || room.players.length !== 2 || room.phase !== 'waiting') return cb({ ok: false, error: 'Önce iki oyuncunun da odaya katılması gerekiyor.' });
     const player = room.players.find(p => p.id === socket.id);
+    if (player.ready) return cb({ ok: false, error: 'Zaten hazırsın.' });
     if (!validFleet(ships)) return cb({ ok: false, error: 'Gemilerin yerleşimi geçersiz.' });
     player.ships = ships.map((cells, i) => ({ id: i, cells })); player.ready = true;
     if (room.players.every(p => p.ready)) { room.phase = 'playing'; room.turn = room.players[0].id; }
@@ -116,6 +119,7 @@ io.on('connection', socket => {
     else room.turn = foe.id;
     cb({ ok: true, hit, sunk: sunkNow }); sendState(room);
   });
+  socket.on('leaveRoom', () => removePlayer(socket));
   socket.on('disconnect', () => removePlayer(socket));
 });
 const port = process.env.PORT || 3000;
