@@ -1,0 +1,9 @@
+
+[data-kc-frame="frame_violet"]{outline:2px solid #b28aff;outline-offset:3px;box-shadow:0 0 13px #ad80ff70!important}
+[data-kc-frame="frame_gold"]{outline:3px double #f6d18a;outline-offset:3px;box-shadow:0 0 10px #e9b86a55!important}
+[data-kc-cover="cover_nebula"]{background:radial-gradient(ellipse at 15% 30%,#8050ab99,transparent 58%),linear-gradient(120deg,#261839,#6a3c8d,#1b173c,#482b68)!important;background-size:180% 180%!important;animation:kc-cover-flow 18s ease-in-out infinite alternate}
+[data-kc-cover="cover_tide"]{background:linear-gradient(120deg,#172b42,#245f6c,#473673,#193e56)!important;background-size:180% 180%!important;animation:kc-cover-flow 20s ease-in-out infinite alternate}
+@keyframes kc-cover-flow{from{background-position:0 40%}to{background-position:100% 60%}}
+[data-kc-name="name_lilac"]{color:#e0baff!important}[data-kc-name="name_gold"]{color:#ffe0a2!important}
+[data-kc-effect="effect_glow"]{box-shadow:0 0 24px #b58cff45,inset 0 0 25px #c8a5ff12!important}
+@media(prefers-reduced-motion:reduce){[data-kc-cover]{animation:none!important}}
