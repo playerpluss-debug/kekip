@@ -1,6 +1,7 @@
 'use strict';
 const crypto=require('crypto');
 const Avatar=require('./public/avatar-model.js');
+const GeceCollection=require('./gece-catalog.json');
 const hash=x=>crypto.createHash('sha256').update(String(x)).digest('hex');
 const token=()=>crypto.randomBytes(24).toString('hex');
 const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status})};
@@ -297,7 +298,7 @@ const COSMETICS=Object.freeze([
 ]);
 const COSMETIC_SLOTS=[...new Set(COSMETICS.map(x=>x.slot))];
 async function equippedCosmetics(db,id){const q=await db.query('SELECT slot,item_id FROM kekip_cosmetic_equipped WHERE account_id=$1',[id]);return Object.fromEntries(q.rows.filter(r=>COSMETICS.some(c=>c.id===r.item_id&&c.slot===r.slot)).map(r=>[r.slot,r.item_id]));}
-async function shopList(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);return {username:a.username,balance:await coinBalance(db,a),catalog:COSMETICS,owned:q.rows.map(r=>r.item_id),equipped:await equippedCosmetics(db,a.id)};}
+async function shopList(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);return {username:a.username,balance:await coinBalance(db,a),catalog:COSMETICS,geceCollection:GeceCollection,owned:q.rows.map(r=>r.item_id),equipped:await equippedCosmetics(db,a.id)};}
 async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);if(action==='shop')return shopList(db,a);if(!['shop-buy','shop-equip'].includes(action))fail('İşlem bulunamadı.',404);
  const item=COSMETICS.find(x=>x.id===b.id);const slot=action==='shop-buy'?item?.slot:b.slot;
  if(action==='shop-buy'&&item?.legacy)fail('Bu ürün eski koleksiyona ait ve artık satışta değil.',409);
