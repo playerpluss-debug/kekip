@@ -300,6 +300,7 @@ async function equippedCosmetics(db,id){const q=await db.query('SELECT slot,item
 async function shopList(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);return {username:a.username,balance:await coinBalance(db,a),catalog:COSMETICS,owned:q.rows.map(r=>r.item_id),equipped:await equippedCosmetics(db,a.id)};}
 async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);if(action==='shop')return shopList(db,a);if(!['shop-buy','shop-equip'].includes(action))fail('İşlem bulunamadı.',404);
  const item=COSMETICS.find(x=>x.id===b.id);const slot=action==='shop-buy'?item?.slot:b.slot;
+ if(action==='shop-buy'&&item?.legacy)fail('Bu ürün eski koleksiyona ait ve artık satışta değil.',409);
  if(!COSMETIC_SLOTS.includes(slot)||(action==='shop-buy'&&!item)||(action==='shop-equip'&&b.id!==''&&(!item||item.slot!==slot)))fail('Kozmetik geçersiz.');
  const c=await db.connect();try{await c.query('BEGIN');const lock=await c.query('SELECT id FROM kekip_football_accounts WHERE id=$1 AND blocked_at IS NULL FOR UPDATE',[a.id]);if(!lock.rows.length)fail('Hesap erişimi kapalı.',403);
  if(action==='shop-buy'){const owned=await c.query('SELECT 1 FROM kekip_cosmetic_inventory WHERE account_id=$1 AND item_id=$2',[a.id,item.id]);if(owned.rows.length)fail('Bu ürün zaten envanterinde.',409);if(await coinBalance(c,a)<item.price)fail('Yeterli KC yok.',409);
