@@ -57,12 +57,24 @@ const streetTiles={av_hat_cap:[0,0],av_hat_goldcap:[1,0],av_hat_frostcap:[2,0],a
 function renderAppearance(id,value,outfit){const p=preset(id)||presets[0],a=normalizeAppearance(value),e=normalizeOutfit(outfit),[head,neck,waist,ankle]=streetCuts[p.id];
  const regions={av_hat:[0,head],av_top:[neck,waist],av_bottom:[waist,ankle],av_shoes:[ankle,660]};const layers=[];
  for(const [slot,[lo,hi]] of Object.entries(regions)){const id=e[slot],t=streetTiles[id],w=winterTiles[id],v=wardrobeTiles[id];if(t){layers.push({lo,hi,col:t[0],row:slot==='av_hat'&&a.hair?3+a.hair:t[1],sheet:'street-r2',cols:3,rows:6});}else if(w!==undefined){layers.push({lo,hi,col:0,row:slot==='av_hat'&&a.hair?3+a.hair:w,sheet:'winter-r3',cols:1,rows:6});}else if(v!==undefined){const product=avatarCatalog.find(x=>x.id===id);if(product?.starterPreset!==p.id)layers.push({lo,hi,col:v%3,row:Math.floor(v/3),sheet:'wardrobe-r3',cols:3,rows:3});}}
+ // Katman birleşim çizgilerini gizlemek için küçük bir bindirme payı kullanıyoruz.
+ const seamOverlap=3, pct=v=>(v/660*100).toFixed(6)+'%';
+ const expandedLayers=layers.map(layer=>({
+  ...layer,
+  baseLo:layer.lo,
+  baseHi:layer.hi,
+  lo:Math.max(0,layer.lo-seamOverlap),
+  hi:Math.min(660,layer.hi+seamOverlap)
+ }));
  // Base and free appearance sprites are clipped only where an equipped garment replaces that region.
- const stops=[];let cursor=0;const pct=v=>(v/660*100).toFixed(6)+'%';for(const {lo,hi} of layers){if(lo>cursor)stops.push('#000 '+pct(cursor),'#000 '+pct(lo));stops.push('transparent '+pct(lo),'transparent '+pct(hi));cursor=hi;}if(cursor<660)stops.push('#000 '+pct(cursor),'#000 100%');
- const mask=layers.length?'mask-image:linear-gradient(to bottom,'+stops.join(',')+');-webkit-mask-image:linear-gradient(to bottom,'+stops.join(',')+');':'';
+ const stops=[];let cursor=0;
+ for(const {lo,hi} of expandedLayers){if(lo>cursor)stops.push('#000 '+pct(cursor),'#000 '+pct(lo));stops.push('transparent '+pct(lo),'transparent '+pct(hi));cursor=hi;}
+ if(cursor<660)stops.push('#000 '+pct(cursor),'#000 100%');
+ const mask=expandedLayers.length?'mask-image:linear-gradient(to bottom,'+stops.join(',')+');-webkit-mask-image:linear-gradient(to bottom,'+stops.join(',')+');':'';
  let html=`<span class="avatar-composite" style="display:block;position:relative;width:100%;aspect-ratio:480/660;isolation:isolate;overflow:hidden" role="img" aria-label="${p.name} — KEKIP karakteri"><span style="position:absolute;inset:0;${mask}"><img src="/images/avatars/${p.id}-472.webp" alt="" draggable="false" style="position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:fill;filter:none;transform:none">`;
  for(let row=0;row<appearanceOptions.length;row++){const key=appearanceOptions[row].key,n=a[key];if(n)html+=`<span aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;background-image:url('/images/avatars/${p.id}-colors-473.webp');background-size:200% 600%;background-position:${(n-1)*100}% ${row*20}%;background-repeat:no-repeat"></span>`;}
- html+='</span>';for(const {lo,hi,col,row,sheet,cols,rows} of layers){html+=`<span aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;background-image:url('/images/avatars/${p.id}-${sheet}.webp');background-size:${cols*100}% ${rows*100}%;background-position:${cols===1?0:col*100/(cols-1)}% ${row*100/(rows-1)}%;background-repeat:no-repeat;clip-path:inset(${pct(lo)} 0 ${pct(660-hi)} 0)"></span>`;}
+ html+='</span>';
+ for(const {lo,hi,col,row,sheet,cols,rows} of expandedLayers){html+=`<span aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;background-image:url('/images/avatars/${p.id}-${sheet}.webp');background-size:${cols*100}% ${rows*100}%;background-position:${cols===1?0:col*100/(cols-1)}% ${row*100/(rows-1)}%;background-repeat:no-repeat;clip-path:inset(${pct(lo)} 0 ${pct(660-hi)} 0)"></span>`;}
  const hasHeadset=e.av_top==='av_top_track'||(p.id==='blue'&&(!e.av_top||e.av_top==='av_top_winter'));
  if(e.av_accessory==='av_accessory_headset'&&!hasHeadset)html+=`<span aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;background-image:url('/images/avatars/${p.id}-wardrobe-r3.webp');background-size:300% 300%;background-position:100% 100%;background-repeat:no-repeat"></span>`;
  return html+accessoryArt(p,e)+'</span>';}
