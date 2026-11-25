@@ -1,0 +1,706 @@
+{
+  "schemaVersion": 1,
+  "release": "0.49.14.2",
+  "character": "gece",
+  "source": "0.49.13.4",
+  "saleEnabled": false,
+  "colorsIncluded": true,
+  "disabledCategories": [
+    "glasses",
+    "neck"
+  ],
+  "items": [
+    {
+      "id": "gece_hair_double",
+      "character": "gece",
+      "slot": "av_hair",
+      "key": "double",
+      "name": "Çift topuz",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
+      "previewPath": "/gece-koleksiyon.html?item=gece_hair_double",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_hair_double.webp"
+    },
+    {
+      "id": "gece_hair_pony",
+      "character": "gece",
+      "slot": "av_hair",
+      "key": "pony",
+      "name": "Yüksek at kuyruğu",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_hair_pony",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_hair_pony.webp"
+    },
+    {
+      "id": "gece_hair_wave",
+      "character": "gece",
+      "slot": "av_hair",
+      "key": "wave",
+      "name": "Dalgalı açık saç",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_hair_wave",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_hair_wave.webp"
+    },
+    {
+      "id": "gece_hair_bob",
+      "character": "gece",
+      "slot": "av_hair",
+      "key": "bob",
+      "name": "Tokalı bob",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_hair_bob",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_hair_bob.webp"
+    },
+    {
+      "id": "gece_hair_bun",
+      "character": "gece",
+      "slot": "av_hair",
+      "key": "bun",
+      "name": "Dağınık topuz",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_hair_bun",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_hair_bun.webp"
+    },
+    {
+      "id": "gece_hair_short",
+      "character": "gece",
+      "slot": "av_hair",
+      "key": "short",
+      "name": "Kısa ve katlı saç",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_hair_short",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_hair_short.webp"
+    },
+    {
+      "id": "gece_eye_original",
+      "character": "gece",
+      "slot": "av_eye",
+      "key": "original",
+      "name": "Orijinal altın göz",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
+      "previewPath": "/gece-koleksiyon.html?item=gece_eye_original",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_eye_original.webp"
+    },
+    {
+      "id": "gece_eye_round",
+      "character": "gece",
+      "slot": "av_eye",
+      "key": "round",
+      "name": "Sevimli yuvarlak göz",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_eye_round",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_eye_round.webp"
+    },
+    {
+      "id": "gece_eye_sharp",
+      "character": "gece",
+      "slot": "av_eye",
+      "key": "sharp",
+      "name": "Keskin bakış",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_eye_sharp",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_eye_sharp.webp"
+    },
+    {
+      "id": "gece_eye_almond",
+      "character": "gece",
+      "slot": "av_eye",
+      "key": "almond",
+      "name": "Çekik göz",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_eye_almond",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_eye_almond.webp"
+    },
+    {
+      "id": "gece_eye_sleepy",
+      "character": "gece",
+      "slot": "av_eye",
+      "key": "sleepy",
+      "name": "Uykulu göz",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_eye_sleepy",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_eye_sleepy.webp"
+    },
+    {
+      "id": "gece_eye_star",
+      "character": "gece",
+      "slot": "av_eye",
+      "key": "star",
+      "name": "Parlak yıldızlı göz",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_eye_star",
+      "colorCustomization": true,
+      "thumbnail": "/images/gece-shop/gece_eye_star.webp"
+    },
+    {
+      "id": "gece_brow_original",
+      "character": "gece",
+      "slot": "av_brow",
+      "key": "original",
+      "name": "Orijinal kaş",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
+      "previewPath": "/gece-koleksiyon.html?item=gece_brow_original",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_brow_original.webp"
+    },
+    {
+      "id": "gece_brow_thin",
+      "character": "gece",
+      "slot": "av_brow",
+      "key": "thin",
+      "name": "İnce kaş",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_brow_thin",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_brow_thin.webp"
+    },
+    {
+      "id": "gece_brow_thick",
+      "character": "gece",
+      "slot": "av_brow",
+      "key": "thick",
+      "name": "Kalın kaş",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_brow_thick",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_brow_thick.webp"
+    },
+    {
+      "id": "gece_brow_arched",
+      "character": "gece",
+      "slot": "av_brow",
+      "key": "arched",
+      "name": "Kavisli kaş",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_brow_arched",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_brow_arched.webp"
+    },
+    {
+      "id": "gece_brow_straight",
+      "character": "gece",
+      "slot": "av_brow",
+      "key": "straight",
+      "name": "Düz kaş",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_brow_straight",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_brow_straight.webp"
+    },
+    {
+      "id": "gece_brow_sharp",
+      "character": "gece",
+      "slot": "av_brow",
+      "key": "sharp",
+      "name": "Keskin kaş",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_brow_sharp",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_brow_sharp.webp"
+    },
+    {
+      "id": "gece_mouth_original",
+      "character": "gece",
+      "slot": "av_expression",
+      "key": "original",
+      "name": "Doğal gülümseme",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
+      "previewPath": "/gece-koleksiyon.html?item=gece_mouth_original",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_mouth_original.webp"
+    },
+    {
+      "id": "gece_mouth_happy",
+      "character": "gece",
+      "slot": "av_expression",
+      "key": "happy",
+      "name": "Mutlu",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_mouth_happy",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_mouth_happy.webp"
+    },
+    {
+      "id": "gece_mouth_sad",
+      "character": "gece",
+      "slot": "av_expression",
+      "key": "sad",
+      "name": "Üzgün",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_mouth_sad",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_mouth_sad.webp"
+    },
+    {
+      "id": "gece_mouth_angry",
+      "character": "gece",
+      "slot": "av_expression",
+      "key": "angry",
+      "name": "Kızgın",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_mouth_angry",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_mouth_angry.webp"
+    },
+    {
+      "id": "gece_mouth_surprised",
+      "character": "gece",
+      "slot": "av_expression",
+      "key": "surprised",
+      "name": "Şaşkın",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_mouth_surprised",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_mouth_surprised.webp"
+    },
+    {
+      "id": "gece_mouth_shy",
+      "character": "gece",
+      "slot": "av_expression",
+      "key": "shy",
+      "name": "Utangaç",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_mouth_shy",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_mouth_shy.webp"
+    },
+    {
+      "id": "gece_top_heart",
+      "character": "gece",
+      "slot": "av_top",
+      "key": "heart",
+      "name": "Pembe kalpli tişört",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_top_heart",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_top_heart.webp"
+    },
+    {
+      "id": "gece_top_hoodie",
+      "character": "gece",
+      "slot": "av_top",
+      "key": "hoodie",
+      "name": "Siyah kuru kafalı hoodie",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_top_hoodie",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_top_hoodie.webp"
+    },
+    {
+      "id": "gece_top_star",
+      "character": "gece",
+      "slot": "av_top",
+      "key": "star",
+      "name": "Beyaz yıldızlı sweatshirt",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_top_star",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_top_star.webp"
+    },
+    {
+      "id": "gece_top_sport",
+      "character": "gece",
+      "slot": "av_top",
+      "key": "sport",
+      "name": "Siyah sportif atlet",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_top_sport",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_top_sport.webp"
+    },
+    {
+      "id": "gece_top_bomber",
+      "character": "gece",
+      "slot": "av_top",
+      "key": "bomber",
+      "name": "Pembe bomber ceket",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_top_bomber",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_top_bomber.webp"
+    },
+    {
+      "id": "gece_top_esports",
+      "character": "gece",
+      "slot": "av_top",
+      "key": "esports",
+      "name": "Mor detaylı e-spor ceketi",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_top_esports",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_top_esports.webp"
+    },
+    {
+      "id": "gece_bottom_cargo",
+      "character": "gece",
+      "slot": "av_bottom",
+      "key": "cargo",
+      "name": "Zincirli mavi kargo pantolon",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_bottom_cargo",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_bottom_cargo.webp"
+    },
+    {
+      "id": "gece_bottom_tactical",
+      "character": "gece",
+      "slot": "av_bottom",
+      "key": "tactical",
+      "name": "Siyah taktik kargo pantolon",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_bottom_tactical",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_bottom_tactical.webp"
+    },
+    {
+      "id": "gece_bottom_denim",
+      "character": "gece",
+      "slot": "av_bottom",
+      "key": "denim",
+      "name": "Yırtık kot şort",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_bottom_denim",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_bottom_denim.webp"
+    },
+    {
+      "id": "gece_bottom_pleat",
+      "character": "gece",
+      "slot": "av_bottom",
+      "key": "pleat",
+      "name": "Siyah pileli etek",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_bottom_pleat",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_bottom_pleat.webp"
+    },
+    {
+      "id": "gece_bottom_plaid",
+      "character": "gece",
+      "slot": "av_bottom",
+      "key": "plaid",
+      "name": "Mor ekoseli etek",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_bottom_plaid",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_bottom_plaid.webp"
+    },
+    {
+      "id": "gece_bottom_sport",
+      "character": "gece",
+      "slot": "av_bottom",
+      "key": "sport",
+      "name": "Sportif siyah şort",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_bottom_sport",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_bottom_sport.webp"
+    },
+    {
+      "id": "gece_shoe_classic",
+      "character": "gece",
+      "slot": "av_shoes",
+      "key": "classic",
+      "name": "Siyah-beyaz sneaker",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_shoe_classic",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_shoe_classic.webp"
+    },
+    {
+      "id": "gece_shoe_purple",
+      "character": "gece",
+      "slot": "av_shoes",
+      "key": "purple",
+      "name": "Mor detaylı sneaker",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_shoe_purple",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_shoe_purple.webp"
+    },
+    {
+      "id": "gece_shoe_boots",
+      "character": "gece",
+      "slot": "av_shoes",
+      "key": "boots",
+      "name": "Kalın tabanlı bot",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_shoe_boots",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_shoe_boots.webp"
+    },
+    {
+      "id": "gece_shoe_pink",
+      "character": "gece",
+      "slot": "av_shoes",
+      "key": "pink",
+      "name": "Pembe spor ayakkabı",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_shoe_pink",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_shoe_pink.webp"
+    },
+    {
+      "id": "gece_shoe_casual",
+      "character": "gece",
+      "slot": "av_shoes",
+      "key": "casual",
+      "name": "Siyah günlük ayakkabı",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_shoe_casual",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_shoe_casual.webp"
+    },
+    {
+      "id": "gece_shoe_platform",
+      "character": "gece",
+      "slot": "av_shoes",
+      "key": "platform",
+      "name": "Platform ayakkabı",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_shoe_platform",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_shoe_platform.webp"
+    },
+    {
+      "id": "gece_ear_hoop",
+      "character": "gece",
+      "slot": "av_ear",
+      "key": "hoop",
+      "name": "Altın halka küpe",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_ear_hoop",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_ear_hoop.webp"
+    },
+    {
+      "id": "gece_ear_star",
+      "character": "gece",
+      "slot": "av_ear",
+      "key": "star",
+      "name": "Gümüş yıldız küpe",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_ear_star",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_ear_star.webp"
+    },
+    {
+      "id": "gece_wrist_cuff",
+      "character": "gece",
+      "slot": "av_wrist",
+      "key": "cuff",
+      "name": "Pembe bileklik",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_wrist_cuff",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_wrist_cuff.webp"
+    },
+    {
+      "id": "gece_wrist_studs",
+      "character": "gece",
+      "slot": "av_wrist",
+      "key": "studs",
+      "name": "Siyah metal detaylı bileklik",
+      "starter": false,
+      "price": null,
+      "status": "pending_price",
+      "previewPath": "/gece-koleksiyon.html?item=gece_wrist_studs",
+      "colorCustomization": false,
+      "thumbnail": "/images/gece-shop/gece_wrist_studs.webp"
+    }
+  ],
+  "colors": {
+    "hair": [
+      {
+        "key": "original",
+        "name": "Orijinal"
+      },
+      {
+        "key": "black",
+        "name": "Siyah"
+      },
+      {
+        "key": "brown",
+        "name": "Kahverengi"
+      },
+      {
+        "key": "hazel",
+        "name": "Kumral"
+      },
+      {
+        "key": "blonde",
+        "name": "Sarışın"
+      },
+      {
+        "key": "platinum",
+        "name": "Platin"
+      },
+      {
+        "key": "red",
+        "name": "Kızıl"
+      },
+      {
+        "key": "burgundy",
+        "name": "Bordo"
+      },
+      {
+        "key": "purple",
+        "name": "Mor"
+      },
+      {
+        "key": "pink",
+        "name": "Pembe"
+      },
+      {
+        "key": "blue",
+        "name": "Mavi"
+      },
+      {
+        "key": "teal",
+        "name": "Turkuaz"
+      }
+    ],
+    "eye": [
+      {
+        "key": "gold",
+        "name": "Altın"
+      },
+      {
+        "key": "brown",
+        "name": "Kahverengi"
+      },
+      {
+        "key": "blue",
+        "name": "Mavi"
+      },
+      {
+        "key": "green",
+        "name": "Yeşil"
+      },
+      {
+        "key": "purple",
+        "name": "Mor"
+      },
+      {
+        "key": "pink",
+        "name": "Pembe"
+      },
+      {
+        "key": "red",
+        "name": "Kırmızı"
+      },
+      {
+        "key": "grey",
+        "name": "Gri"
+      },
+      {
+        "key": "teal",
+        "name": "Turkuaz"
+      },
+      {
+        "key": "black",
+        "name": "Siyah"
+      }
+    ]
+  }
+}
