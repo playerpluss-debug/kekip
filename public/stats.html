@@ -136,6 +136,36 @@ body{min-height:100vh}
   .row-stat{display:grid;grid-template-columns:1fr auto;align-items:center;text-align:left;padding:11px 12px}
   .row-stat span{margin-top:0}
 }
+
+/* 0.50.24.2: lightweight visual polish, no data changes */
+:root{--shadow:0 12px 35px #08051160;--panel:#1e152d}
+html,body{background:#110c1c}body{isolation:isolate;background:radial-gradient(ellipse at 50% 0,#33204c 0,transparent 42%),#110c1c}
+body:before,body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1}
+body:before{background:radial-gradient(ellipse at 15% 15%,#b270ff14,transparent 38%),radial-gradient(ellipse at 90% 40%,#7954df19,transparent 43%);animation:ambientBreath 14s ease-in-out infinite alternate}
+body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linear-gradient(90deg,#b58cff05 1px,transparent 1px);background-size:56px 56px;mask-image:linear-gradient(#0009,transparent 75%)}
+.page{position:relative;max-width:1260px;padding-top:22px}.topbar{margin-bottom:18px}.brand-mark{border:1px solid #b991ff6b}.brand-copy strong{font-size:24px}.header-btn{padding:9px 12px;font-size:12px;border-radius:10px;background:#231831}.header-btn:focus-visible,.chip:focus-visible{outline:2px solid #d3baff;outline-offset:3px}
+.hero{display:block;margin-bottom:14px}.hero-card,.panel{border-color:#63478199;border-radius:20px;background:linear-gradient(150deg,#261a38,#1b1428);box-shadow:var(--shadow)}
+.hero-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);column-gap:30px;align-items:center;padding:22px 26px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 0 0,#a370ed20,transparent 60%),linear-gradient(120deg,#2a1c3e,#1b1429)}
+.hero-card .kicker{grid-column:1;justify-self:start;font-size:10px;padding:6px 10px;letter-spacing:1.7px}.hero-title{grid-column:1;font-size:clamp(27px,3.5vw,43px);letter-spacing:-1.3px;margin:10px 0 8px}.hero-title span{color:#f6d999}.hero-text{grid-column:1;font-size:13px;line-height:1.55}.hero-stats{grid-column:2;grid-row:1/4;margin:0;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr))}.mini-card{min-width:0;border-radius:13px;padding:12px;background:#1c142c9c;border-color:#7f5fa14d}.mini-card small{font-size:10px}.mini-card strong{font-size:25px;overflow-wrap:anywhere}.mini-card span{font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+.panel{padding:18px 22px;margin-bottom:14px}.toolbar{gap:12px;margin-bottom:12px}.toolbar-group{gap:7px}.chip{font-size:12px;padding:9px 13px;border-radius:10px;transition:background .2s,border-color .2s,transform .2s,box-shadow .2s}.chip.active{box-shadow:0 4px 15px #9766e630}.summary-grid{gap:9px}.summary-card{padding:10px 13px;border-radius:12px;background:#19122499;border-color:#6c4c8a66;min-width:0}.summary-card strong{font-size:21px;margin-top:5px;overflow-wrap:anywhere}.summary-card span{font-size:11px;margin-top:4px}.summary-card small{font-size:10px}.panel-head h2{font-size:24px;letter-spacing:-.5px}.panel-head p{font-size:13px;margin-top:5px}.panel-note{border-color:#70528c77;border-radius:10px;font-size:11px;padding:8px 10px}.section-kicker{display:block;color:#c5a3f5;font-size:10px;letter-spacing:2.6px;font-weight:850;margin-bottom:7px}
+.podium-panel{background:radial-gradient(ellipse at 50% 25%,#6e4a8922,transparent 65%),linear-gradient(170deg,#251a35,#181123);overflow:hidden}.podium-panel .panel-head{margin-bottom:22px}.podium-wrap{grid-template-columns:1fr 1.12fr 1fr;gap:14px;align-items:end;padding-top:12px}
+.podium-card{--metal:#c8b5dc;--glow:#c8b5dc20;min-width:0;position:relative;isolation:isolate;padding:16px 14px 14px;min-height:0;border-radius:18px;border-color:var(--metal);background:linear-gradient(180deg,#30283d,#1d1529 72%);box-shadow:0 10px 30px #06030e66;transform:none;animation:rankEntrance .5s cubic-bezier(.2,.8,.2,1) backwards;transition:box-shadow .25s,border-color .25s}
+.podium-card.place-1{--metal:#edc66c;--glow:#ecc65b29;min-height:0;transform:none;border-color:#e4bf6f;background:radial-gradient(ellipse at 50% 0,#a27c3044,transparent 70%),linear-gradient(180deg,#30243a,#1d142b);box-shadow:0 0 26px #d9ae3c1b,0 12px 30px #08041077;animation-delay:.06s}
+.podium-card.place-2{--metal:#c0cde3;--glow:#b7c8e81b;border-color:#a7b8d28c;background:radial-gradient(ellipse at 50% 0,#8d9dbb26,transparent 70%),linear-gradient(180deg,#2d273d,#1c152b);animation-delay:.12s}
+.podium-card.place-3{--metal:#d7a07c;--glow:#d5997220;border-color:#c08b698c;background:radial-gradient(ellipse at 50% 0,#a46d4c2b,transparent 70%),linear-gradient(180deg,#342638,#1d152a);animation-delay:.18s}
+.podium-card:before{inset:0;background:radial-gradient(ellipse at 50% 15%,var(--glow),transparent 66%);z-index:-1}.podium-card:after{content:"";height:2px;position:absolute;left:12%;right:12%;bottom:0;background:linear-gradient(90deg,transparent,var(--metal),transparent);opacity:.7;pointer-events:none}
+.podium-card.place-1:not(.is-empty):before{animation:championGlow 6s ease-in-out infinite alternate}
+.medal{z-index:3;top:12px;right:12px;width:36px;height:36px;font-size:19px;border:1px solid #fff6;box-shadow:0 5px 14px #0004}.podium-rank{z-index:3;color:var(--metal);font-size:10px;letter-spacing:2px;left:15px;top:23px}.champion-crown{position:absolute;width:47px;height:31px;left:50%;top:10px;transform:translateX(-50%);z-index:3;filter:drop-shadow(0 0 7px #f7c85a66);animation:crownFloat 5s ease-in-out infinite}.champion-crown svg{width:100%;height:100%}
+.podium-avatar,.place-1 .podium-avatar{position:relative;isolation:isolate;width:min(100%,190px);height:auto;aspect-ratio:480/660;min-height:0;margin:36px auto 12px;border-radius:14px;border:1px solid var(--metal);background:radial-gradient(ellipse at 50% 45%,#53406b,#20172c 75%);box-shadow:0 7px 22px #07041055;flex:none}
+.place-1 .podium-avatar{width:min(100%,218px);margin-top:39px}.podium-avatar:empty:before,.me-avatar:empty:before,.row-avatar:empty:before{content:"";display:block;width:22%;aspect-ratio:1;border:1px solid #a78dbb70;border-radius:50%;background:radial-gradient(circle,#d0b8f42b 0 25%,transparent 28%);opacity:.65}
+.podium-info{z-index:2}.podium-name{font-size:clamp(15px,1.8vw,21px);overflow-wrap:anywhere;flex-wrap:wrap;gap:5px}.podium-name span{font-size:9px;padding:3px 7px}.podium-user{font-size:12px;margin-top:3px}.podium-score{position:relative;margin-top:10px;padding-top:10px;border-color:#ffffff15;gap:5px}.podium-score strong{font-size:34px;font-variant-numeric:tabular-nums;color:var(--metal);text-shadow:0 0 16px var(--glow)}.podium-score small{font-size:10px;color:#d2c0e3}.podium-meta{gap:6px;margin-top:4px}.podium-meta div{padding:7px 3px;background:#0d09172b;border-color:#ffffff12;border-radius:9px}.podium-meta b{font-size:15px}.podium-meta span{font-size:10px;margin-top:2px}
+.me-card{padding:14px;border-radius:15px;margin:0;background:linear-gradient(120deg,#a47aeb19,#2a1c41);box-shadow:inset 3px 0 #a681ea}.me-avatar{height:90px;width:66px;border-radius:10px}.me-text h3{font-size:21px;overflow-wrap:anywhere}.me-text p{font-size:13px}.me-rank strong{color:#e1c6ff;font-variant-numeric:tabular-nums}.board{gap:8px}.row{padding:10px 12px;border-radius:13px;gap:9px;transition:border-color .2s,background .2s}.rank-pill{height:35px;font-size:16px;min-width:42px;border-radius:9px}.row-stat{border-radius:10px;padding:9px 5px}.row-stat b{font-size:17px;font-variant-numeric:tabular-nums}.row-stat span{font-size:10px}.row-avatar{border-radius:11px}.row.viewer{box-shadow:inset 3px 0 #b58bff}.row:nth-child(-n+8){animation:rowEntrance .3s ease-out backwards}.row:nth-child(2n){animation-delay:.035s}
+@media(hover:hover){.chip:hover{transform:translateY(-1px)}.podium-card:hover{box-shadow:0 0 24px var(--glow),0 12px 30px #09051380}.row:hover{border-color:#a986de;background:#302044}}
+@keyframes ambientBreath{from{opacity:.5}to{opacity:1}}@keyframes championGlow{from{opacity:.5}to{opacity:1}}@keyframes crownFloat{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-3px)}}@keyframes rankEntrance{from{opacity:.3;transform:translateY(9px)}to{opacity:1;transform:none}}@keyframes rowEntrance{from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media(max-width:900px){.hero-card{display:block;padding:18px}.hero-stats{margin-top:14px}.podium-wrap{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.podium-card{padding:13px 9px 10px}.podium-rank{left:10px;letter-spacing:1px}.medal{width:29px;height:29px;font-size:15px;right:8px}.champion-crown{width:35px;top:9px}.podium-name{font-size:15px}.podium-score strong{font-size:26px}.podium-meta span{font-size:9px}.me-card{grid-template-columns:auto 1fr auto;justify-items:stretch}.me-rank{text-align:right}}
+@media(max-width:620px){.page{padding:12px 10px 26px}.topbar{gap:10px}.header-btn{padding:8px 9px;font-size:11px}.brand-mark{width:40px;height:40px;border-radius:12px}.brand-copy strong{font-size:21px}.brand-copy small{font-size:9px}.hero-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.mini-card{padding:8px 6px}.mini-card strong{font-size:18px}.mini-card span{font-size:10px}.panel{padding:14px 11px}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.summary-card{padding:9px}.summary-card strong{font-size:17px}.panel-head h2{font-size:21px}.podium-wrap{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding-top:0}.podium-card.place-1{grid-row:1;grid-column:1/-1;width:100%}.podium-card.place-1 .podium-avatar{width:190px}.podium-card.place-1 .podium-meta{grid-template-columns:repeat(4,minmax(0,1fr))}.podium-card.place-2{grid-row:2;grid-column:1}.podium-card.place-3{grid-row:2;grid-column:2}.podium-card .podium-avatar{max-width:155px}.podium-card.place-1 .podium-avatar{max-width:190px}.me-card{grid-template-columns:auto minmax(0,1fr);gap:10px}.me-rank{grid-column:2;text-align:left}.me-rank strong{font-size:28px}.row{grid-template-columns:auto minmax(0,1fr);gap:7px}.row-stat{grid-column:1/-1}.row .extra{display:grid}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
 </style>
 </head>
 <body>
@@ -160,24 +190,12 @@ body{min-height:100vh}
   <section class="hero">
     <div class="hero-card">
       <span class="kicker">🏆 Liderlik Tablosu</span>
-      <h1 class="hero-title">İlk 3 şimdi <span>karakterleriyle</span> sahnede.</h1>
-      <p class="hero-text">Platform XP, Amiral Battı galibiyetleri, futbol performansı ve dönemsel sıralamalar tek yerde. Genel, haftalık ve aylık görünüm arasında geçiş yap; ilk 3 oyuncuyu podyumda karakterleriyle birlikte gör.</p>
+      <h1 class="hero-title">Zirveye <span>adını yaz.</span></h1>
+      <p class="hero-text">KEKIP topluluğunun en iyi oyuncuları. Dönemini ve sıralama ölçütünü seç, zirvedeki yerini keşfet.</p>
       <div class="hero-stats" id="heroStats">
         <div class="mini-card"><small>Durum</small><strong>Yükleniyor…</strong><span>Veriler alınıyor.</span></div>
         <div class="mini-card"><small>İlk Sıra</small><strong>—</strong><span>Sıralama hazırlanıyor.</span></div>
         <div class="mini-card"><small>Kendi Sıran</small><strong>—</strong><span>Hesabın kontrol ediliyor.</span></div>
-      </div>
-    </div>
-    <div class="hero-side">
-      <div class="hero-card status-card">
-        <div class="status-badge">✨ Yeni görünüm</div>
-        <h3>Podyum düzeni</h3>
-        <p>Birinci, ikinci ve üçüncü oyuncu; kayıtlı KEKIP karakterleriyle özel kartlarda gösterilir. Böylece sıralama daha canlı ve daha okunabilir hale gelir.</p>
-      </div>
-      <div class="hero-card status-card">
-        <div class="status-badge">📊 Çoklu filtre</div>
-        <h3>Dönem ve metrik seçimi</h3>
-        <p>Genel, bu hafta ve bu ay görünümleri arasında geçiş yap. İstersen platform XP, galibiyet, gol, asist veya toplam maç sayısına göre sıralamayı yeniden düzenle.</p>
       </div>
     </div>
   </section>
@@ -203,6 +221,17 @@ body{min-height:100vh}
     </div>
   </section>
 
+  <section class="panel podium-panel">
+    <div class="panel-head">
+      <div>
+        <span class="section-kicker">KEKIP HALL OF FAME</span><h2>Şampiyonluk podyumu</h2>
+        <p>Seçili sıralamanın ilk üç oyuncusu.</p>
+      </div>
+      <div class="panel-note" id="podiumMetricNote">Platform XP'ye göre sıralanıyor.</div>
+    </div>
+    <div id="podiumContent" class="loading">Podyum hazırlanıyor…</div>
+  </section>
+
   <section class="panel" id="mePanel">
     <div class="panel-head">
       <div>
@@ -212,17 +241,6 @@ body{min-height:100vh}
       <div class="panel-note" id="viewerNote">Hesap bilgisi bekleniyor…</div>
     </div>
     <div id="meContent" class="loading">Yükleniyor…</div>
-  </section>
-
-  <section class="panel">
-    <div class="panel-head">
-      <div>
-        <h2>İlk 3 podyumu</h2>
-        <p>En güçlü üç oyuncu; karakterleri, kullanıcı adları ve temel performans bilgileriyle sahnede.</p>
-      </div>
-      <div class="panel-note" id="podiumMetricNote">Platform XP'ye göre sıralanıyor.</div>
-    </div>
-    <div id="podiumContent" class="loading">Podyum hazırlanıyor…</div>
   </section>
 
   <section class="panel">
@@ -300,7 +318,7 @@ function currentRangeText(){
   if(!src?.start||!src?.end)return 'Seçili dönem verisi gösteriliyor.';
   return (state.period==='week'?'Haftalık':'Aylık')+' aralık: '+dateLabel(src.start)+' – '+dateLabel(new Date(new Date(src.end).getTime()-86400000).toISOString())
 }
-function buildChipBar(rootId,items,active,handler){const root=$(rootId);root.replaceChildren(...items.map(item=>{const b=document.createElement('button');b.className='chip'+(item.id===active?' active':'');b.type='button';b.textContent=item.label;b.onclick=()=>handler(item.id);return b;}));}
+function buildChipBar(rootId,items,active,handler){const root=$(rootId);root.replaceChildren(...items.map(item=>{const b=document.createElement('button');b.className='chip'+(item.id===active?' active':'');b.type='button';b.setAttribute('aria-pressed',String(item.id===active));b.textContent=item.label;b.onclick=()=>handler(item.id);return b;}));}
 
 function renderHero(list){
   const leader=list[0];
@@ -336,7 +354,7 @@ function renderMe(list){
   $('meContent').className='';
   $('meContent').innerHTML=`
     <div class="me-card">
-      <div class="me-avatar" data-kp-avatar="${escapeHtml(me.username)}" data-kp-avatar-mode="body">🎮</div>
+      <div class="me-avatar" data-kp-avatar="${escapeHtml(me.username)}" data-kp-avatar-mode="body"></div>
       <div class="me-text">
         <h3>@${escapeHtml(me.username)}</h3>
         <p>${state.period==='all'?'Platform seviyesi <b>Lv. '+fmt(p.level)+'</b> · Toplam XP <b>'+fmt(p.xp)+'</b>':'Bu dönemde <b>'+fmt(playerXp(me,state.period))+' XP</b> topladın.'}<br>${fmt(me.battle?.wins||0)} galibiyet · ${fmt(me.football?.goals||0)} gol · ${fmt(me.football?.assists||0)} asist · ${fmt((me.battle?.games||0)+(me.football?.games||0))} toplam maç</p>
@@ -349,14 +367,15 @@ function renderMe(list){
 }
 
 function podiumCard(player,rank){
-  if(!player)return `<article class="podium-card place-${rank}"><div class="podium-rank">#${rank}</div><div class="medal">${rank===1?'🥇':rank===2?'🥈':'🥉'}</div><div class="podium-avatar">—</div><div class="podium-info"><div class="podium-name">Boş yer</div><div class="podium-user">Henüz veri yok</div><div class="podium-score"><strong>0</strong><small>${escapeHtml(metricText(state.metric))}</small></div><div class="podium-meta"><div><b>0</b><span>Galibiyet</span></div><div><b>0</b><span>Gol</span></div></div></div></article>`;
+  if(!player)return `<article class="podium-card place-${rank} is-empty"><div class="podium-rank">#${rank}</div><div class="medal">${rank===1?'🥇':rank===2?'🥈':'🥉'}</div><div class="podium-avatar">—</div><div class="podium-info"><div class="podium-name">Boş yer</div><div class="podium-user">Henüz veri yok</div><div class="podium-score"><strong>0</strong><small>${escapeHtml(metricText(state.metric))}</small></div><div class="podium-meta"><div><b>0</b><span>Galibiyet</span></div><div><b>0</b><span>Gol</span></div></div></div></article>`;
   const isViewer=player.username===state.viewer;
   const score=playerValue(player,state.metric,state.period);
   const progress=player.progress||progressFromXp(playerXp(player,state.period));
   return `<article class="podium-card place-${rank}">
-      <div class="podium-rank">#${rank}</div>
-      <div class="medal">${rank===1?'🥇':rank===2?'🥈':'🥉'}</div>
-      <div class="podium-avatar" data-kp-avatar="${escapeHtml(player.username)}" data-kp-avatar-mode="body">${escapeHtml(player.username.slice(0,2).toUpperCase())}</div>
+      <div class="podium-rank">${rank===1?'ZİRVE':rank===2?'İKİNCİ':'ÜÇÜNCÜ'}</div>
+      <div class="medal" aria-label="${rank}. sıra">${rank}</div>
+      ${rank===1?'<div class="champion-crown" aria-hidden="true"><svg viewBox="0 0 64 40" fill="none"><path d="M7 8L20 20 32 3 44 20 57 8 50 33H14Z" fill="#cba34b" stroke="#ffe7a0" stroke-width="2" stroke-linejoin="round"/><path d="M15 34H49" stroke="#fff1b5" stroke-width="3" stroke-linecap="round"/><path d="M32 13l5 7-5 7-5-7z" fill="#fff6ce"/><circle cx="7" cy="8" r="3" fill="#ffe7a0"/><circle cx="57" cy="8" r="3" fill="#ffe7a0"/></svg></div>':''}
+      <div class="podium-avatar" data-kp-avatar="${escapeHtml(player.username)}" data-kp-avatar-mode="body"></div>
       <div class="podium-info">
         <div class="podium-name">@${escapeHtml(player.username)} ${isViewer?'<span>Sen</span>':''}</div>
         <div class="podium-user">${state.period==='all'?'Seviye '+fmt(progress.level):'Dönem XP '+fmt(playerXp(player,state.period))}</div>
@@ -372,7 +391,7 @@ function podiumCard(player,rank){
 }
 
 function renderPodium(list){
-  $('podiumMetricNote').textContent=metricText(state.metric)+' metricine göre sıralanıyor.';
+  $('podiumMetricNote').textContent=metricText(state.metric)+' sıralaması';
   if(!list.length){$('podiumContent').className='empty';$('podiumContent').innerHTML='Gösterilecek sıralama verisi bulunamadı.';return;}
   const byRank=new Map(list.slice(0,3).map(p=>[p.rank,p]));
   $('podiumContent').className='';
@@ -386,7 +405,7 @@ function rowCard(player){
   return `<article class="row${isViewer?' viewer':''}">
       <div class="rank-pill">#${fmt(player.rank)}</div>
       <div class="row-user">
-        <div class="row-avatar" data-kp-avatar="${escapeHtml(player.username)}" data-kp-avatar-mode="body">${escapeHtml(player.username.slice(0,2).toUpperCase())}</div>
+        <div class="row-avatar" data-kp-avatar="${escapeHtml(player.username)}" data-kp-avatar-mode="body"></div>
         <div class="row-name">
           <strong>@${escapeHtml(player.username)} ${isViewer?'· Sen':''}</strong>
           <small>${state.period==='all'?'Seviye '+fmt(progress.level)+' · '+fmt(progress.xp)+' XP':'Dönem XP '+fmt(playerXp(player,state.period))}</small>
