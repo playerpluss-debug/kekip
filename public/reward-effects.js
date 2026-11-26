@@ -21,5 +21,6 @@ const css=document.createElement('style');css.textContent=`
 @media(prefers-reduced-motion:reduce){.kp-kc-celebration,.kp-kc-medal{animation:none!important}.kp-kc-spark{display:none!important}}
 `;document.head.append(css);
 function sync(){if(document.hidden||!allowed('effects',owner))clear();if(document.hidden||!allowed('sound',soundOwner))stopSound();}window.addEventListener('kekip:preferences-status',sync);window.addEventListener('kekip:experience',sync);document.addEventListener('visibilitychange',sync);window.addEventListener('pagehide',()=>{clear();stopSound();});
-window.KEKIPRewardEffects=Object.freeze({prepare,show});
+function playCard({username,id}={}){if(typeof username!=='string'||typeof id!=='string'||!id||!allowed('sound',username)||document.hidden)return false;const key=username+'|'+id;if(seen.has(key))return false;seen.add(key);if(seen.size>100)seen.delete(seen.values().next().value);sound(username);return true;}
+window.KEKIPRewardEffects=Object.freeze({prepare,show,playCard});
 })();
