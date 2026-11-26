@@ -31,7 +31,26 @@ app.use('/api/football',async(req,res,next)=>{
  try{if(!accounts.sessionToken(req))return res.status(401).json({error:'Önce hesabına giriş yap.'});await accounts.requireAccount(await accounts.database(),req);return next();}catch(e){return res.status(e.status||503).json({error:e.status?e.message:'Hesap bağlantısı kurulamadı.'});}
 });
 app.get(["/avatar-core-lab.html", "/avatar-original-workshop.html", "/avatar-premium-fullbody.html", "/avatar-premium-modular.html", "/avatar-premium-preview.html"], (_req,res)=>res.redirect(302,'/avatar.html'));
-app.use('/avatar-assets-v1', express.static(path.join(__dirname, 'public', 'avatar-assets-v1'), {maxAge: '1y', immutable: true, index: false, fallthrough: false}));
+// Content-addressed avatar assets: use original folder first, then the earlier flat
+// upload layout, then the bundled byte-identical fallback. No account or database I/O.
+const avatarAssetOptions={maxAge:'1y',immutable:true,index:false,redirect:false,fallthrough:true};
+app.use('/avatar-assets-v1',express.static(path.join(__dirname,'public','avatar-assets-v1'),avatarAssetOptions));
+let avatarFallback;
+app.use('/avatar-assets-v1',(req,res,next)=>{
+ if(!['GET','HEAD'].includes(req.method))return next();
+ const match=/^\/(part-[1-4]\/[a-f0-9]{64}\.(webp|png|jpg|jpeg))$/.exec(req.path);
+ if(!match)return res.sendStatus(404);
+ const key=match[1],ext=match[2];
+ try{
+  const fs=require('fs');const flat=path.join(__dirname,'public',key);
+  if(fs.existsSync(flat)&&fs.statSync(flat).isFile())return res.sendFile(flat,{maxAge:'1y',immutable:true});
+  if(!avatarFallback)avatarFallback=require('./avatar-assets-fallback.json');
+  if(!Object.hasOwn(avatarFallback,key))return res.sendStatus(404);
+  const data=Buffer.from(avatarFallback[key],'base64');
+  res.set('Cache-Control','public, max-age=31536000, immutable');
+  res.type(ext==='jpg'?'jpeg':ext);return res.send(data);
+ }catch(err){console.error('KEKIP avatar asset fallback:',err.code||err.message);return res.sendStatus(503);}
+});
 app.use(express.static(path.join(__dirname, 'public'),{redirect:false,setHeaders(res,file){if(file.endsWith('.html'))res.setHeader('Cache-Control','no-store');}}));
 accounts.attachAccounts(app,{disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id)io.sockets.sockets.get(p.id)?.disconnect(true);},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));}});
 require('./football-online').attachFootball(app);
