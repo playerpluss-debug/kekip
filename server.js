@@ -59,7 +59,18 @@ app.use('/avatar-assets-v1',(req,res,next)=>{
  }catch(err){console.error('KEKIP avatar asset fallback:',err.code||err.message);return res.sendStatus(503);}
 });
 app.use(express.static(path.join(__dirname, 'public'),{redirect:false,setHeaders(res,file){if(file.endsWith('.html'))res.setHeader('Cache-Control','no-store');}}));
-accounts.attachAccounts(app,{disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id)io.sockets.sockets.get(p.id)?.disconnect(true);},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));}});
+// Admin monitoring: sanitized snapshot only; no private room codes, player IDs or board data.
+function adminBattleSnapshot(){
+ const result={total:0,waiting:0,playing:0,finished:0,public:0,private:0,players:0,rooms:[]};
+ for(const room of rooms.values()){
+  result.total++;if(['waiting','playing','finished'].includes(room.phase))result[room.phase]++;
+  const visibility=room.visibility==='public'?'public':'private';result[visibility]++;
+  const players=room.players.length;result.players+=players;
+  if(result.rooms.length<100)result.rooms.push({visibility,phase:['waiting','playing','finished'].includes(room.phase)?room.phase:'unknown',players,capacity:2});
+ }
+ return result;
+}
+accounts.attachAccounts(app,{adminBattleSnapshot,disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id)io.sockets.sockets.get(p.id)?.disconnect(true);},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));}});
 require('./football-online').attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 

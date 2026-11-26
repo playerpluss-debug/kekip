@@ -199,6 +199,27 @@ async function inviteAction(db,req,action,b){requireAdmin(req,b);if(action==='in
 // Admin-only management. No password hashes, session tokens or career secrets are returned.
 async function adminAction(db,req,action,b,options){
  requireAdmin(req,b);
+ if(action==='admin-system-status'){
+  const start=Date.now();
+  // Count only current valid sessions; respect users' hidden presence preference.
+  const presence=await db.query(`WITH latest AS (
+   SELECT DISTINCT ON (p.account_id) p.account_id,p.activity FROM kekip_presence p
+   JOIN kekip_football_sessions s ON s.token_hash=p.token_hash AND s.account_id=p.account_id
+   JOIN kekip_football_accounts a ON a.id=p.account_id
+   LEFT JOIN kekip_player_profiles pp ON pp.account_id=p.account_id
+   WHERE p.seen_at>now()-interval '80 seconds' AND s.expires_at>now() AND a.blocked_at IS NULL
+    AND coalesce(pp.data->'privacy'->>'presence','friends')<>'hidden'
+   ORDER BY p.account_id,(p.activity<>'home') DESC,p.seen_at DESC
+  ) SELECT activity,count(*)::int AS count FROM latest GROUP BY activity`);
+  const online={home:0,battleship:0,football:0};for(const r of presence.rows)if(Object.hasOwn(online,r.activity))online[r.activity]=r.count;
+  const football=await db.query(`SELECT count(*)::int AS total,
+   count(*) FILTER(WHERE updated_at>now()-interval '15 minutes')::int AS recent,
+   count(*) FILTER(WHERE updated_at>now()-interval '15 minutes' AND data->>'stage'='lobby')::int AS lobby,
+   count(*) FILTER(WHERE updated_at>now()-interval '15 minutes' AND data->>'stage'='playing')::int AS playing,
+   count(*) FILTER(WHERE updated_at>now()-interval '15 minutes' AND data->>'stage'='results')::int AS results
+   FROM kekip_football_rooms`);
+  return {sampledAt:new Date().toISOString(),presence:online,football:football.rows[0],battle:typeof options.adminBattleSnapshot==='function'?options.adminBattleSnapshot():null,system:{database:'ok',queryMs:Date.now()-start,uptimeSeconds:Math.floor(process.uptime()),rssMb:Math.round(process.memoryUsage().rss/1048576)}};
+ }
  if(action==='admin-grant')return adminGrant(db,b);
  if(action==='admin-members'){
   const search=typeof b.search==='string'?b.search.trim().toLowerCase():'';
