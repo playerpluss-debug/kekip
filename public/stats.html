@@ -193,7 +193,16 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
 @media(prefers-reduced-motion:reduce){:is(.badge-card,.achievement-card)[data-rarity] :is(.symbol,.badge-icon)::after{animation:none!important;display:none!important;}}
 @media(max-width:380px){:is(.badge-card,.achievement-card)[data-rarity] :is(.symbol,.badge-icon){width:54px;height:54px;font-size:26px;}}
 </style>
-<link rel="stylesheet" href="/kekip-ambient.css?v=05113"><style>.kp-player-link{font-weight:800;color:#e0ccff;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}</style><link rel="stylesheet" href="/kekip-responsive.css?v=051411"></head>
+<link rel="stylesheet" href="/kekip-ambient.css?v=05113"><style>.kp-player-link{font-weight:800;color:#e0ccff;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}</style><link rel="stylesheet" href="/kekip-responsive.css?v=051411"><style id="stats-tabs-051158">
+.stats-view[hidden],#statsFilters[hidden],#statsFilters [hidden]{display:none!important}
+.stats-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:6px;margin:0 0 14px;border:1px solid #63478199;border-radius:16px;background:#1b1428;box-shadow:0 8px 24px #08051140}
+.stats-tabs button{min-width:0;min-height:46px;border:1px solid transparent;border-radius:11px;background:transparent;color:#c9b6e3;font-weight:800;font-size:13px;cursor:pointer;padding:10px 6px;display:flex;align-items:center;justify-content:center;gap:6px}
+.stats-tabs button[aria-selected=true]{background:linear-gradient(135deg,#7951bc,#4d2f7a);border-color:#c3a1f6;color:#fff;box-shadow:0 4px 12px #9766e625}
+.stats-tabs button:hover{border-color:#9b78c8}.stats-tabs button:focus-visible,.stats-view:focus-visible{outline:2px solid #e0c4ff;outline-offset:2px}
+#statsFilters .toolbar-group{min-width:0;max-width:100%}#statsFilters .chips{gap:6px}#statsFilters .chip,#badgeChips .chip{min-height:42px;max-width:100%;white-space:normal}#statsFilters .toolbar:has(#statsMetricGroup[hidden]){margin-bottom:0}
+#statsFilters .summary-grid{margin-top:8px}.stats-view{min-width:0}.stats-view .panel{min-width:0}.stats-view .panel-note{max-width:100%;overflow-wrap:anywhere}.stats-view .compare-select{max-width:100%;min-width:0}.row-stat b,.podium-score strong,.podium-meta b,.me-rank strong{overflow-wrap:anywhere}
+@media(max-width:620px){.stats-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;border-radius:13px}.stats-tabs button{min-height:44px;font-size:12px}.stats-view .panel-head{margin-bottom:12px}#statsFilters .toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}#statsFilters .chips{display:flex;flex-wrap:wrap}#statsFilters .chip,#badgeChips .chip{min-height:44px;padding:8px 10px}.stats-view .row{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stats-view .row .row-user{grid-column:2;grid-row:1;grid-template-columns:36px minmax(0,1fr);gap:6px}.stats-view .row .row-avatar{width:36px;height:36px}.stats-view .row .rank-pill{grid-column:1;grid-row:1}.stats-view .row-stat{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:8px;min-width:0}.stats-view .row-stat span{white-space:normal;overflow-wrap:anywhere}.stats-view .row-stat.extra{grid-column:1/-1}.stats-view .me-card{min-width:0}.stats-view .compare-head{min-width:0}.stats-view .compare-head strong{overflow-wrap:anywhere}}
+</style></head>
 <body data-kp-layout="stats" class="kp-motion-page kp-motion-legacy-pseudo"><div class="kp-live-backdrop" aria-hidden="true"><span class="kp-light kp-light-a"></span><span class="kp-light kp-light-b"></span><span class="kp-rays"></span><span class="kp-stars"></span><span class="kp-vignette"></span></div>
 <div class="page">
   <header class="topbar">
@@ -226,7 +235,14 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
     </div>
   </section>
 
-  <section class="panel">
+  <!-- 0.51.15.8: section navigation -->
+  <nav class="stats-tabs" role="tablist" aria-label="Liderlik merkezi bölümleri">
+    <button type="button" role="tab" id="statsTab-ranking" aria-selected="true" aria-controls="statsView-ranking" tabindex="0">🏆 <span>Sıralama</span></button>
+    <button type="button" role="tab" id="statsTab-performance" aria-selected="false" aria-controls="statsView-performance" tabindex="-1">📊 <span>Performans</span></button>
+    <button type="button" role="tab" id="statsTab-comparison" aria-selected="false" aria-controls="statsView-comparison" tabindex="-1">👥 <span>Karşılaştırma</span></button>
+    <button type="button" role="tab" id="statsTab-badges" aria-selected="false" aria-controls="statsView-badges" tabindex="-1">🏅 <span>Rozetler</span></button>
+  </nav>
+  <section class="panel" id="statsFilters" aria-label="Sıralama filtreleri">
     <div class="toolbar-group game-chips"><label>Oyun seçimi</label><div class="chips" id="gameChips"></div></div>
     <div class="toolbar">
       <div class="toolbar-group">
@@ -234,7 +250,7 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
         <div class="chips" id="periodChips"></div>
         <div class="range-label" id="rangeLabel">Tüm zamanlar verisi gösteriliyor.</div>
       </div>
-      <div class="toolbar-group">
+      <div class="toolbar-group" id="statsMetricGroup">
         <label>Sıralama metriği</label>
         <div class="chips" id="metricChips"></div>
       </div>
@@ -248,6 +264,7 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
     </div>
   </section>
 
+  <div class="stats-view" id="statsView-ranking" role="tabpanel" aria-labelledby="statsTab-ranking" tabindex="0">
   <section class="panel podium-panel">
     <div class="panel-head">
       <div>
@@ -270,18 +287,6 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
     <div id="meContent" class="loading">Yükleniyor…</div>
   </section>
 
-  <section class="panel" id="performancePanel">
-    <div class="panel-head"><div><span class="section-kicker">OYUNCU KARNESİ</span><h2>Oyun performansın</h2><p>Seçili dönemdeki kayıtlı oyun istatistiklerin.</p></div><div class="panel-note" id="performanceNote">Yükleniyor…</div></div>
-    <div id="performanceContent" class="loading">Veriler alınıyor…</div>
-  </section>
-  <section class="panel" id="comparisonPanel">
-    <div class="panel-head"><div><span class="section-kicker">KEKIP SOSYAL</span><h2>Arkadaşınla karşılaştır</h2><p>İstatistiklerini bir arkadaşınla yan yana incele.</p></div><select id="friendSelect" class="compare-select" aria-label="Karşılaştırılacak arkadaş" disabled><option>Arkadaşlar yükleniyor…</option></select></div>
-    <div id="comparisonContent" class="loading">Arkadaşlar yükleniyor…</div>
-  </section>
-  <section class="panel" id="achievementPanel">
-    <div class="panel-head"><div><span class="section-kicker">BAŞARI KOLEKSİYONU</span><h2>Başarılar ve rozetler</h2><p>Kalıcı hesap başarıların ve ilerleme durumun.</p></div><div class="panel-note" id="badgeNote">Yükleniyor…</div><a class="header-btn primary" href="/achievements.html">Başarım merkezini aç ↗</a></div>
-    <div class="chips" id="badgeChips" style="margin-bottom:14px"></div><div id="achievementContent" class="loading">Rozetler yükleniyor…</div>
-  </section>
   <section class="panel">
     <div class="panel-head">
       <div>
@@ -293,6 +298,26 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
     <div id="listContent" class="loading">Oyuncular yükleniyor…</div>
     <p class="footnote">Not: Platform XP değeri kalıcı maç kayıtları, futbol kariyeri istatistikleri ve görev XP kazanımlarına göre hesaplanır. Dönemsel görünümde sadece ilgili zaman aralığındaki kayıtlar dikkate alınır.</p>
   </section>
+  </div>
+  <div class="stats-view" id="statsView-performance" role="tabpanel" aria-labelledby="statsTab-performance" hidden tabindex="0">
+  <section class="panel" id="performancePanel">
+    <div class="panel-head"><div><span class="section-kicker">OYUNCU KARNESİ</span><h2>Oyun performansın</h2><p>Seçili dönemdeki kayıtlı oyun istatistiklerin.</p></div><div class="panel-note" id="performanceNote">Yükleniyor…</div></div>
+    <div id="performanceContent" class="loading">Veriler alınıyor…</div>
+  </section>
+  </div>
+  <div class="stats-view" id="statsView-comparison" role="tabpanel" aria-labelledby="statsTab-comparison" hidden tabindex="0">
+  <section class="panel" id="comparisonPanel">
+    <div class="panel-head"><div><span class="section-kicker">KEKIP SOSYAL</span><h2>Arkadaşınla karşılaştır</h2><p>İstatistiklerini bir arkadaşınla yan yana incele.</p></div><select id="friendSelect" class="compare-select" aria-label="Karşılaştırılacak arkadaş" disabled><option>Arkadaşlar yükleniyor…</option></select></div>
+    <div id="comparisonContent" class="loading">Arkadaşlar yükleniyor…</div>
+  </section>
+  </div>
+  <div class="stats-view" id="statsView-badges" role="tabpanel" aria-labelledby="statsTab-badges" hidden tabindex="0">
+  <section class="panel" id="achievementPanel">
+    <div class="panel-head"><div><span class="section-kicker">BAŞARI KOLEKSİYONU</span><h2>Başarılar ve rozetler</h2><p>Kalıcı hesap başarıların ve ilerleme durumun.</p></div><div class="panel-note" id="badgeNote">Yükleniyor…</div><a class="header-btn primary" href="/achievements.html">Başarım merkezini aç ↗</a></div>
+    <div class="chips" id="badgeChips" style="margin-bottom:14px"></div><div id="achievementContent" class="loading">Rozetler yükleniyor…</div>
+  </section>
+  </div>
+
 </div>
 
 <script src="/avatar-portraits.js?v=05024"></script>
@@ -528,6 +553,22 @@ async function load(){
   buildChipBar('metricChips',gameMetrics(),state.metric,metricHandler);
   buildChipBar('badgeChips',BADGES,state.badge,badgeHandler);
   $('friendSelect').addEventListener('change',e=>{state.friend=e.target.value;if(state.loaded){renderComparison();}});
+})();
+
+// 0.51.15.8: presentation-only navigation; existing ranking and account state stay intact.
+(function initStatsTabs(){
+  const ids=['ranking','performance','comparison','badges'];
+  function select(id,focus=false){
+    if(!ids.includes(id))return;
+    for(const key of ids){const active=key===id,btn=$('statsTab-'+key);btn.setAttribute('aria-selected',String(active));btn.tabIndex=active?0:-1;$('statsView-'+key).hidden=!active;}
+    $('statsFilters').hidden=id==='badges';
+    $('statsFilters').querySelector('.game-chips').hidden=id!=='ranking';
+    $('statsMetricGroup').hidden=id!=='ranking';
+    $('summaryGrid').hidden=id!=='ranking';
+    if(focus)$('statsTab-'+id).focus();
+  }
+  ids.forEach((id,i)=>{const btn=$('statsTab-'+id);btn.addEventListener('click',()=>select(id));btn.addEventListener('keydown',e=>{let next;if(e.key==='ArrowRight')next=ids[(i+1)%ids.length];else if(e.key==='ArrowLeft')next=ids[(i+ids.length-1)%ids.length];else if(e.key==='Home')next=ids[0];else if(e.key==='End')next=ids[ids.length-1];else return;e.preventDefault();select(next,true);});});
+  select('ranking');
 })();
 
 load();
