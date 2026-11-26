@@ -155,14 +155,7 @@ body{background:#100c1b}.ambient-scene{opacity:.38}.ambient-scene:before,.ambien
 </style><style>/* 0.51.3.4 · Quick join and occupancy */
 .kp-rooms-list:not([hidden]){grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));}.kp-room-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center}.kp-room-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:10px;border-top:1px solid #76549c55}.kp-room-capacity{display:flex;align-items:center;gap:7px;font-size:14px;color:#e3d5f7;font-weight:750;white-space:nowrap}.kp-room-capacity i{display:inline-block;width:10px;height:17px;border-radius:4px;background:#49365f;border:1px solid #9a80bb}.kp-room-capacity i.filled{background:#a9e5c2;border-color:#a9e5c2}.kp-room-join{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:10px 17px;border:1px solid #bd98ff;border-radius:10px;background:linear-gradient(125deg,#9d74e5,#754cbd);color:#fff;font-size:14px;font-weight:850;box-shadow:0 5px 16px #8959d32b}.kp-room-join:hover{filter:brightness(1.13)}.kp-room-join:disabled{opacity:.5;cursor:default}.kp-room-state{white-space:normal;text-align:right}.kp-room-join:focus-visible{outline:2px solid #f2dbff;outline-offset:3px}@media(max-width:480px){.kp-room-row{grid-template-columns:40px minmax(0,1fr);gap:9px}.kp-room-state{grid-column:2;text-align:left}.kp-room-actions{gap:8px}.kp-room-join{padding:10px 13px}.kp-room-capacity{font-size:13px}}
 </style>
-<style>
-/* 0.51.3.5.1 — notification bell badge visual fix */
-#kn-launch{position:relative;overflow:visible!important;min-width:52px;justify-content:center;padding-inline:12px}
-#kn-launch > span[aria-hidden="true"]{display:inline-grid;place-items:center;line-height:1}
-#kn-count{position:absolute;top:-7px;right:-7px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:linear-gradient(180deg,#caa8ff 0%,#9f78ff 100%);border:1px solid #f1e6ff;color:#24133e;font-size:10px;font-weight:900;line-height:1;display:grid;place-items:center;box-shadow:0 8px 18px rgba(52,24,92,.32),0 0 0 3px #20152f;z-index:2}
-#kn-count[hidden]{display:none!important}
-@media(max-width:700px){#kn-launch{min-width:48px;padding-inline:10px}#kn-count{top:-5px;right:-5px;min-width:18px;height:18px;font-size:9px;padding:0 4px}}
-</style>
+
 <link rel="stylesheet" href="/kekip-responsive.css?v=05143"><style>
 /* 0.51.4.2 — responsive profile studio; uses the existing validated account form. */
 #kpAccountDialog:has(#kpProfileEditor:not([hidden])){width:min(860px,calc(100% - 24px));max-height:min(90vh,90dvh)}
@@ -267,7 +260,7 @@ function playShotSound(hit,sunk){if(muted)return;unlockAudio();const a=shotAudio
 function showShotFeedback(state){const shot=state.lastShot;if(!shot||shot.seq===lastFeedbackSeq)return;lastFeedbackSeq=shot.seq;const box=document.getElementById('shotFeedback'),headline=document.getElementById('shotHeadline'),detail=document.getElementById('shotDetail');const mine=shot.playerId===socket.id,hit=shot.hit===true,sunk=hit&&shot.sunk===true,coord=String.fromCharCode(65+shot.r)+(shot.c+1);box.className='shot-feedback';void box.offsetWidth;box.className='shot-feedback show '+(hit?'hit':'miss');if(mine){headline.textContent=sunk?'🚢 GEMİYİ BATIRDIN!':hit?'💥 İSABET!':'🌊 ISKALADIN!';detail.textContent=sunk?'Rakibinin gemilerinden biri tamamen battı.':hit?'Atışın hedefi buldu · '+coord:'Atışın suya düştü · '+coord;}else{headline.textContent=sunk?'⚠️ GEMİN BATTI!':hit?'💥 RAKİP İSABET ETTİ!':'🌊 RAKİP ISKALADI!';detail.textContent=sunk?'Gemilerinden biri sulara gömüldü.':'Rakibin '+coord+' koordinatına ateş etti.';}playShotSound(hit,sunk);}
 function fireAt(r,c){if(firePending)return;unlockAudio();firePending=true;socket.timeout(10000).emit('fire',{r,c},(err,res)=>{firePending=false;if(err||!res?.ok)error(res?.error||'Atış yanıtı alınamadı.');else error('');});}
 const incomingInvite=new URLSearchParams(location.search).get('room')?.trim().toUpperCase();if(incomingInvite&&/^[A-Z2-9]{5}$/.test(incomingInvite)){openGame('join',incomingInvite);}
-</script><script src="/avatar-portraits.js?v=05023"></script><script src="/account.js?v=5014"></script><script src="/social.js?v=05143" defer></script><script src="/chat-client.js?v=5014" defer></script><script src="/notifications.js?v=44" defer></script><script>
+</script><script src="/avatar-portraits.js?v=05023"></script><script src="/account.js?v=5014"></script><script src="/social.js?v=05143" defer></script><script src="/chat-client.js?v=5014" defer></script><script src="/notifications.js?v=05161" defer></script><script>
 (()=>{'use strict';
 const card=document.getElementById('kpSideCharacter'),stage=document.getElementById('kscStage'),image=document.getElementById('kscImage'),name=document.getElementById('kscName'),caption=document.getElementById('kscCaption');
 let current=undefined,sequence=0,lastCheck=0;
