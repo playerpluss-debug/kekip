@@ -269,6 +269,7 @@ async function friendAction(db,a,action,b){
  else if(action==='friends-remove')result=await db.query(`DELETE FROM kekip_friendships WHERE low_id=$1 AND high_id=$2 AND status='accepted' RETURNING status`,[low,high]);
  else fail('İşlem bulunamadı.',404);
  if(!result.rows.length)fail('Arkadaşlık durumu değişmiş. Listeyi yenile ve tekrar dene.',409);
+ if(action==='friends-remove'){dmTyping.delete(dmTypingKey(low,high));dmTyping.delete(dmTypingKey(high,low));}
  return {ok:true};
 }
 
@@ -439,6 +440,7 @@ const DM_TYPING_TTL=6000, DM_TYPING_MAX=10000;
 function dmTypingKey(from,to){return JSON.stringify([from,to]);}
 function dmTypingSweep(now){for(const [k,expiry] of dmTyping)if(expiry<=now)dmTyping.delete(k);}
 async function messageAction(db,a,action,b){
+ if(!b||typeof b!=='object'||Array.isArray(b))fail('Geçersiz mesaj isteği.');
  if(!['messages-list','messages-history','messages-send','messages-sync','messages-read','messages-unread'].includes(action))fail('İşlem bulunamadı.',404);
  if(b.account!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
  const limit=b.limit===undefined?30:b.limit;
