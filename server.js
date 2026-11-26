@@ -7,6 +7,50 @@ const accounts = require('./accounts');
 
 const app = express();
 const server = http.createServer(app);
+
+// 0.51.12.4: bounded, process-local request budgets before API parsing/database work.
+// A syntactically valid session cookie is only a rate-limit key, never authentication.
+function createBudget(maxKeys, windowMs, now=Date.now){
+ const entries=new Map();let nextSweep=0;
+ return function consume(key,maximum){
+  const t=now();
+  if(t>=nextSweep){for(const [k,v] of entries)if(v.until<=t)entries.delete(k);nextSweep=t+windowMs;}
+  let item=entries.get(key);
+  if(item&&item.until<=t){entries.delete(key);item=null;}
+  if(!item){if(entries.size>=maxKeys)return Math.max(1,Math.ceil((nextSweep-t)/1000));item={count:0,until:t+windowMs};entries.set(key,item);}
+  if(item.count>=maximum)return Math.max(1,Math.ceil((item.until-t)/1000));
+  item.count++;return 0;
+ };
+}
+const apiBudget=createBudget(4096,60000), globalApiBudget=createBudget(1,60000);
+const activeApi=new Map();let apiInFlight=0;
+function requestKey(req){
+ const token=accounts.sessionToken(req);
+ // Do not trust a browser-supplied forwarding header. Proxy peers may share an anonymous budget.
+ return token?'session:'+crypto.createHash('sha256').update(token).digest('hex'):'peer:'+String(req.socket?.remoteAddress||'unknown');
+}
+function allowedApiOrigin(req){
+ if(req.get('Sec-Fetch-Site')==='cross-site')return false;
+ const origin=req.get('Origin');if(!origin)return true;
+ try{const u=new URL(origin);return ['https:','http:'].includes(u.protocol)&&u.host===req.get('Host');}catch{return false;}
+}
+function apiGuard(req,res,next){
+ res.set('Cache-Control','no-store');
+ if(!allowedApiOrigin(req))return res.status(403).json({error:'İstek kaynağı geçersiz.'});
+ const key=requestKey(req),active=activeApi.get(key)||0;
+ const reject=(seconds)=>{res.set('Retry-After',String(seconds));return res.status(429).json({error:'Çok fazla istek. Biraz sonra tekrar dene.'});};
+ if(apiInFlight>=48||active>=16)return reject(2);
+ const localWait=apiBudget(key,key.startsWith('session:')?180:300);
+ if(localWait)return reject(localWait);
+ const globalWait=globalApiBudget('all',2400);if(globalWait)return reject(globalWait);
+ apiInFlight++;activeApi.set(key,active+1);let released=false;
+ const release=()=>{if(released)return;released=true;apiInFlight--;const n=(activeApi.get(key)||1)-1;if(n>0)activeApi.set(key,n);else activeApi.delete(key);};
+ res.once('finish',release);res.once('close',release);return next();
+}
+app.disable('x-powered-by');
+app.use((_req,res,next)=>{res.set('X-Content-Type-Options','nosniff');res.set('X-Frame-Options','SAMEORIGIN');res.set('Referrer-Policy','same-origin');next();});
+app.use('/api',apiGuard);
+
 // Same-origin browser connections only; non-browser clients still need a valid account.
 function sameOriginSocket(req, done) {
   const origin=req.headers.origin;
@@ -14,7 +58,7 @@ function sameOriginSocket(req, done) {
   try { const u=new URL(origin); return done(null,['http:','https:'].includes(u.protocol)&&u.host===req.headers.host); }
   catch { return done(null,false); }
 }
-const io = new Server(server, { allowRequest: sameOriginSocket });
+const io = new Server(server, { allowRequest: sameOriginSocket, maxHttpBufferSize: 64 * 1024 });
 // Check the HttpOnly session on every protected page. Rendering workers remain available during onboarding.
 app.use(async (req,res,next)=>{
  if(!['GET','HEAD'].includes(req.method))return next();
@@ -144,7 +188,7 @@ const SHIPS = [5, 4, 3, 3, 2];
 const makeCode = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code;
-  do { code = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join(''); }
+  do { code = Array.from({ length: 5 }, () => chars[crypto.randomInt(chars.length)]).join(''); }
   while (rooms.has(code));
   return code;
 };
@@ -224,16 +268,29 @@ function reservePlayer(socket){
  }
 }
 // Validate the envelope before destructuring and catch synchronous/asynchronous handler failures.
-function gameHandler(handler) {
+function validateGameHandler(handler) {
   return (payload, acknowledgement) => {
     const cb=typeof acknowledgement==='function'?acknowledgement:()=>{};
     if (!payload || typeof payload!=='object' || Array.isArray(payload)) return cb({ok:false,error:'Geçersiz oyun isteği.'});
-    if (['name','code'].some(k=>payload[k]!==undefined&&typeof payload[k]!=='string')) return cb({ok:false,error:'Geçersiz oyun isteği.'});
+    if (['name','code','username'].some(k=>payload[k]!==undefined&&(typeof payload[k]!=='string'||payload[k].length>64))) return cb({ok:false,error:'Geçersiz oyun isteği.'});
     try { Promise.resolve(handler(payload,cb)).catch(err=>{console.error('KEKIP oyun isteği:',err.code||err.message);cb({ok:false,error:'Oyun isteği tamamlanamadı.'});}); }
     catch(err){console.error('KEKIP oyun isteği:',err.code||err.message);cb({ok:false,error:'Oyun isteği tamamlanamadı.'});}
   };
 }
+const socketSessionBudget=createBudget(4096,60000);
 io.on('connection', socket => {
+  // Limit game commands before any room scan or database work. Leave/disconnect always remain available.
+  const commandBudget=createBudget(1,10000);
+  const sessionKey=requestKey({get:k=>socket.request.headers[k.toLowerCase()],socket:socket.request.socket});
+  const gameHandler=handler=>{
+    const validated=validateGameHandler(handler);
+    return (payload,ack)=>{
+      const cb=typeof ack==='function'?ack:()=>{};
+      if(commandBudget('commands',60)||socketSessionBudget(sessionKey,sessionKey.startsWith('session:')?240:480))return cb({ok:false,error:'Çok sık oyun isteği gönderiyorsun. Biraz sonra tekrar dene.'});
+      return validated(payload,cb);
+    };
+  };
+
   // Only authenticated members can discover joinable public Battleship rooms.
   // Never serialize private rooms, account IDs, socket IDs or game boards.
   let lastPublicList=-Infinity;
@@ -374,6 +431,13 @@ io.on('connection', socket => {
   }));
   socket.on('leaveRoom', () => cancelMembership('left'));
   socket.on('disconnect', reason => {membershipEpoch++;membershipPending=false;if(reason==='server namespace disconnect'||reason==='client namespace disconnect')removePlayer(socket,'left');else reservePlayer(socket);});
+});
+app.use('/api',(err,_req,res,next)=>{
+ if(res.headersSent)return next(err);
+ if(err.type==='entity.too.large')return res.status(413).json({error:'İstek boyutu çok büyük.'});
+ if(err.type==='entity.parse.failed')return res.status(400).json({error:'Geçersiz JSON isteği.'});
+ if(err.status===415)return res.status(415).json({error:'Desteklenmeyen istek biçimi.'});
+ return next(err);
 });
 const port = process.env.PORT || 3000;
 server.listen(port, () => console.log(`KEKIP server listening on ${port}`));
