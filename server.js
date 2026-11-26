@@ -431,7 +431,7 @@ io.on('connection', socket => {
     if (allSunk) { room.phase = 'finished'; room.winner = socket.id;
       const players=JSON.parse(JSON.stringify(room.players)), matchId=room.matchId, winner=socket.id;
       if(players.some(p=>p.accountId)) {
-        const persist=async()=>{try{await accounts.recordBattle(matchId,players,winner);for(const p of players)if(p.accountId)io.to(p.id).emit('statsSaved',{ok:true});}catch(e){console.error('Battle stats:',e.code||e.message);throw e}};
+        const persist=async()=>{try{await accounts.recordBattle(matchId,players,winner);for(const p of players)if(p.accountId)io.to(p.id).emit('statsSaved',{ok:true,matchId});}catch(e){console.error('Battle stats:',e.code||e.message);throw e}};
         persist().catch(()=>setTimeout(()=>persist().catch(()=>{for(const p of players)if(p.accountId)io.to(p.id).emit('statsSaved',{ok:false});}),2000));
       }
     }

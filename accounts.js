@@ -89,17 +89,20 @@ async function recordGameResults(game,matchId,rows,transaction=null,allowCards=f
  }catch(e){if(!transaction)await db.query('ROLLBACK').catch(()=>{});throw e;}finally{if(!transaction)db.release();}
 }
 async function recordBattle(matchId,players,winner){return recordGameResults('battleship',matchId,players.filter(p=>p.accountId).map(p=>({accountId:p.accountId,result:{win:p.id===winner,shots:p.shots.length,hits:p.shots.filter(s=>s.hit).length,shipsSunk:players.find(q=>q.id!==p.id)?.sunk.length||0}})),null,players.length===2&&players.every(p=>p.accountId)&&players[0].accountId!==players[1].accountId)}
-// 0.51.17.1: only freshly persisted, server-adjudicated battles create card offers.
+// 0.51.17.1.1: only freshly persisted, server-adjudicated battles can create card offers.
 const MATCH_CARD_DAILY_CAP=3;
+const MATCH_CARD_CHANCE_PERCENT=20;
 function shuffledMatchPrizes(){const prizes=['kc5','kc15','spin'];for(let i=prizes.length-1;i>0;i--){const j=crypto.randomInt(i+1);[prizes[i],prizes[j]]=[prizes[j],prizes[i]]}return prizes}
 async function createMatchCard(db,accountId,game,matchId){
  const count=await db.query(`SELECT count(*)::int AS n FROM kekip_match_cards WHERE account_id=$1 AND (created_at AT TIME ZONE 'Europe/Istanbul')::date=(now() AT TIME ZONE 'Europe/Istanbul')::date`,[accountId]);
  if(count.rows[0].n>=MATCH_CARD_DAILY_CAP)return;
+ // Each fresh eligible account result is evaluated once in the same transaction.
+ if(crypto.randomInt(100)>=MATCH_CARD_CHANCE_PERCENT)return;
  await db.query(`INSERT INTO kekip_match_cards(id,account_id,game,match_id,prizes) VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT(account_id,game,match_id) DO NOTHING`,[crypto.randomUUID(),accountId,game,matchId,JSON.stringify(shuffledMatchPrizes())]);
 }
 function cardPrizeText(prize){return prize==='spin'?'1 ekstra çark hakkı':prize==='kc5'?'+5 KC':'+15 KC'}
 async function matchCardsAction(db,a,action,b){
- if(action==='match-cards'){const q=await db.query(`SELECT id,game FROM kekip_match_cards WHERE account_id=$1 AND chosen IS NULL ORDER BY created_at,id LIMIT 20`,[a.id]);return {username:a.username,offers:q.rows,dailyCap:MATCH_CARD_DAILY_CAP};}
+ if(action==='match-cards'){const q=await db.query(`SELECT id,game,match_id AS "matchId" FROM kekip_match_cards WHERE account_id=$1 AND chosen IS NULL ORDER BY (game='battleship' AND match_id=$2) DESC NULLS LAST,created_at,id LIMIT 20`,[a.id,typeof b.matchId==='string'&&b.matchId.length<=100?b.matchId:null]);return {username:a.username,offers:q.rows,dailyCap:MATCH_CARD_DAILY_CAP,chancePercent:MATCH_CARD_CHANCE_PERCENT};}
  if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
  if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id)||!Number.isInteger(b.choice)||b.choice<0||b.choice>2)fail('Kart seçimi geçersiz.');
  const c=await db.connect();try{await c.query('BEGIN');
