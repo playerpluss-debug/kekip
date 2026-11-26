@@ -17,3 +17,50 @@ body.kp-motion-page.kp-motion-legacy-pseudo::before,body.kp-motion-page.kp-motio
 @keyframes kp-ambient-stars{from{transform:translate3d(0,3%,0)}to{transform:translate3d(-4%,-5%,0)}}
 @media(max-width:700px){.kp-live-backdrop .kp-light-a{animation-duration:35s}.kp-live-backdrop .kp-light-b{animation-duration:42s}.kp-live-backdrop .kp-rays{display:none}.kp-live-backdrop .kp-stars{opacity:.6;animation-duration:48s}}
 @media(prefers-reduced-motion:reduce){.kp-live-backdrop>*{animation:none!important;will-change:auto!important}}
+
+
+/* KEKIP 0.51.1.4 — Shared brand refresh */
+:root{--kp-brand-font:Inter,"Segoe UI Variable Display","Segoe UI",ui-sans-serif,system-ui,sans-serif;--kp-brand-ink:#f7f3ff;--kp-brand-muted:#b8a8d0;--kp-brand-accent:#c3a1ff;--kp-brand-accent-2:#7f5dff;--kp-brand-shadow:0 14px 34px rgba(108,76,214,.28),0 4px 14px rgba(0,0,0,.2)}
+body.kp-motion-page .side .brand{gap:13px!important;padding:2px 10px 2px 8px!important;text-decoration:none!important}
+body.kp-motion-page .side .brand-icon,
+body.kp-motion-page .brand-mark,
+body.kp-motion-page .kp-brand-badge{position:relative;display:grid;place-items:center;flex:0 0 auto;width:44px;height:44px;border-radius:15px;border:1px solid rgba(255,255,255,.15);background:linear-gradient(165deg,#f4edff 0%,#c39bff 38%,#7b57e3 100%);box-shadow:var(--kp-brand-shadow);color:#140e25!important;font-family:var(--kp-brand-font)!important;font-size:23px!important;font-weight:1000!important;letter-spacing:-.08em!important;text-transform:uppercase;overflow:hidden}
+body.kp-motion-page .side .brand-icon::before,
+body.kp-motion-page .brand-mark::before,
+body.kp-motion-page .kp-brand-badge::before{content:"";position:absolute;inset:7px;border-radius:11px;border:1px solid rgba(255,255,255,.28);background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0))}
+body.kp-motion-page .side .brand-icon::after,
+body.kp-motion-page .brand-mark::after,
+body.kp-motion-page .kp-brand-badge::after{content:"";position:absolute;right:7px;top:8px;width:7px;height:7px;border-radius:999px;background:#efe8ff;box-shadow:0 0 0 3px rgba(255,255,255,.12)}
+body.kp-motion-page .brand-mark{margin-right:12px;color:transparent!important}
+body.kp-motion-page .brand-mark{font-size:0!important}
+body.kp-motion-page .brand-mark::before,body.kp-motion-page .brand-mark::after{pointer-events:none}
+body.kp-motion-page .side .brand-name,
+body.kp-motion-page .kp-brand-text,
+body.kp-motion-page .brand-copy strong,
+body.kp-motion-page .brand-inline-logo .kp-brand-stack{font-family:var(--kp-brand-font)!important;font-weight:950!important;letter-spacing:.055em!important;color:var(--kp-brand-ink)!important;text-transform:uppercase}
+body.kp-motion-page .side .brand-name{font-size:23px!important;line-height:.95!important}
+body.kp-motion-page .side .brand-name span,
+body.kp-motion-page .kp-brand-text span,
+body.kp-motion-page .brand-copy strong span,
+body.kp-motion-page .brand-inline-logo .kp-brand-text span{color:var(--kp-brand-accent)!important}
+body.kp-motion-page .side .brand-sub,
+body.kp-motion-page .brand-copy small,
+body.kp-motion-page .kp-brand-sub,
+body.kp-motion-page .brand-inline-logo small{display:block;color:var(--kp-brand-muted)!important;font-family:var(--kp-brand-font)!important;font-size:10px!important;letter-spacing:.24em!important;font-weight:800!important;text-transform:uppercase}
+body.kp-motion-page main>header>.brand,
+body.kp-motion-page main>header>a.brand,
+body.kp-motion-page main>header>div.brand,
+body.kp-motion-page .simple-header .brand,
+body.kp-motion-page .topbar .brand,
+body.kp-motion-page .brand-inline,
+body.kp-motion-page .brand-inline-logo{display:inline-flex!important;align-items:center!important;gap:12px!important;color:var(--kp-brand-ink)!important;text-decoration:none!important}
+body.kp-motion-page .kp-brand-text{display:inline-block;font-size:20px!important;line-height:1!important}
+body.kp-motion-page .brand-copy strong{font-size:18px!important;line-height:1.05!important;display:block}
+body.kp-motion-page .brand-copy small{margin-top:3px}
+body.kp-motion-page .brand-inline-logo{gap:12px!important}
+body.kp-motion-page .brand-inline-logo .kp-brand-stack{display:flex;flex-direction:column;gap:2px;font-size:20px!important;line-height:1}
+body.kp-motion-page .top .logo{position:relative;display:inline-flex!important;align-items:center!important;gap:12px!important;font-family:var(--kp-brand-font)!important;font-weight:950!important;letter-spacing:.055em!important;text-transform:uppercase;color:var(--kp-brand-ink)!important;text-decoration:none!important}
+body.kp-motion-page .top .logo::before{content:"K";display:grid;place-items:center;flex:0 0 auto;width:42px;height:42px;border-radius:15px;border:1px solid rgba(255,255,255,.15);background:linear-gradient(165deg,#f4edff 0%,#c39bff 38%,#7b57e3 100%);box-shadow:var(--kp-brand-shadow);color:#140e25;font-size:22px;font-weight:1000;letter-spacing:-.08em}
+body.kp-motion-page .top .logo small{display:block;color:var(--kp-brand-muted)!important;font-family:var(--kp-brand-font)!important;font-size:10px!important;letter-spacing:.24em!important;font-weight:800!important;margin-top:4px}
+body.kp-motion-page .top .logo span:first-of-type{color:var(--kp-brand-accent)!important}
+@media(max-width:700px){body.kp-motion-page .side .brand-icon,body.kp-motion-page .brand-mark,body.kp-motion-page .kp-brand-badge,body.kp-motion-page .top .logo::before{width:40px;height:40px;border-radius:14px;font-size:21px!important}body.kp-motion-page .side .brand-name,body.kp-motion-page .kp-brand-text{font-size:18px!important}body.kp-motion-page .side .brand-sub,body.kp-motion-page .brand-copy small,body.kp-motion-page .kp-brand-sub,body.kp-motion-page .brand-inline-logo small{font-size:9px!important;letter-spacing:.18em!important}}
