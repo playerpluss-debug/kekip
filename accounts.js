@@ -431,8 +431,13 @@ async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!=
 
 // 0.51.5.1 — private, persistent friend-to-friend messages.
 function dmPublic(row){return {id:String(row.id),sender:row.sender,receiver:row.receiver,text:row.body,createdAt:row.created_at};}
+// 0.51.5.3 — transient typing presence, no message content stored here.
+const dmTyping = new Map();
+const DM_TYPING_TTL=6000, DM_TYPING_MAX=10000;
+function dmTypingKey(from,to){return JSON.stringify([from,to]);}
+function dmTypingSweep(now){for(const [k,expiry] of dmTyping)if(expiry<=now)dmTyping.delete(k);}
 async function messageAction(db,a,action,b){
- if(!['messages-list','messages-history','messages-send'].includes(action))fail('İşlem bulunamadı.',404);
+ if(!['messages-list','messages-history','messages-send','messages-sync'].includes(action))fail('İşlem bulunamadı.',404);
  if(b.account!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
  const limit=b.limit===undefined?30:b.limit;
  if(action!=='messages-send'&&(!Number.isInteger(limit)||limit<1||limit>50))fail('Sayfa boyutu geçersiz.');
@@ -448,6 +453,21 @@ async function messageAction(db,a,action,b){
  }
  const name=b.username;
  if(typeof name!=='string'||!/^[a-z0-9_]{3,24}$/.test(name)||name===a.username)fail('Geçerli başka bir oyuncu seç.');
+ if(action==='messages-sync'){
+  const after=b.afterId;
+  if(typeof after!=='string'||! /^(0|[1-9][0-9]{0,18})$/.test(after)||BigInt(after)>9223372036854775807n||typeof b.typing!=='boolean')fail('Sohbet güncellemesi geçersiz.');
+  const q=await db.query(`SELECT u.id AS peer_id,m.id,m.body,m.created_at,m.sender,m.receiver FROM kekip_friendships f
+    JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END AND u.username=$2 AND u.blocked_at IS NULL
+    JOIN kekip_football_accounts me ON me.id=$1 AND me.blocked_at IS NULL
+    LEFT JOIN LATERAL (SELECT d.id,d.body,d.created_at,CASE WHEN d.sender_id=$1 THEN me.username ELSE u.username END AS sender,CASE WHEN d.sender_id=$1 THEN u.username ELSE me.username END AS receiver FROM kekip_direct_messages d WHERE d.low_id=f.low_id AND d.high_id=f.high_id AND d.id>$3::bigint ORDER BY d.id ASC LIMIT $4) m ON true
+    WHERE (f.low_id=$1 OR f.high_id=$1) AND f.status='accepted' ORDER BY m.id ASC NULLS LAST`,[a.id,name,after,limit+1]);
+  if(!q.rows.length)fail('Bu oyuncuyla mesajlaşabilmek için arkadaş olmalısın.',403);
+  const now=Date.now(),other=q.rows[0].peer_id,key=dmTypingKey(a.id,other);
+  dmTypingSweep(now);
+  if(b.typing){if(dmTyping.has(key)||dmTyping.size<DM_TYPING_MAX)dmTyping.set(key,now+DM_TYPING_TTL);}else dmTyping.delete(key);
+  const rows=q.rows.filter(r=>r.id!=null),page=rows.slice(0,limit);
+  return {username:a.username,peer:name,messages:page.map(dmPublic),afterId:page.length?String(page[page.length-1].id):after,more:rows.length>limit,typing:(dmTyping.get(dmTypingKey(other,a.id))||0)>now};
+ }
  if(action==='messages-history'){
   const before=b.before===undefined||b.before===null?null:b.before;
   if(before!==null&&(typeof before!=='string'||!/^[1-9][0-9]{0,18}$/.test(before)||BigInt(before)>9223372036854775807n))fail('Mesaj konumu geçersiz.');
