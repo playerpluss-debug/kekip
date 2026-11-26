@@ -8,14 +8,31 @@ const accounts = require('./accounts');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
+// Check the HttpOnly session on every protected page. Rendering workers remain available during onboarding.
+app.use(async (req,res,next)=>{
+ if(!['GET','HEAD'].includes(req.method))return next();
+ let pathname;try{pathname=decodeURIComponent(req.path).replace(/\\/g,'/');}catch{return res.sendStatus(400);}
+ pathname=path.posix.normalize(pathname).toLowerCase();
+ if(pathname!=='/'&&!pathname.endsWith('.html')&&!pathname.endsWith('/'))return next();
+ if(pathname==='/admin.html')return next(); // Admin endpoints retain their separate administrator-key checks.
+ const welcome=pathname==='/welcome.html';
+ const worker=['/avatar-portrait-gece.html','/avatar-portrait-golge.html'].includes(pathname);
+ res.set('Cache-Control','no-store');
+ if(!accounts.sessionToken(req))return welcome?next():res.redirect(302,'/welcome.html');
+ try{const a=await accounts.getAccount(await accounts.database(),req);
+ if(!a)return welcome?next():res.redirect(302,'/welcome.html');
+ if(!a.onboarded)return welcome||worker?next():res.redirect(302,'/welcome.html');
+ if(welcome)return res.redirect(302,'/');return next();
+ }catch(e){if(welcome)return next();return res.status(503).send('Hesap bağlantısı kurulamadı. Sayfayı yenile.');}
+});
+// Career endpoints formerly accepted guests with room keys. Require a completed account now.
+app.use('/api/football',async(req,res,next)=>{
+ if(req.path.startsWith('/account/'))return next();
+ try{if(!accounts.sessionToken(req))return res.status(401).json({error:'Önce hesabına giriş yap.'});await accounts.requireAccount(await accounts.database(),req);return next();}catch(e){return res.status(e.status||503).json({error:e.status?e.message:'Hesap bağlantısı kurulamadı.'});}
+});
 app.get(["/avatar-core-lab.html", "/avatar-original-workshop.html", "/avatar-premium-fullbody.html", "/avatar-premium-modular.html", "/avatar-premium-preview.html"], (_req,res)=>res.redirect(302,'/avatar.html'));
-// 0.50.18.1: support parts uploaded directly inside public, as well as the original layout.
-const avatarAssetOptions = {maxAge: '1y', immutable: true, index: false};
-for (const part of ['part-1', 'part-2', 'part-3', 'part-4']) {
-  app.use('/avatar-assets-v1/' + part, express.static(path.join(__dirname, 'public', part), {...avatarAssetOptions, fallthrough: true}));
-}
-app.use('/avatar-assets-v1', express.static(path.join(__dirname, 'public', 'avatar-assets-v1'), {...avatarAssetOptions, fallthrough: false}));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/avatar-assets-v1', express.static(path.join(__dirname, 'public', 'avatar-assets-v1'), {maxAge: '1y', immutable: true, index: false, fallthrough: false}));
+app.use(express.static(path.join(__dirname, 'public'),{redirect:false,setHeaders(res,file){if(file.endsWith('.html'))res.setHeader('Cache-Control','no-store');}}));
 accounts.attachAccounts(app,{disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id)io.sockets.sockets.get(p.id)?.disconnect(true);},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));}});
 require('./football-online').attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
@@ -82,7 +99,7 @@ function removePlayer(socket) {
 }
 io.on('connection', socket => {
   socket.on('createRoom', async ({ name } = {}, cb = () => {}) => {
-    let account; try { account = await accounts.socketAccount(socket); } catch { return cb({ok:false,error:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
+    let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
     if (!socket.connected) return;
     removePlayer(socket);
     const code = makeCode();
@@ -90,7 +107,7 @@ io.on('connection', socket => {
     rooms.set(code, room); socket.join(code); cb({ ok: true, code }); sendState(room);
   });
   socket.on('joinRoom', async ({ code, name } = {}, cb = () => {}) => {
-    let account; try { account = await accounts.socketAccount(socket); } catch { return cb({ok:false,error:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
+    let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
     if (!socket.connected) return;
     const room = rooms.get(String(code || '').toUpperCase().trim());
     if (!room) return cb({ ok: false, error: 'Bu oda koduyla açık bir oyun bulunamadı.' });
