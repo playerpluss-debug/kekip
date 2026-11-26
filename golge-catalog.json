@@ -29,13 +29,13 @@
       "slot": "av_hair",
       "key": "short",
       "name": "Modern kısa saç",
-      "starter": false,
-      "price": 120,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_hair_short",
       "colorCustomization": true,
       "thumbnail": "/images/golge-shop/golge_hair_short.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_hair_undercut",
@@ -43,13 +43,13 @@
       "slot": "av_hair",
       "key": "undercut",
       "name": "Undercut",
-      "starter": false,
-      "price": 120,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_hair_undercut",
       "colorCustomization": true,
       "thumbnail": "/images/golge-shop/golge_hair_undercut.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_hair_side",
@@ -113,13 +113,13 @@
       "slot": "av_eye",
       "key": "sharp",
       "name": "Keskin bakış",
-      "starter": false,
-      "price": 100,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_eyes_sharp",
       "colorCustomization": true,
       "thumbnail": "/images/golge-shop/golge_eyes_sharp.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_eyes_round",
@@ -127,13 +127,13 @@
       "slot": "av_eye",
       "key": "round",
       "name": "Yuvarlak göz",
-      "starter": false,
-      "price": 100,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_eyes_round",
       "colorCustomization": true,
       "thumbnail": "/images/golge-shop/golge_eyes_round.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_eyes_almond",
@@ -225,13 +225,13 @@
       "slot": "av_brow",
       "key": "straight",
       "name": "Kalın ve düz kaş",
-      "starter": false,
-      "price": 60,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_eyebrows_straight",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_eyebrows_straight.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_eyebrows_thin",
@@ -337,13 +337,13 @@
       "slot": "av_expression",
       "key": "happy",
       "name": "Mutlu",
-      "starter": false,
-      "price": 70,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_expression_happy",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_expression_happy.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_expression_confident",
@@ -351,13 +351,13 @@
       "slot": "av_expression",
       "key": "confident",
       "name": "Kendinden emin",
-      "starter": false,
-      "price": 70,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_expression_confident",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_expression_confident.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_expression_angry",
@@ -449,13 +449,13 @@
       "slot": "av_top",
       "key": "tee",
       "name": "Oversize tişört",
-      "starter": false,
-      "price": 180,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_top_tee",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_top_tee.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_top_hoodie",
@@ -463,13 +463,13 @@
       "slot": "av_top",
       "key": "hoodie",
       "name": "Mor detaylı hoodie",
-      "starter": false,
-      "price": 180,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_top_hoodie",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_top_hoodie.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_top_denim",
@@ -547,13 +547,13 @@
       "slot": "av_bottom",
       "key": "tech",
       "name": "Siyah tokalı techwear",
-      "starter": false,
-      "price": 160,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_bottom_tech",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_bottom_tech.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_bottom_ripped",
@@ -561,13 +561,13 @@
       "slot": "av_bottom",
       "key": "ripped",
       "name": "Buz mavisi yırtık baggy denim",
-      "starter": false,
-      "price": 160,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_bottom_ripped",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_bottom_ripped.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_bottom_pleats",
@@ -645,13 +645,13 @@
       "slot": "av_shoes",
       "key": "chunky",
       "name": "Krem-mor chunky sneaker",
-      "starter": false,
-      "price": 150,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_shoes_chunky",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_shoes_chunky.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_shoes_retro",
@@ -659,13 +659,13 @@
       "slot": "av_shoes",
       "key": "retro",
       "name": "Retro basketbol sneaker",
-      "starter": false,
-      "price": 150,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_shoes_retro",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_shoes_retro.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_shoes_boots",
@@ -757,13 +757,13 @@
       "slot": "av_ear",
       "key": "hoop",
       "name": "Gümüş halka küpe",
-      "starter": false,
-      "price": 70,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_ear_hoop",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_ear_hoop.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_ear_stud",
@@ -813,13 +813,13 @@
       "slot": "av_wrist",
       "key": "leather",
       "name": "Siyah deri bileklik",
-      "starter": false,
-      "price": 80,
-      "status": "available",
+      "starter": true,
+      "price": 0,
+      "status": "starter",
       "previewPath": "/golge-gardirop.html?item=golge_wrist_leather",
       "colorCustomization": false,
       "thumbnail": "/images/golge-shop/golge_wrist_leather.webp",
-      "rarity": "Yaygın"
+      "rarity": "Standart"
     },
     {
       "id": "golge_wrist_beads",
