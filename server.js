@@ -137,7 +137,18 @@ function gameHandler(handler) {
 io.on('connection', socket => {
   // Only authenticated members can discover joinable public Battleship rooms.
   // Never serialize private rooms, account IDs, socket IDs or game boards.
-  let lastPublicList=0;
+  let lastPublicList=-Infinity;
+  let membershipEpoch=0, membershipPending=false;
+  const membershipHandler=handler=>gameHandler(async (payload,cb)=>{
+    if(membershipPending)return cb({ok:false,error:'Oda işlemi zaten sürüyor.'});
+    membershipPending=true;
+    const epoch=++membershipEpoch, started=Date.now();
+    const stillValid=()=>socket.connected&&epoch===membershipEpoch&&Date.now()-started<=8000;
+    const done=result=>{if(epoch===membershipEpoch)membershipPending=false;cb(result);};
+    try{await handler(payload,done,stillValid);}finally{if(epoch===membershipEpoch)membershipPending=false;}
+  });
+  const cancelMembership=()=>{membershipEpoch++;membershipPending=false;removePlayer(socket);};
+  const accountInOtherSocket=account=>account&&[...rooms.values()].some(r=>r.players.some(p=>p.accountId===account.id&&p.id!==socket.id));
   socket.on('listPublicRooms', gameHandler(async (_payload, cb) => {
     const now=Date.now();
     if(now-lastPublicList<3000)return cb({ok:false,error:'Biraz sonra tekrar yenile.'});
@@ -156,23 +167,25 @@ io.on('connection', socket => {
     }
     cb({ok:true,rooms:open,total});
   }));
-  socket.on('createRoom', gameHandler(async ({ name, visibility = 'private' } = {}, cb = () => {}) => {
+  socket.on('createRoom', membershipHandler(async ({ name, visibility = 'private' }, cb, stillValid) => {
     if (!['public','private'].includes(visibility)) return cb({ok:false,error:'Geçersiz oda türü.'});
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
-    if (!socket.connected) return;
+    if(!stillValid())return cb({ok:false,error:'Oda isteğinin süresi doldu veya iptal edildi.'});
+    if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
+    if(accountInOtherSocket(account))return cb({ok:false,error:'Bu hesap başka bir sekmede odada. Önce oradan ayrıl.'});
     removePlayer(socket);
     const code = makeCode();
     const room = { code, visibility, chatId:crypto.randomUUID(), players: [{ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
     rooms.set(code, room); socket.join(code); cb({ ok: true, code }); sendState(room);
   }));
-  const joinRoom = publicOnly => gameHandler(async ({ code, name } = {}, cb = () => {}) => {
-    const started=Date.now();
+  const joinRoom = publicOnly => membershipHandler(async ({ code, name }, cb, stillValid) => {
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
-    if (!socket.connected) return;
+    if(!stillValid())return cb({ok:false,error:'Oda isteğinin süresi doldu veya iptal edildi.'});
+    if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
+    if(accountInOtherSocket(account))return cb({ok:false,error:'Bu hesap başka bir sekmede odada. Önce oradan ayrıl.'});
     const room = rooms.get(String(code || '').toUpperCase().trim());
     if(publicOnly){
       if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
-      if(Date.now()-started>8000)return cb({ok:false,error:'Katılım isteğinin süresi doldu. Tekrar dene.'});
       if(!room||room.visibility!=='public')return cb({ok:false,error:'Bu açık oda artık katılıma uygun değil.'});
       if(!room.players.length||!io.sockets.sockets.get(room.players[0].id)?.connected)return cb({ok:false,error:'Oda sahibi ayrıldı.'});
       if([...rooms.values()].some(r=>r!==room&&r.players.some(p=>p.id===socket.id||p.accountId===account.id)))return cb({ok:false,error:'Önce mevcut odandan ayrıl.'});
@@ -228,8 +241,8 @@ io.on('connection', socket => {
     else room.turn = foe.id;
     cb({ ok: true, hit, sunk: sunkNow }); sendState(room);
   }));
-  socket.on('leaveRoom', () => removePlayer(socket));
-  socket.on('disconnect', () => removePlayer(socket));
+  socket.on('leaveRoom', cancelMembership);
+  socket.on('disconnect', cancelMembership);
 });
 const port = process.env.PORT || 3000;
 server.listen(port, () => console.log(`KEKIP server listening on ${port}`));
