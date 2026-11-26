@@ -2,6 +2,7 @@
 const crypto=require('crypto');
 const GeceCollection=require('./gece-catalog.json');
 const Wardrobe=require('./wardrobe.js');
+const MysteryChest=require('./mystery-chest.js');
 const GolgeCollection=require('./golge-catalog.json');
 const hash=x=>crypto.createHash('sha256').update(String(x)).digest('hex');
 const token=()=>crypto.randomBytes(24).toString('hex');
@@ -45,7 +46,7 @@ await pool.query(`INSERT INTO kekip_cosmetic_inventory(account_id,item_id)
  FROM (SELECT account_id,character,appearance FROM kekip_modular_avatars UNION ALL SELECT account_id,character,appearance FROM kekip_avatar_outfits) looks
  CROSS JOIN LATERAL jsonb_each_text(CASE WHEN jsonb_typeof(looks.appearance->'items')='object' THEN looks.appearance->'items' ELSE '{}'::jsonb END) part
  WHERE (looks.character='gece' AND part.value=ANY($1::text[])) OR (looks.character='golge' AND part.value=ANY($2::text[]))
- ON CONFLICT(account_id,item_id) DO NOTHING`, [Wardrobe.collections.gece.items.filter(i=>i.onboardingEligible).map(i=>i.id),Wardrobe.collections.golge.items.filter(i=>i.onboardingEligible).map(i=>i.id)]);
+ ON CONFLICT(account_id,item_id) DO NOTHING`, [Wardrobe.collections.gece.items.filter(i=>i.onboardingEligible&&i.chestOnly!==true).map(i=>i.id),Wardrobe.collections.golge.items.filter(i=>i.onboardingEligible&&i.chestOnly!==true).map(i=>i.id)]);
 await pool.query(`CREATE TABLE IF NOT EXISTS kekip_daily_wheel_items(account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, day date NOT NULL, item_id text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(account_id,day))`);await pool.query(`CREATE TABLE IF NOT EXISTS kekip_cosmetic_equipped(account_id text NOT NULL,slot text NOT NULL,item_id text NOT NULL,PRIMARY KEY(account_id,slot),FOREIGN KEY(account_id,item_id) REFERENCES kekip_cosmetic_inventory(account_id,item_id) ON DELETE CASCADE)`);await pool.query(`CREATE TABLE IF NOT EXISTS kekip_registration_invites (id text PRIMARY KEY, username text NOT NULL, code_hash text UNIQUE NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz NOT NULL, used_at timestamptz, revoked_at timestamptz)`);
 // 0.51.12.2: indexes match existing read and cleanup predicates. No game data migration.
 await pool.query('CREATE INDEX IF NOT EXISTS kekip_football_rooms_data_gin ON kekip_football_rooms USING GIN (data jsonb_path_ops)');
@@ -68,6 +69,7 @@ await pool.query(`DO $$ BEGIN
  ALTER TABLE kekip_match_cards DROP CONSTRAINT IF EXISTS kekip_match_cards_chosen_check;
 END; $$`);
 await pool.query('CREATE INDEX IF NOT EXISTS kekip_match_cards_account ON kekip_match_cards(account_id,created_at)');
+await MysteryChest.ensureSchema(pool);
 })().catch(e=>{init=null;throw e});await init;return pool;}
 function throttle(req,name){const now=Date.now();for(const [k,v] of attempts)if(v.until<now)attempts.delete(k);const ip=(req.get('X-Forwarded-For')||req.ip||'unknown').split(',').pop().trim();for(const [key,limit] of [['ip:'+ip,30],['user:'+name,8]]){let v=attempts.get(key)||{n:0,until:now+10*60*1000};if(v.n>=limit||attempts.size>10000)fail('Çok fazla deneme. Birkaç dakika sonra tekrar dene.',429);v.n++;attempts.set(key,v)}}
 const json=require('express').json;
@@ -567,7 +569,7 @@ async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!=
  if(item?.slot==='background'&&action==='shop-equip')fail('Arka planı gardıroptan kaydet.',409);
  if(action==='shop-equip'&&slot==='background')fail('Arka planı gardıroptan kaydet.',409);
  if(action==='shop-buy'&&modular){
-  if(!modularCollection.saleEnabled||modular.starter||modular.status!=='available'||!Number.isSafeInteger(modular.price)||modular.price<=0)fail('Bu ürün satışta değil.',409);
+  if(modular.chestOnly===true||!modularCollection.saleEnabled||modular.starter||modular.status!=='available'||!Number.isSafeInteger(modular.price)||modular.price<=0)fail('Bu ürün satışta değil.',409);
  }else{
   if(action==='shop-buy'&&(item?.legacy||item?.slot.startsWith('av_')))fail('Bu ürün eski koleksiyona ait ve artık satışta değil.',409);
   if(!COSMETIC_SLOTS.includes(slot)||(action==='shop-buy'&&!item)||(action==='shop-equip'&&b.id!==''&&(!item||item.slot!==slot)))fail('Kozmetik geçersiz.');
@@ -582,7 +584,7 @@ async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!=
 // Administration gifts: same per-account lock as shop/wardrobe, transactional audit and idempotency.
 function adminGiftCatalog(){
  const valid=i=>typeof i.id==='string'&&Number.isSafeInteger(i.price)&&i.price>0;
- const items=[...COSMETICS.filter(i=>valid(i)&&!i.legacy&&!i.slot.startsWith('av_')).map(i=>({...i,group:'Profil'})),...Object.entries(Wardrobe.collections).flatMap(([key,c])=>c.saleEnabled?c.items.filter(i=>valid(i)&&!i.starter&&i.status==='available').map(i=>({...i,group:key==='gece'?'Gece':'Gölge'})):[])];
+ const items=[...COSMETICS.filter(i=>valid(i)&&!i.legacy&&!i.slot.startsWith('av_')).map(i=>({...i,group:'Profil'})),...Object.entries(Wardrobe.collections).flatMap(([key,c])=>c.saleEnabled?c.items.filter(i=>valid(i)&&i.chestOnly!==true&&!i.starter&&i.status==='available').map(i=>({...i,group:key==='gece'?'Gece':'Gölge'})):[])];
  return [...new Map(items.map(i=>[i.id,{id:i.id,name:i.name||i.id,group:i.group}])).values()];
 }
 async function adminGrant(db,b){
@@ -611,6 +613,9 @@ async function adminGrant(db,b){
 async function wardrobeWrite(db,a,work){
  const c=await db.connect();try{await c.query('BEGIN');const lock=await c.query('SELECT id FROM kekip_football_accounts WHERE id=$1 AND blocked_at IS NULL FOR UPDATE',[a.id]);if(!lock.rows.length)fail('Hesap erişimi kapalı.',403);const result=await work(c);await c.query('COMMIT');return result;}catch(e){await c.query('ROLLBACK').catch(()=>{});throw e;}finally{c.release();}
 }
+
+// 0.51.18.1 — keep purchases disabled until exclusive collections and opening UI are approved.
+const chestAction=MysteryChest.createService({collections:Wardrobe.collections,coinBalance,write:wardrobeWrite,enabled:false});
 
 // 0.51.5.1 — private, persistent friend-to-friend messages.
 function dmPublic(row){return {id:String(row.id),sender:row.sender,receiver:row.receiver,text:row.body,createdAt:row.created_at,readAt:row.read_at||null};}
@@ -727,10 +732,10 @@ if(action==='register'||action==='login'){const name=typeof b.username==='string
 // Onboarding is authoritative: only starter products may be used, and a completed look cannot be overwritten by this endpoint.
 if(action==='onboarding-catalog'||action==='onboarding-complete'){
  const a=await getAccount(db,req);if(!a)fail('Önce hesabına giriş yap.',401);
- if(action==='onboarding-catalog')return res.json({username:a.username,onboarded:a.onboarded,collections:Object.fromEntries(Object.entries(Wardrobe.collections).map(([key,c])=>[key,{character:key,colors:c.colors,items:c.items.filter(i=>i.onboardingEligible).map(i=>({...i,price:0,starter:true,status:'starter'}))}]))});
+ if(action==='onboarding-catalog')return res.json({username:a.username,onboarded:a.onboarded,collections:Object.fromEntries(Object.entries(Wardrobe.collections).map(([key,c])=>[key,{character:key,colors:c.colors,items:c.items.filter(i=>i.onboardingEligible&&i.chestOnly!==true).map(i=>({...i,price:0,starter:true,status:'starter'}))}]))});
  if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
  const c=await db.connect();try{await c.query('BEGIN');const lock=await c.query('SELECT id FROM kekip_football_accounts WHERE id=$1 AND blocked_at IS NULL FOR UPDATE',[a.id]);if(!lock.rows.length)fail('Hesap erişimi kapalı.',403);const prior=await Wardrobe.readSaved(c,a.id);if(prior){await c.query('COMMIT');return res.json({ok:true,alreadyCompleted:true});}
- const eligible=Wardrobe.collection(b.character).items.filter(i=>i.onboardingEligible).map(i=>i.id);
+ const eligible=Wardrobe.collection(b.character).items.filter(i=>i.onboardingEligible&&i.chestOnly!==true).map(i=>i.id);
  const appearance=Wardrobe.validate(b.character,{...b.draft,background:null},eligible);
  const chosen=[...new Set(Object.values(appearance.items).filter(Boolean))];
  await c.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) SELECT $1,unnest($2::text[]) ON CONFLICT(account_id,item_id) DO NOTHING',[a.id,chosen]);
@@ -745,5 +750,5 @@ if(action.startsWith('social-')){const a=await requireAccount(db,req);return res
 if(action==='avatar-portraits'){await requireAccount(db,req);if(!Array.isArray(b.usernames)||b.usernames.length>40||b.usernames.some(n=>typeof n!=='string'||!/^[a-z0-9_]{3,24}$/.test(n)))fail('Oyuncu listesi geçersiz.');const names=[...new Set(b.usernames)];if(!names.length)return res.json({players:[]});const q=await db.query(`SELECT a.username, m.appearance, CASE WHEN m.appearance IS NULL THEN p.data->>'photo' ELSE NULL END AS photo FROM kekip_football_accounts a LEFT JOIN kekip_player_profiles p ON p.account_id=a.id LEFT JOIN LATERAL (SELECT appearance FROM kekip_modular_avatars WHERE account_id=a.id AND character IN ('gece','golge') ORDER BY updated_at DESC,character LIMIT 1) m ON true WHERE a.blocked_at IS NULL AND a.username=ANY($1::text[])`,[names]);return res.json({players:q.rows.map(r=>({username:r.username,appearance:r.appearance||null,photo:typeof r.photo==='string'&&r.photo.length<=44000&&r.photo.startsWith('data:image/jpeg;base64,')?r.photo:''}))});}
 if(['wardrobe-slots','wardrobe-slot-save','wardrobe-slot-rename','wardrobe-slot-delete','wardrobe-slot-equip'].includes(action)){const a=await requireAccount(db,req);if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);return res.json(action==='wardrobe-slots'?await Wardrobe.slotAction(db,a.id,b.character,action,b):await wardrobeWrite(db,a,c=>Wardrobe.slotAction(c,a.id,b.character,action,b)));}
 if(action==='wardrobe-save'){const a=await requireAccount(db,req);if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);const saved=await wardrobeWrite(db,a,c=>Wardrobe.save(c,a.id,b.character,b.draft));return res.json({username:a.username,saved,persisted:true});}
-if(action==='wardrobe'||action==='wardrobe-check'){const a=await requireAccount(db,req);if(b.username!==undefined&&b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);const character=b.character||'gece';const collection=Wardrobe.collection(character);const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);const owned=q.rows.map(r=>r.item_id);if(action==='wardrobe-check')return res.json({username:a.username,draft:Wardrobe.validate(character,b.draft,owned),persisted:false});return res.json({username:a.username,collection,saved:await Wardrobe.readSaved(db,a.id,character),available:Wardrobe.access(character,owned),backgroundOwned:owned.filter(id=>BACKGROUNDS.some(i=>i.id===id)),owned:owned.filter(id=>collection.items.some(i=>i.id===id))});}if(['shop','shop-buy','shop-equip'].includes(action)){const a=await requireAccount(db,req);return res.json(await shopAction(db,a,action,b))}if(['match-cards','match-card-claim'].includes(action)){const a=await requireAccount(db,req);return res.json(await matchCardsAction(db,a,action,b));}if(['daily-rewards','daily-login','daily-spin','extra-spin'].includes(action)){const a=await requireAccount(db,req);return res.json(await rewardAction(db,a,action,b));}if(action==='wallet'){const a=await requireAccount(db,req);return res.json(await wallet(db,a))}if(action==='stats'){const a=await requireAccount(db,req);const stats=await profileStats(db,a);return res.json({...stats,titles:accountTitles(stats.achievements),coins:await coinBalance(db,a)})}if(action==='leaderboard'){const a=await requireAccount(db,req);return res.json(await leaderboardStats(db,a))}if(action==='period-leaderboard'){await requireAccount(db,req);return res.json(await periodLeaderboard(db))}fail('İşlem bulunamadı.',404)}catch(e){if(!e.status)console.error('KEKIP account:',e.code||e.message);res.status(e.status||503).json({error:e.status?e.message:'Hesap sunucusuna erişilemiyor. Tekrar dene.'})}})}
+if(action==='wardrobe'||action==='wardrobe-check'){const a=await requireAccount(db,req);if(b.username!==undefined&&b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);const character=b.character||'gece';const collection=Wardrobe.collection(character);const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);const owned=q.rows.map(r=>r.item_id);if(action==='wardrobe-check')return res.json({username:a.username,draft:Wardrobe.validate(character,b.draft,owned),persisted:false});return res.json({username:a.username,collection,saved:await Wardrobe.readSaved(db,a.id,character),available:Wardrobe.access(character,owned),backgroundOwned:owned.filter(id=>BACKGROUNDS.some(i=>i.id===id)),owned:owned.filter(id=>collection.items.some(i=>i.id===id))});}if(['shop','shop-buy','shop-equip'].includes(action)){const a=await requireAccount(db,req);return res.json(await shopAction(db,a,action,b))}if(['chest-status','chest-open'].includes(action)){const a=await requireAccount(db,req);return res.json(await chestAction(db,a,action,b,c=>requireAccount(c,req)));}if(['match-cards','match-card-claim'].includes(action)){const a=await requireAccount(db,req);return res.json(await matchCardsAction(db,a,action,b));}if(['daily-rewards','daily-login','daily-spin','extra-spin'].includes(action)){const a=await requireAccount(db,req);return res.json(await rewardAction(db,a,action,b));}if(action==='wallet'){const a=await requireAccount(db,req);return res.json(await wallet(db,a))}if(action==='stats'){const a=await requireAccount(db,req);const stats=await profileStats(db,a);return res.json({...stats,titles:accountTitles(stats.achievements),coins:await coinBalance(db,a)})}if(action==='leaderboard'){const a=await requireAccount(db,req);return res.json(await leaderboardStats(db,a))}if(action==='period-leaderboard'){await requireAccount(db,req);return res.json(await periodLeaderboard(db))}fail('İşlem bulunamadı.',404)}catch(e){if(!e.status)console.error('KEKIP account:',e.code||e.message);res.status(e.status||503).json({error:e.status?e.message:'Hesap sunucusuna erişilemiyor. Tekrar dene.'})}})}
 module.exports={attachAccounts,requireAdmin,database,sessionToken,getAccount,requireAccount,safeRequest,passwordHash,verifyPassword,socketAccount,recordBattle,recordGameResults,profileStats};
