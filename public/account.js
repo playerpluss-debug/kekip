@@ -57,6 +57,7 @@ el('kpAccountOpen').onclick=()=>openAccount(false);el('kpHeaderEdit').onclick=()
 el('kpChangePassword').onsubmit=async e=>{e.preventDefault();if(busy||savingProfile||!user)return;if(joined){msg('Önce aktif odadan ayrıl.');return}if(!confirm('Şifren değiştirilecek ve tüm oturumların kapatılacak. Devam edilsin mi?'))return;busy=true;const form=e.currentTarget,btn=form.querySelector('button');btn.disabled=true;try{await api('password-change',{oldPassword:el('kpOldPassword').value,newPassword:el('kpNewPassword').value});form.reset();window.KEKIPPreferences?.sessionChanged();alert('Şifren değiştirildi. Yeni şifrenle giriş yap.');location.reload()}catch(err){msg(err.message)}finally{busy=false;btn.disabled=false;form.reset()}};
 dialog.addEventListener('close',()=>el('kpChangePassword').reset());
 socket.on('statsSaved',r=>{if(r.ok){stats();}else error('Oyun tamamlandı ancak hesap istatistikleri kaydedilemedi.');});
+window.addEventListener('kekip:match-card-claimed',()=>stats());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user){stats();if(el('kpProfileEditor').hidden)loadIdentity()}});
 window.addEventListener('pageshow',e=>{if(e.persisted&&!joined)location.reload()});init();
 })();
