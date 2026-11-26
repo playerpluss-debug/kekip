@@ -30,6 +30,8 @@ await pool.query(`CREATE TABLE IF NOT EXISTS kekip_direct_messages (
 )`);
 await pool.query('CREATE INDEX IF NOT EXISTS kekip_dm_pair_recent ON kekip_direct_messages(low_id,high_id,id DESC)');
 await pool.query('CREATE INDEX IF NOT EXISTS kekip_dm_sender_time ON kekip_direct_messages(sender_id,created_at)');
+await pool.query('ALTER TABLE kekip_direct_messages ADD COLUMN IF NOT EXISTS read_at timestamptz');
+await pool.query('CREATE INDEX IF NOT EXISTS kekip_dm_unread_receiver ON kekip_direct_messages(receiver_id,sender_id,id) WHERE read_at IS NULL');
 await pool.query(`CREATE TABLE IF NOT EXISTS kekip_presence (token_hash text PRIMARY KEY REFERENCES kekip_football_sessions(token_hash) ON DELETE CASCADE, account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, activity text NOT NULL CHECK(activity IN ('home','battleship','football')), seen_at timestamptz NOT NULL DEFAULT now())`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_presence_account ON kekip_presence(account_id,seen_at)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_social_invites (id text PRIMARY KEY, sender_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, receiver_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, game text NOT NULL CHECK(game IN ('battleship','football')), room_code text NOT NULL, status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted','declined')), created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz NOT NULL, UNIQUE(sender_id,receiver_id,game,room_code), CHECK(sender_id<>receiver_id))`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_social_invites_receiver ON kekip_social_invites(receiver_id,expires_at)');await pool.query('CREATE INDEX IF NOT EXISTS kekip_game_results_account ON kekip_game_results(account_id,game)');await pool.query('CREATE INDEX IF NOT EXISTS kekip_game_results_date ON kekip_game_results(created_at,game)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_mission_claims (account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, mission_id text NOT NULL, period_start date NOT NULL, xp integer NOT NULL CHECK(xp>0), claimed_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(account_id,mission_id,period_start))`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_mission_claims_date ON kekip_mission_claims(claimed_at)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_coin_ledger (id bigserial PRIMARY KEY, account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, source_kind text NOT NULL, source_id text NOT NULL, label text NOT NULL, amount integer NOT NULL CHECK(amount<>0), created_at timestamptz NOT NULL DEFAULT now(), UNIQUE(account_id,source_kind,source_id))`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_coin_ledger_recent ON kekip_coin_ledger(account_id,id DESC)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_cosmetic_inventory(account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,item_id text NOT NULL,purchased_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(account_id,item_id))`);// 0.50.19.5: retain every formerly free piece referenced in existing active/saved outfits.
 await pool.query(`INSERT INTO kekip_cosmetic_inventory(account_id,item_id)
  SELECT DISTINCT looks.account_id, part.value
@@ -430,51 +432,76 @@ async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!=
  await c.query('COMMIT');}catch(e){await c.query('ROLLBACK').catch(()=>{});throw e}finally{c.release()}return {ok:true};}
 
 // 0.51.5.1 — private, persistent friend-to-friend messages.
-function dmPublic(row){return {id:String(row.id),sender:row.sender,receiver:row.receiver,text:row.body,createdAt:row.created_at};}
+function dmPublic(row){return {id:String(row.id),sender:row.sender,receiver:row.receiver,text:row.body,createdAt:row.created_at,readAt:row.read_at||null};}
 // 0.51.5.3 — transient typing presence, no message content stored here.
 const dmTyping = new Map();
 const DM_TYPING_TTL=6000, DM_TYPING_MAX=10000;
 function dmTypingKey(from,to){return JSON.stringify([from,to]);}
 function dmTypingSweep(now){for(const [k,expiry] of dmTyping)if(expiry<=now)dmTyping.delete(k);}
 async function messageAction(db,a,action,b){
- if(!['messages-list','messages-history','messages-send','messages-sync'].includes(action))fail('İşlem bulunamadı.',404);
+ if(!['messages-list','messages-history','messages-send','messages-sync','messages-read','messages-unread'].includes(action))fail('İşlem bulunamadı.',404);
  if(b.account!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
  const limit=b.limit===undefined?30:b.limit;
  if(action!=='messages-send'&&(!Number.isInteger(limit)||limit<1||limit>50))fail('Sayfa boyutu geçersiz.');
+ if(action==='messages-unread'){
+  const q=await db.query(`SELECT count(*) AS n FROM kekip_direct_messages d
+    JOIN kekip_friendships f ON f.low_id=d.low_id AND f.high_id=d.high_id AND f.status='accepted'
+    JOIN kekip_football_accounts u ON u.id=d.sender_id AND u.blocked_at IS NULL
+    JOIN kekip_football_accounts me ON me.id=$1 AND me.blocked_at IS NULL
+    WHERE d.receiver_id=$1 AND d.read_at IS NULL`,[a.id]);
+  return {username:a.username,unread:Number(q.rows[0]?.n||0)};
+ }
  if(action==='messages-list'){
   const after=b.after===undefined?'':b.after;
   if(typeof after!=='string'||(after!==''&&!/^[a-z0-9_]{3,24}$/.test(after)))fail('Liste konumu geçersiz.');
-  const q=await db.query(`SELECT u.username, m.id,m.body,m.created_at,m.sender,m.receiver
+  const q=await db.query(`SELECT u.username, m.id,m.body,m.created_at,m.sender,m.receiver,m.read_at, (SELECT count(*) FROM kekip_direct_messages d WHERE d.receiver_id=$1 AND d.sender_id=u.id AND d.read_at IS NULL) AS unread
     FROM kekip_friendships f JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END
     JOIN kekip_football_accounts me ON me.id=$1 AND me.blocked_at IS NULL
-    LEFT JOIN LATERAL (SELECT d.id,d.body,d.created_at,CASE WHEN d.sender_id=$1 THEN me.username ELSE u.username END AS sender,CASE WHEN d.sender_id=$1 THEN u.username ELSE me.username END AS receiver FROM kekip_direct_messages d WHERE d.low_id=f.low_id AND d.high_id=f.high_id ORDER BY d.id DESC LIMIT 1) m ON true
+    LEFT JOIN LATERAL (SELECT d.id,d.body,d.created_at,d.read_at,CASE WHEN d.sender_id=$1 THEN me.username ELSE u.username END AS sender,CASE WHEN d.sender_id=$1 THEN u.username ELSE me.username END AS receiver FROM kekip_direct_messages d WHERE d.low_id=f.low_id AND d.high_id=f.high_id ORDER BY d.id DESC LIMIT 1) m ON true
     WHERE (f.low_id=$1 OR f.high_id=$1) AND f.status='accepted' AND u.blocked_at IS NULL AND u.username>$2 ORDER BY u.username LIMIT $3`,[a.id,after,limit+1]);
-  const rows=q.rows.slice(0,limit);return {username:a.username,people:rows.map(r=>({username:r.username,lastMessage:r.id==null?null:dmPublic(r)})),nextAfter:q.rows.length>limit?rows[rows.length-1].username:null};
+  const rows=q.rows.slice(0,limit);return {username:a.username,people:rows.map(r=>({username:r.username,lastMessage:r.id==null?null:dmPublic(r),unread:Number(r.unread||0)})),nextAfter:q.rows.length>limit?rows[rows.length-1].username:null};
  }
  const name=b.username;
  if(typeof name!=='string'||!/^[a-z0-9_]{3,24}$/.test(name)||name===a.username)fail('Geçerli başka bir oyuncu seç.');
+ if(action==='messages-read'){
+  const through=b.throughId;
+  if(typeof through!=='string'||! /^[1-9][0-9]{0,18}$/.test(through)||BigInt(through)>9223372036854775807n)fail('Mesaj konumu geçersiz.');
+  // Only the recipient may acknowledge a message in an active, accepted friendship.
+  const q=await db.query(`WITH allowed AS (
+   SELECT u.id FROM kekip_friendships f
+   JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END AND u.username=$2 AND u.blocked_at IS NULL
+   JOIN kekip_football_accounts me ON me.id=$1 AND me.blocked_at IS NULL
+   WHERE (f.low_id=$1 OR f.high_id=$1) AND f.status='accepted'
+   AND EXISTS(SELECT 1 FROM kekip_direct_messages d WHERE d.id=$3::bigint AND d.receiver_id=$1 AND d.sender_id=u.id)
+  ), changed AS (
+   UPDATE kekip_direct_messages d SET read_at=now() FROM allowed u
+   WHERE d.receiver_id=$1 AND d.sender_id=u.id AND d.id<=$3::bigint AND d.read_at IS NULL RETURNING d.id
+  ) SELECT EXISTS(SELECT 1 FROM allowed) AS ok,(SELECT count(*) FROM changed) AS marked`,[a.id,name,through]);
+  if(!q.rows[0]?.ok)fail('Bu konuşma veya mesaj erişilebilir değil.',403);
+  return {username:a.username,peer:name,throughId:through,marked:Number(q.rows[0].marked||0)};
+ }
  if(action==='messages-sync'){
   const after=b.afterId;
   if(typeof after!=='string'||! /^(0|[1-9][0-9]{0,18})$/.test(after)||BigInt(after)>9223372036854775807n||typeof b.typing!=='boolean')fail('Sohbet güncellemesi geçersiz.');
-  const q=await db.query(`SELECT u.id AS peer_id,m.id,m.body,m.created_at,m.sender,m.receiver FROM kekip_friendships f
+  const q=await db.query(`SELECT u.id AS peer_id,m.id,m.body,m.created_at,m.sender,m.receiver,m.read_at, (SELECT max(d.id) FROM kekip_direct_messages d WHERE d.sender_id=$1 AND d.receiver_id=u.id AND d.read_at IS NOT NULL) AS peer_read_id, (SELECT count(*) FROM kekip_direct_messages d WHERE d.receiver_id=$1 AND d.sender_id=u.id AND d.read_at IS NULL) AS unread FROM kekip_friendships f
     JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END AND u.username=$2 AND u.blocked_at IS NULL
     JOIN kekip_football_accounts me ON me.id=$1 AND me.blocked_at IS NULL
-    LEFT JOIN LATERAL (SELECT d.id,d.body,d.created_at,CASE WHEN d.sender_id=$1 THEN me.username ELSE u.username END AS sender,CASE WHEN d.sender_id=$1 THEN u.username ELSE me.username END AS receiver FROM kekip_direct_messages d WHERE d.low_id=f.low_id AND d.high_id=f.high_id AND d.id>$3::bigint ORDER BY d.id ASC LIMIT $4) m ON true
+    LEFT JOIN LATERAL (SELECT d.id,d.body,d.created_at,d.read_at,CASE WHEN d.sender_id=$1 THEN me.username ELSE u.username END AS sender,CASE WHEN d.sender_id=$1 THEN u.username ELSE me.username END AS receiver FROM kekip_direct_messages d WHERE d.low_id=f.low_id AND d.high_id=f.high_id AND d.id>$3::bigint ORDER BY d.id ASC LIMIT $4) m ON true
     WHERE (f.low_id=$1 OR f.high_id=$1) AND f.status='accepted' ORDER BY m.id ASC NULLS LAST`,[a.id,name,after,limit+1]);
   if(!q.rows.length)fail('Bu oyuncuyla mesajlaşabilmek için arkadaş olmalısın.',403);
   const now=Date.now(),other=q.rows[0].peer_id,key=dmTypingKey(a.id,other);
   dmTypingSweep(now);
   if(b.typing){if(dmTyping.has(key)||dmTyping.size<DM_TYPING_MAX)dmTyping.set(key,now+DM_TYPING_TTL);}else dmTyping.delete(key);
   const rows=q.rows.filter(r=>r.id!=null),page=rows.slice(0,limit);
-  return {username:a.username,peer:name,messages:page.map(dmPublic),afterId:page.length?String(page[page.length-1].id):after,more:rows.length>limit,typing:(dmTyping.get(dmTypingKey(other,a.id))||0)>now};
+  return {username:a.username,peer:name,messages:page.map(dmPublic),afterId:page.length?String(page[page.length-1].id):after,more:rows.length>limit,peerReadId:String(q.rows[0].peer_read_id||'0'),unread:Number(q.rows[0].unread||0),typing:(dmTyping.get(dmTypingKey(other,a.id))||0)>now};
  }
  if(action==='messages-history'){
   const before=b.before===undefined||b.before===null?null:b.before;
   if(before!==null&&(typeof before!=='string'||!/^[1-9][0-9]{0,18}$/.test(before)||BigInt(before)>9223372036854775807n))fail('Mesaj konumu geçersiz.');
-  const q=await db.query(`SELECT m.id,m.body,m.created_at,m.sender,m.receiver FROM kekip_friendships f
+  const q=await db.query(`SELECT m.id,m.body,m.created_at,m.sender,m.receiver,m.read_at FROM kekip_friendships f
     JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END AND u.username=$2 AND u.blocked_at IS NULL
     JOIN kekip_football_accounts me ON me.id=$1 AND me.blocked_at IS NULL
-    LEFT JOIN LATERAL (SELECT d.id,d.body,d.created_at,CASE WHEN d.sender_id=$1 THEN me.username ELSE u.username END AS sender,CASE WHEN d.sender_id=$1 THEN u.username ELSE me.username END AS receiver FROM kekip_direct_messages d WHERE d.low_id=f.low_id AND d.high_id=f.high_id AND ($3::bigint IS NULL OR d.id<$3::bigint) ORDER BY d.id DESC LIMIT $4) m ON true
+    LEFT JOIN LATERAL (SELECT d.id,d.body,d.created_at,d.read_at,CASE WHEN d.sender_id=$1 THEN me.username ELSE u.username END AS sender,CASE WHEN d.sender_id=$1 THEN u.username ELSE me.username END AS receiver FROM kekip_direct_messages d WHERE d.low_id=f.low_id AND d.high_id=f.high_id AND ($3::bigint IS NULL OR d.id<$3::bigint) ORDER BY d.id DESC LIMIT $4) m ON true
     WHERE (f.low_id=$1 OR f.high_id=$1) AND f.status='accepted' ORDER BY m.id DESC NULLS LAST`,[a.id,name,before,limit+1]);
   if(!q.rows.length)fail('Bu oyuncuyla mesajlaşabilmek için arkadaş olmalısın.',403);
   const rows=q.rows.filter(r=>r.id!=null),page=rows.slice(0,limit);return {username:a.username,peer:name,messages:page.map(dmPublic).reverse(),nextBefore:rows.length>limit?String(page[page.length-1].id):null};
@@ -493,7 +520,7 @@ async function messageAction(db,a,action,b){
   const peer=pair.rows.find(r=>r.id!==a.id),[low,high]=[a.id,peer.id].sort();
   const f=await c.query("SELECT status FROM kekip_friendships WHERE low_id=$1 AND high_id=$2 AND status='accepted' FOR SHARE",[low,high]);
   if(!f.rows.length)fail('Bu oyuncuyla mesajlaşabilmek için arkadaş olmalısın.',403);
-  const prior=await c.query('SELECT id,receiver_id,body,created_at FROM kekip_direct_messages WHERE sender_id=$1 AND client_id=$2',[a.id,clientId]);
+  const prior=await c.query('SELECT id,receiver_id,body,created_at,read_at FROM kekip_direct_messages WHERE sender_id=$1 AND client_id=$2',[a.id,clientId]);
   let row=prior.rows[0];
   if(row){if(row.receiver_id!==peer.id||row.body!==body)fail('Mesaj gönderim anahtarı zaten kullanıldı.',409);}
   else{
