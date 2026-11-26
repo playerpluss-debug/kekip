@@ -230,18 +230,18 @@ async function friendAction(db,a,action,b){
  const state=r=>!r.status?'none':r.status==='accepted'?'friend':r.requested_by===a.id?'outgoing':'incoming';
  const publicRow=r=>({username:r.username,state:state(r)});
  if(action==='friends-list'){
-  const q=await db.query(`SELECT u.username,f.status,f.requested_by FROM kekip_friendships f JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END WHERE f.low_id=$1 OR f.high_id=$1 ORDER BY u.username`,[a.id]);
+  const q=await db.query(`SELECT u.username,f.status,f.requested_by FROM kekip_friendships f JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END WHERE (f.low_id=$1 OR f.high_id=$1) AND u.blocked_at IS NULL ORDER BY u.username`,[a.id]);
   return {username:a.username,people:q.rows.map(publicRow)};
  }
  if(action==='friends-search'){
   const term=typeof b.query==='string'?b.query.trim().toLowerCase():'';
   if(!/^[a-z0-9_]{2,24}$/.test(term))fail('Aramak için en az 2 harf veya rakam yaz.');
-  const q=await db.query(`SELECT u.username,f.status,f.requested_by FROM kekip_football_accounts u LEFT JOIN kekip_friendships f ON ((f.low_id=$1 AND f.high_id=u.id) OR (f.high_id=$1 AND f.low_id=u.id)) WHERE u.id<>$1 AND strpos(u.username,$2)>0 ORDER BY (u.username=$2) DESC,u.username LIMIT 30`,[a.id,term]);
+  const q=await db.query(`SELECT u.username,f.status,f.requested_by FROM kekip_football_accounts u LEFT JOIN kekip_friendships f ON ((f.low_id=$1 AND f.high_id=u.id) OR (f.high_id=$1 AND f.low_id=u.id)) WHERE u.id<>$1 AND u.blocked_at IS NULL AND strpos(u.username,$2)>0 ORDER BY (u.username=$2) DESC,u.username LIMIT 30`,[a.id,term]);
   return {people:q.rows.map(publicRow)};
  }
  const name=typeof b.username==='string'?b.username.trim().toLowerCase():'';
  if(!/^[a-z0-9_]{3,24}$/.test(name)||name===a.username)fail('Geçerli başka bir oyuncu seç.');
- const q=await db.query('SELECT id FROM kekip_football_accounts WHERE username=$1',[name]);
+ const q=await db.query('SELECT id FROM kekip_football_accounts WHERE username=$1 AND blocked_at IS NULL',[name]);
  if(!q.rows.length)fail('Oyuncu bulunamadı.',404);
  const [low,high]=[a.id,q.rows[0].id].sort();
  let result;
@@ -265,14 +265,14 @@ async function socialAction(db,req,a,action,b,options){
  if(action==='social-pulse'){
   if(!['home','battleship','football'].includes(b.activity))fail('Geçersiz durum.');
   await db.query(`INSERT INTO kekip_presence(token_hash,account_id,activity) SELECT token_hash,account_id,$3 FROM kekip_football_sessions WHERE token_hash=$1 AND account_id=$2 AND expires_at>now() ON CONFLICT(token_hash) DO UPDATE SET activity=EXCLUDED.activity,seen_at=now()`,[hash(sessionToken(req)),a.id,b.activity]);
-  const f=await db.query(`SELECT u.username,CASE WHEN pp.data->'privacy'->>'presence'='hidden' THEN 'offline' ELSE coalesce(p.activity,'offline') END AS activity FROM kekip_friendships f JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END LEFT JOIN kekip_player_profiles pp ON pp.account_id=u.id LEFT JOIN LATERAL (SELECT pr.activity FROM kekip_presence pr JOIN kekip_football_sessions s ON s.token_hash=pr.token_hash WHERE pr.account_id=u.id AND pr.seen_at>now()-interval '80 seconds' AND s.expires_at>now() ORDER BY (pr.activity<>'home') DESC,pr.seen_at DESC LIMIT 1) p ON true WHERE (f.low_id=$1 OR f.high_id=$1) AND f.status='accepted' ORDER BY u.username`,[a.id]);
-  const i=await db.query(`SELECT i.id,u.username AS sender,i.game,i.expires_at FROM kekip_social_invites i JOIN kekip_football_accounts u ON u.id=i.sender_id JOIN kekip_friendships f ON f.low_id=LEAST(i.sender_id,i.receiver_id) AND f.high_id=GREATEST(i.sender_id,i.receiver_id) AND f.status='accepted' WHERE i.receiver_id=$1 AND i.status='pending' AND i.expires_at>now() ORDER BY i.created_at DESC LIMIT 30`,[a.id]);
+  const f=await db.query(`SELECT u.username,CASE WHEN pp.data->'privacy'->>'presence'='hidden' THEN 'offline' ELSE coalesce(p.activity,'offline') END AS activity FROM kekip_friendships f JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END LEFT JOIN kekip_player_profiles pp ON pp.account_id=u.id LEFT JOIN LATERAL (SELECT pr.activity FROM kekip_presence pr JOIN kekip_football_sessions s ON s.token_hash=pr.token_hash WHERE pr.account_id=u.id AND pr.seen_at>now()-interval '80 seconds' AND s.expires_at>now() ORDER BY (pr.activity<>'home') DESC,pr.seen_at DESC LIMIT 1) p ON true WHERE (f.low_id=$1 OR f.high_id=$1) AND f.status='accepted' AND u.blocked_at IS NULL ORDER BY u.username`,[a.id]);
+  const i=await db.query(`SELECT i.id,u.username AS sender,i.game,i.expires_at FROM kekip_social_invites i JOIN kekip_football_accounts u ON u.id=i.sender_id JOIN kekip_friendships f ON f.low_id=LEAST(i.sender_id,i.receiver_id) AND f.high_id=GREATEST(i.sender_id,i.receiver_id) AND f.status='accepted' WHERE i.receiver_id=$1 AND i.status='pending' AND i.expires_at>now() AND u.blocked_at IS NULL ORDER BY i.created_at DESC LIMIT 30`,[a.id]);
   return {username:a.username,friends:f.rows,invites:i.rows};
  }
  if(action==='social-invite'){
   const game=b.game,code=typeof b.code==='string'?b.code.toUpperCase():'',username=b.username;
   if(!['battleship','football'].includes(game)||!(game==='battleship'?/^[A-Z2-9]{5}$/:/^[A-F0-9]{10}$/).test(code)||typeof username!=='string'||!/^[a-z0-9_]{3,24}$/.test(username)||username===a.username)fail('Davet bilgileri geçersiz.');
-  const f=await db.query(`SELECT u.id FROM kekip_football_accounts u JOIN kekip_friendships f ON f.low_id=LEAST(u.id,$1) AND f.high_id=GREATEST(u.id,$1) AND f.status='accepted' WHERE u.username=$2`,[a.id,username]);
+  const f=await db.query(`SELECT u.id FROM kekip_football_accounts u JOIN kekip_friendships f ON f.low_id=LEAST(u.id,$1) AND f.high_id=GREATEST(u.id,$1) AND f.status='accepted' WHERE u.username=$2 AND u.blocked_at IS NULL`,[a.id,username]);
   const receiver=f.rows[0]?.id;if(!receiver)fail('Yalnızca arkadaşlarını davet edebilirsin.',403);
   if(!await socialRoomOpen(db,game,code,a.id,receiver,options))fail('Davet için hesabına bağlı, boş yeri olan açık bir lobi gerekli.',409);
   const count=await db.query(`SELECT count(*) AS n FROM kekip_social_invites WHERE sender_id=$1 AND created_at>now()-interval '1 minute'`,[a.id]);if(Number(count.rows[0].n)>=10)fail('Çok fazla davet gönderdin. Biraz bekle.',429);
@@ -280,7 +280,7 @@ async function socialAction(db,req,a,action,b,options){
  }
  if(action==='social-accept'||action==='social-decline'){
   if(typeof b.id!=='string'||!/^[a-f0-9]{32}$/.test(b.id))fail('Davet geçersiz.');
-  const q=await db.query(`SELECT i.* FROM kekip_social_invites i JOIN kekip_friendships f ON f.low_id=LEAST(i.sender_id,i.receiver_id) AND f.high_id=GREATEST(i.sender_id,i.receiver_id) AND f.status='accepted' WHERE i.id=$1 AND i.receiver_id=$2 AND i.status='pending' AND i.expires_at>now()`,[b.id,a.id]);const i=q.rows[0];if(!i)fail('Davet artık geçerli değil.',409);
+  const q=await db.query(`SELECT i.* FROM kekip_social_invites i JOIN kekip_football_accounts u ON u.id=i.sender_id AND u.blocked_at IS NULL JOIN kekip_friendships f ON f.low_id=LEAST(i.sender_id,i.receiver_id) AND f.high_id=GREATEST(i.sender_id,i.receiver_id) AND f.status='accepted' WHERE i.id=$1 AND i.receiver_id=$2 AND i.status='pending' AND i.expires_at>now()`,[b.id,a.id]);const i=q.rows[0];if(!i)fail('Davet artık geçerli değil.',409);
   if(action==='social-accept'&&!await socialRoomOpen(db,i.game,i.room_code,i.sender_id,a.id,options))fail('Oda kapandı, doldu veya oyun başladı.',409);
   const u=await db.query(`UPDATE kekip_social_invites SET status=$3 WHERE id=$1 AND receiver_id=$2 AND status='pending' AND expires_at>now() RETURNING id`,[b.id,a.id,action==='social-accept'?'accepted':'declined']);if(!u.rows.length)fail('Davet artık geçerli değil.',409);
   return action==='social-accept'?{url:i.game==='battleship'?'/?room='+i.room_code:'/football.html?footballRoom='+i.room_code}:{ok:true};
