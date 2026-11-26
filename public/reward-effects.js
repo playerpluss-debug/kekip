@@ -1,9 +1,10 @@
 /* KEKIP 0.51.13.2 — presentation only; reward authority remains on server. */
 (()=>{'use strict';
-let audio=null,card=null,timer=null,owner=null;const seen=new Set();
+let audio=null,card=null,timer=null,owner=null;const seen=new Set(),tones=new Set();let soundOwner=null;
+function stopSound(){for(const o of tones){try{o.stop()}catch{}}tones.clear();soundOwner=null;}
 function allowed(key,username){const status=window.KEKIPPreferences?.status();return status?.mode==='member'&&status.username===username&&window.KEKIPExperience?.get()?.[key]===true;}
 function prepare(username){if(!allowed('sound',username)||document.hidden)return;try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;audio=audio||new Audio();if(audio.state==='suspended')audio.resume().catch(()=>{});}catch{}}
-function sound(username){if(!allowed('sound',username)||document.hidden||!audio||audio.state!=='running')return;try{const start=audio.currentTime;for(const [i,hz] of [660,880,1175].entries()){const o=audio.createOscillator(),g=audio.createGain(),t=start+i*.075;o.type='sine';o.frequency.setValueAtTime(hz,t);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.085,t+.018);g.gain.exponentialRampToValueAtTime(.001,t+.20);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+.21);o.onended=()=>{o.disconnect();g.disconnect();};}}catch{}}
+function sound(username){if(!allowed('sound',username)||document.hidden||!audio||audio.state!=='running')return;stopSound();soundOwner=username;try{const start=audio.currentTime;for(const [i,hz] of [660,880,1175].entries()){const o=audio.createOscillator(),g=audio.createGain(),t=start+i*.075;o.type='sine';o.frequency.setValueAtTime(hz,t);g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.085,t+.018);g.gain.exponentialRampToValueAtTime(.001,t+.20);o.connect(g);g.connect(audio.destination);tones.add(o);o.onended=()=>{tones.delete(o);o.disconnect();g.disconnect();};o.start(t);o.stop(t+.21);}}catch{stopSound();}}
 function clear(){if(timer!==null){clearTimeout(timer);timer=null;}card?.remove();card=null;owner=null;}
 function show({amount,username,id,missionPeriod,xp}={}){if(!Number.isSafeInteger(amount)||amount<=0||typeof username!=='string'||typeof id!=='string'||!id||document.hidden)return false;
 const status=window.KEKIPPreferences?.status();if(status?.mode!=='member'||status.username!==username)return false;
@@ -19,6 +20,6 @@ const css=document.createElement('style');css.textContent=`
 @media(max-width:520px){.kp-kc-celebration{left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));max-width:none;padding:13px 16px}.kp-kc-medal{width:46px;height:46px}}
 @media(prefers-reduced-motion:reduce){.kp-kc-celebration,.kp-kc-medal{animation:none!important}.kp-kc-spark{display:none!important}}
 `;document.head.append(css);
-window.addEventListener('kekip:preferences-status',e=>{if(e.detail?.mode!=='member'||e.detail.username!==owner||!allowed('effects',e.detail.username))clear();});document.addEventListener('visibilitychange',()=>{if(document.hidden)clear();});
+function sync(){if(document.hidden||!allowed('effects',owner))clear();if(document.hidden||!allowed('sound',soundOwner))stopSound();}window.addEventListener('kekip:preferences-status',sync);window.addEventListener('kekip:experience',sync);document.addEventListener('visibilitychange',sync);window.addEventListener('pagehide',()=>{clear();stopSound();});
 window.KEKIPRewardEffects=Object.freeze({prepare,show});
 })();
