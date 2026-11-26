@@ -58,6 +58,68 @@ app.use('/avatar-assets-v1',(req,res,next)=>{
   res.type(ext==='jpg'?'jpeg':ext);return res.send(data);
  }catch(err){console.error('KEKIP avatar asset fallback:',err.code||err.message);return res.sendStatus(503);}
 });
+// 0.51.12.1 — Compress public text assets only, after page authorization.
+// No new npm dependency. Keep API, Socket.IO, avatar binaries and room logic unchanged.
+const staticFs = require('fs').promises;
+const gzipStatic = require('util').promisify(require('zlib').gzip);
+const publicRoot = path.join(__dirname, 'public');
+const compressedAssets = new Map(), compressionPending = new Map();
+let compressedBytes = 0;
+const COMPRESSED_CACHE_LIMIT = 8 * 1024 * 1024;
+const MAX_COMPRESS_FILE = 6 * 1024 * 1024;
+const MAX_PENDING_COMPRESSIONS = 3;
+function forgetCompressed(name) {
+ const item = compressedAssets.get(name);
+ if(item){compressedBytes -= item.data.length; compressedAssets.delete(name);}
+}
+function storeCompressed(name, item){
+ forgetCompressed(name);
+ if(item.data.length>COMPRESSED_CACHE_LIMIT)return;
+ while(compressedBytes+item.data.length>COMPRESSED_CACHE_LIMIT && compressedAssets.size){
+  forgetCompressed(compressedAssets.keys().next().value);
+ }
+ compressedAssets.set(name,item);compressedBytes+=item.data.length;
+}
+async function readCompressedAsset(name, stat){
+ const signature=stat.size+':'+stat.mtimeMs;
+ const cached=compressedAssets.get(name);
+ if(cached?.signature===signature){compressedAssets.delete(name);compressedAssets.set(name,cached);return cached.data;}
+ if(cached)forgetCompressed(name);
+ const pending=compressionPending.get(name);
+ if(pending)return pending.signature===signature?pending.promise:null;
+ if(compressionPending.size>=MAX_PENDING_COMPRESSIONS)return null;
+ const promise=(async()=>{
+  const raw=await staticFs.readFile(path.join(publicRoot,name));
+  if(raw.length!==stat.size || raw.length>MAX_COMPRESS_FILE)return null;
+  const data=await gzipStatic(raw,{level:4});
+  if(data.length>=raw.length)return null;
+  storeCompressed(name,{signature,data});return data;
+ })();
+ compressionPending.set(name,{signature,promise});
+ try{return await promise;}finally{compressionPending.delete(name);}
+}
+app.use(async (req,res,next)=>{
+ if(!['GET','HEAD'].includes(req.method))return next();
+ // Root-level HTML, JS and CSS only; never resolve user-controlled directories.
+ const pathname=req.path;
+ const name=pathname==='/'?'index.html':/^\/[a-zA-Z0-9_-]+\.(?:html|js|css)$/.test(pathname)?pathname.slice(1):null;
+ if(!name)return next();
+ res.vary('Accept-Encoding');
+ if(req.headers.range || req.headers['if-range'] || req.acceptsEncodings('gzip','identity')!=='gzip')return next();
+ try{
+  const stat=await staticFs.stat(path.join(publicRoot,name));
+  if(!stat.isFile() || stat.size<1024 || stat.size>MAX_COMPRESS_FILE)return next();
+  const data=await readCompressedAsset(name,stat);
+  if(!data)return next();
+  res.set('Cache-Control',name.endsWith('.html')?'no-store':'public, max-age=0, must-revalidate');
+  res.set('Content-Encoding','gzip');
+  res.type(path.extname(name));
+  return res.send(data); // Express supplies Content-Length, ETag and HEAD handling.
+ }catch(err){
+  if(err.code!=='ENOENT'&&err.code!=='ENOTDIR')console.warn('KEKIP static compression:',err.code||err.message);
+  if(!res.headersSent)return next();
+ }
+});
 app.use(express.static(path.join(__dirname, 'public'),{redirect:false,setHeaders(res,file){if(file.endsWith('.html'))res.setHeader('Cache-Control','no-store');}}));
 // Admin monitoring: sanitized snapshot only; no private room codes, player IDs or board data.
 function adminBattleSnapshot(){
