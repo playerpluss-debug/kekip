@@ -56,7 +56,7 @@ async function progressNotifications(db,a,readIds,counts=null,observedAt=Date.no
  if(stats)await c.query('INSERT INTO kekip_notification_state(account_id,data) VALUES($1,$2::jsonb) ON CONFLICT DO NOTHING',[a.id,JSON.stringify({...mergeProgress(null,stats),...mergeHistory({},counts,undefined,observedAt)})]);
  const q=await c.query('SELECT data FROM kekip_notification_state WHERE account_id=$1 FOR UPDATE',[a.id]);
  const previous=q.rows[0]?.data;if(!previous){await c.query('COMMIT');return {events:[],history:[]};}
- const acknowledge=e=>readIds.includes(e.id)?{...e,read:true}:e;
+ const readSet=new Set(readIds||[]);const acknowledge=e=>readSet.has(e.id)&&!e.read?{...e,read:true}:e;
  const next=stats?{...previous,...mergeProgress(previous,stats),...mergeHistory(previous,counts,undefined,observedAt)}:{...previous,events:previous.events.map(acknowledge),history:(previous.history||[]).map(acknowledge)};
  if(JSON.stringify(previous)!==JSON.stringify(next))await c.query('UPDATE kekip_notification_state SET data=$2::jsonb WHERE account_id=$1',[a.id,JSON.stringify(next)]);
  await c.query('COMMIT');return {events:next.events,history:next.history||[]};
@@ -64,7 +64,7 @@ async function progressNotifications(db,a,readIds,counts=null,observedAt=Date.no
 }
 async function notifications(db,a,action,b,options){
  if(action==='notifications-read'){
-  if(!Array.isArray(b.ids)||b.ids.length>150||b.ids.some(x=>typeof x!=='string'||!/^[a-f0-9-]{36}$/.test(x)))fail('Bildirim numarası geçersiz.');
+  if(!Array.isArray(b.ids)||b.ids.length>150||b.ids.some(x=>typeof x!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(x)))fail('Bildirim numarası geçersiz.');
   return {username:a.username,...await progressNotifications(db,a,b.ids)};
  }
  const observedAt=Date.now();
