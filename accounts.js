@@ -16,6 +16,13 @@ function cookie(res,req,value,age){const local=/^(localhost|127\.0\.0\.1)(:\d+)?
 async function getAccount(db,req){const t=sessionToken(req);if(!t)return null;const q=await db.query('SELECT a.id,a.username, EXISTS(SELECT 1 FROM kekip_modular_avatars m WHERE m.account_id=a.id AND m.character IN (\'gece\',\'golge\')) AS "onboarded" FROM kekip_football_sessions s JOIN kekip_football_accounts a ON a.id=s.account_id WHERE s.token_hash=$1 AND s.expires_at>now() AND a.blocked_at IS NULL',[hash(t)]);return q.rows[0]||null}
 const requireAccount=async(db,req)=>{const a=await getAccount(db,req);if(!a)fail('Önce hesabına giriş yap.',401);if(!a.onboarded)fail('Önce karakterini oluştur.',403);return a};
 async function database(){if(!process.env.DATABASE_URL)fail('Çevrimiçi kariyer için DATABASE_URL henüz ayarlanmadı.',503);if(!pool){const {Pool}=require('pg');pool=new Pool({connectionString:process.env.DATABASE_URL,max:4,connectionTimeoutMillis:10000,enableChannelBinding:true});}if(!init)init=(async()=>{await pool.query('CREATE TABLE IF NOT EXISTS kekip_football_rooms (code text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())');await pool.query('CREATE TABLE IF NOT EXISTS kekip_football_accounts (id text PRIMARY KEY, username text UNIQUE NOT NULL, password_hash text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())');await pool.query('ALTER TABLE kekip_football_accounts ADD COLUMN IF NOT EXISTS blocked_at timestamptz');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_admin_audit (id bigserial PRIMARY KEY, username text NOT NULL, action text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`);await pool.query('CREATE TABLE IF NOT EXISTS kekip_football_sessions (token_hash text PRIMARY KEY, account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, expires_at timestamptz NOT NULL)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_game_results (game text NOT NULL, match_id text NOT NULL, account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, result jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(game,match_id,account_id))`);await pool.query(`CREATE TABLE IF NOT EXISTS kekip_player_avatars(account_id text PRIMARY KEY REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, preset_id text NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())`);await pool.query(`ALTER TABLE kekip_player_avatars ADD COLUMN IF NOT EXISTS appearance jsonb NOT NULL DEFAULT '{}'::jsonb`);await pool.query(`CREATE TABLE IF NOT EXISTS kekip_modular_avatars(account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,character text NOT NULL,appearance jsonb NOT NULL,updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(account_id,character))`);await pool.query(`CREATE TABLE IF NOT EXISTS kekip_avatar_outfits(account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,character text NOT NULL,slot smallint NOT NULL CHECK(slot BETWEEN 1 AND 5),name text NOT NULL CHECK(char_length(name) BETWEEN 1 AND 40),appearance jsonb NOT NULL,updated_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(account_id,character,slot),CHECK(character IN ('gece','golge')))`);await pool.query(`CREATE TABLE IF NOT EXISTS kekip_player_profiles (account_id text PRIMARY KEY REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, data jsonb NOT NULL DEFAULT '{}'::jsonb)`);await pool.query(`CREATE TABLE IF NOT EXISTS kekip_friendships (low_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, high_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, requested_by text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted')), created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(low_id,high_id), CHECK(low_id<>high_id), CHECK(requested_by IN (low_id,high_id)))`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_friendships_high ON kekip_friendships(high_id)');
+await pool.query(`CREATE TABLE IF NOT EXISTS kekip_admin_grants (
+ request_id text PRIMARY KEY, account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,
+ kind text NOT NULL CHECK(kind IN ('kc','xp','item')), amount integer NOT NULL, item_id text NOT NULL DEFAULT '',
+ reason text NOT NULL CHECK(char_length(reason) BETWEEN 3 AND 160), created_at timestamptz NOT NULL DEFAULT now(),
+ CHECK((kind IN ('kc','xp') AND amount BETWEEN 1 AND 10000 AND item_id='') OR (kind='item' AND amount=0 AND item_id<>''))
+)`);
+await pool.query('CREATE INDEX IF NOT EXISTS kekip_admin_grants_account ON kekip_admin_grants(account_id,kind,created_at)');
 await pool.query(`CREATE TABLE IF NOT EXISTS kekip_direct_messages (
  id bigserial PRIMARY KEY,
  low_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,
@@ -67,22 +74,22 @@ async function recordGameResults(game,matchId,rows,transaction=null){
  }catch(e){if(!transaction)await db.query('ROLLBACK').catch(()=>{});throw e;}finally{if(!transaction)db.release();}
 }
 async function recordBattle(matchId,players,winner){return recordGameResults('battleship',matchId,players.filter(p=>p.accountId).map(p=>({accountId:p.accountId,result:{win:p.id===winner,shots:p.shots.length,hits:p.shots.filter(s=>s.hit).length,shipsSunk:players.find(q=>q.id!==p.id)?.sunk.length||0}})))}
-async function profileStats(db,a){const rows=await db.query('SELECT result FROM kekip_game_results WHERE account_id=$1 AND game=$2',[a.id,'battleship']);const battle={games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0};for(const {result:r} of rows.rows){battle.games++;battle[r.win===true?'wins':'losses']++;battle.shots+=statNumber(r.shots);battle.hits+=statNumber(r.hits);battle.shipsSunk+=statNumber(r.shipsSunk)}const q=await db.query('SELECT code,data FROM kekip_football_rooms WHERE data @> $1::jsonb',[JSON.stringify({players:[{accountId:a.id}]})]);const football={careers:0,games:0,goals:0,assists:0};for(const row of q.rows){for(const p of row.data.players.filter(p=>p.accountId===a.id)){football.careers++;football.games+=statNumber(p.save?.games);football.goals+=statNumber(p.save?.goals);football.assists+=statNumber(p.save?.assists);}}const bonus=await db.query('SELECT COALESCE(sum(xp),0) AS xp FROM kekip_mission_claims WHERE account_id=$1',[a.id]);return withProgress(battle,football,statNumber(bonus.rows[0]?.xp))}
+async function profileStats(db,a){const rows=await db.query('SELECT result FROM kekip_game_results WHERE account_id=$1 AND game=$2',[a.id,'battleship']);const battle={games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0};for(const {result:r} of rows.rows){battle.games++;battle[r.win===true?'wins':'losses']++;battle.shots+=statNumber(r.shots);battle.hits+=statNumber(r.hits);battle.shipsSunk+=statNumber(r.shipsSunk)}const q=await db.query('SELECT code,data FROM kekip_football_rooms WHERE data @> $1::jsonb',[JSON.stringify({players:[{accountId:a.id}]})]);const football={careers:0,games:0,goals:0,assists:0};for(const row of q.rows){for(const p of row.data.players.filter(p=>p.accountId===a.id)){football.careers++;football.games+=statNumber(p.save?.games);football.goals+=statNumber(p.save?.goals);football.assists+=statNumber(p.save?.assists);}}const bonus=await db.query('SELECT COALESCE(sum(xp),0) AS xp FROM kekip_mission_claims WHERE account_id=$1',[a.id]);const reward=await db.query("SELECT COALESCE(sum(amount),0) AS xp FROM kekip_admin_grants WHERE account_id=$1 AND kind='xp'",[a.id]);return withProgress(battle,football,statNumber(bonus.rows[0]?.xp),statNumber(reward.rows[0]?.xp))}
 // Read-only member leaderboard. Numeric values are sanitized and no private account or career identifiers leave the server.
 function statNumber(v){const n=Number(v);return Number.isSafeInteger(n)&&n>=0?n:0;}
 // Platform XP is derived from persisted match/career aggregates, not a client-submitted XP value.
 // To integrate another game, add its verified persisted stats and contribution here.
-function accountProgress(battle,football,bonus=0){
+function accountProgress(battle,football,bonus=0,adminBonus=0){
   const battleXp=statNumber(battle.games)*20+Math.min(statNumber(battle.wins),statNumber(battle.games))*10;
   const footballXp=statNumber(football.games)*20+statNumber(football.goals)*5+statNumber(football.assists)*5;
-  const missionXp=statNumber(bonus);const xp=Math.min(Number.MAX_SAFE_INTEGER,battleXp+footballXp+missionXp);
+  const missionXp=statNumber(bonus),adminXp=statNumber(adminBonus);const xp=Math.min(Number.MAX_SAFE_INTEGER,battleXp+footballXp+missionXp+adminXp);
   // Level 1 starts at 0. Cost to advance: 100, 125, 150, ...
   const threshold=n=>100*n+25*n*(n-1)/2;
   let n=Math.max(0,Math.floor((Math.sqrt(87.5**2+50*xp)-87.5)/25));
   while(n>0&&threshold(n)>xp)n--;
   while(threshold(n+1)<=xp)n++;
   const level=n+1, levelXp=xp-threshold(n), nextLevelXp=100+25*n;
-  return {xp,level,levelXp,nextLevelXp,remainingXp:nextLevelXp-levelXp,percent:Math.floor(100*levelXp/nextLevelXp),battleXp,footballXp,missionXp};
+  return {xp,level,levelXp,nextLevelXp,remainingXp:nextLevelXp-levelXp,percent:Math.floor(100*levelXp/nextLevelXp),battleXp,footballXp,missionXp,adminXp};
 }
 // Central achievement registry. Add future games by extending verified stats and this registry.
 const ACHIEVEMENTS = [
@@ -125,7 +132,7 @@ const SPECIAL_TITLES=Object.freeze({
 function accountTitles(achievements){
  return achievements.flatMap(a=>{const base={id:a.id,name:a.name,rarity:a.rarity,group:a.group,description:a.description,current:a.current,target:a.target,unlocked:a.unlocked,special:false};const name=SPECIAL_TITLES[a.id];return name?[base,{...base,id:'earned_title_'+a.id,name,special:true}]:[base]});
 }
-function withProgress(battle,football,bonus=0){const stats={battle,football,progress:accountProgress(battle,football,bonus)};return {...stats,achievements:accountAchievements(stats)};}
+function withProgress(battle,football,bonus=0,adminBonus=0){const stats={battle,football,progress:accountProgress(battle,football,bonus,adminBonus)};return {...stats,achievements:accountAchievements(stats)};}
 
 async function leaderboardStats(db, viewer){
   const q=await db.query(`WITH battle AS (
@@ -143,14 +150,14 @@ async function leaderboardStats(db, viewer){
     FROM kekip_football_rooms r CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(r.data->'players')='array' THEN r.data->'players' ELSE '[]'::jsonb END) AS players(p)
     WHERE p->>'accountId' IS NOT NULL GROUP BY p->>'accountId'
   ) SELECT a.username, b.games AS battle_games, b.wins, b.shots, b.hits, b.ships_sunk,
-    f.careers, f.games AS football_games, f.goals, f.assists, COALESCE(m.xp,0) AS mission_xp
-    FROM kekip_football_accounts a LEFT JOIN battle b ON b.account_id=a.id LEFT JOIN football f ON f.account_id=a.id LEFT JOIN (SELECT account_id,sum(xp) AS xp FROM kekip_mission_claims GROUP BY account_id) m ON m.account_id=a.id
+    f.careers, f.games AS football_games, f.goals, f.assists, COALESCE(m.xp,0) AS mission_xp, COALESCE(g.xp,0) AS admin_xp
+    FROM kekip_football_accounts a LEFT JOIN battle b ON b.account_id=a.id LEFT JOIN football f ON f.account_id=a.id LEFT JOIN (SELECT account_id,sum(xp) AS xp FROM kekip_mission_claims GROUP BY account_id) m ON m.account_id=a.id LEFT JOIN (SELECT account_id,sum(amount) AS xp FROM kekip_admin_grants WHERE kind='xp' GROUP BY account_id) g ON g.account_id=a.id
     WHERE a.blocked_at IS NULL
     ORDER BY a.username`);
   return {viewer:viewer.username,players:q.rows.map(r=>{
     const games=statNumber(r.battle_games), wins=Math.min(games,statNumber(r.wins)), shots=statNumber(r.shots), hits=Math.min(shots,statNumber(r.hits));
     const battle={games,wins,losses:games-wins,shots,hits,shipsSunk:statNumber(r.ships_sunk)},football={careers:statNumber(r.careers),games:statNumber(r.football_games),goals:statNumber(r.goals),assists:statNumber(r.assists)};
-    return {username:r.username,...withProgress(battle,football,statNumber(r.mission_xp))};
+    return {username:r.username,...withProgress(battle,football,statNumber(r.mission_xp),statNumber(r.admin_xp))};
   })};
 }
 // Periodic rankings use immutable server-side match records, not room update timestamps.
@@ -192,6 +199,7 @@ async function inviteAction(db,req,action,b){requireAdmin(req,b);if(action==='in
 // Admin-only management. No password hashes, session tokens or career secrets are returned.
 async function adminAction(db,req,action,b,options){
  requireAdmin(req,b);
+ if(action==='admin-grant')return adminGrant(db,b);
  if(action==='admin-members'){
   const search=typeof b.search==='string'?b.search.trim().toLowerCase():'';
   if(!/^[a-z0-9_]{0,24}$/.test(search))fail('Arama geçersiz.');
@@ -213,7 +221,10 @@ async function adminAction(db,req,action,b,options){
   const q=await db.query(`SELECT a.id,a.username,a.created_at,a.blocked_at,(SELECT count(*)::int FROM kekip_football_sessions s WHERE s.account_id=a.id AND s.expires_at>now()) AS sessions,EXISTS(SELECT 1 FROM kekip_modular_avatars m WHERE m.account_id=a.id AND m.character IN ('gece','golge')) AS onboarded FROM kekip_football_accounts a WHERE a.username=$1`,[b.username]);
   const a=q.rows[0];if(!a)fail('Üye bulunamadı.',404);
   const stats=await profileStats(db,a);
-  return {member:{username:a.username,created_at:a.created_at,blocked_at:a.blocked_at,sessions:a.sessions,onboarded:a.onboarded},progress:{level:stats.progress.level,xp:stats.progress.xp},battle:stats.battle,football:stats.football,achievements:{earned:stats.achievements.filter(x=>x.unlocked).length,total:stats.achievements.length}};
+  const inventory=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1 ORDER BY item_id',[a.id]);
+  const catalog=adminGiftCatalog();const allItems=new Map([...COSMETICS,...Object.values(Wardrobe.collections).flatMap(c=>c.items)].map(i=>[i.id,i.name||i.id]));
+  const owned=inventory.rows.map(r=>({id:r.item_id,name:allItems.get(r.item_id)||r.item_id}));
+  return {economy:{balance:await coinBalance(db,a),adminXp:stats.progress.adminXp,owned,catalog},member:{username:a.username,created_at:a.created_at,blocked_at:a.blocked_at,sessions:a.sessions,onboarded:a.onboarded},progress:{level:stats.progress.level,xp:stats.progress.xp},battle:stats.battle,football:stats.football,achievements:{earned:stats.achievements.filter(x=>x.unlocked).length,total:stats.achievements.length}};
  }
  if(!['admin-block','admin-unblock','admin-reset','admin-revoke-sessions'].includes(action))fail('İşlem bulunamadı.',404);
  if(typeof b.username!=='string'||!/^[a-z0-9_]{3,24}$/.test(b.username))fail('Kullanıcı adı geçersiz.');
@@ -485,6 +496,34 @@ async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!=
  await c.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) VALUES($1,$2)',[a.id,item.id]);await c.query(`INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'cosmetic',$2,$3,$4)`,[a.id,item.id,'Mağaza · '+item.name,-item.price]);
  }else if(b.id===''){await c.query('DELETE FROM kekip_cosmetic_equipped WHERE account_id=$1 AND slot=$2',[a.id,slot]);}else{const owned=await c.query('SELECT 1 FROM kekip_cosmetic_inventory WHERE account_id=$1 AND item_id=$2',[a.id,item.id]);if(!owned.rows.length)fail('Önce bu ürünü satın almalısın.',403);await c.query('INSERT INTO kekip_cosmetic_equipped(account_id,slot,item_id) VALUES($1,$2,$3) ON CONFLICT(account_id,slot) DO UPDATE SET item_id=EXCLUDED.item_id',[a.id,slot,item.id]);}
  await c.query('COMMIT');}catch(e){await c.query('ROLLBACK').catch(()=>{});throw e}finally{c.release()}return {ok:true};}
+
+// Administration gifts: same per-account lock as shop/wardrobe, transactional audit and idempotency.
+function adminGiftCatalog(){
+ const valid=i=>typeof i.id==='string'&&Number.isSafeInteger(i.price)&&i.price>0;
+ const items=[...COSMETICS.filter(i=>valid(i)&&!i.legacy&&!i.slot.startsWith('av_')).map(i=>({...i,group:'Profil'})),...Object.entries(Wardrobe.collections).flatMap(([key,c])=>c.saleEnabled?c.items.filter(i=>valid(i)&&!i.starter&&i.status==='available').map(i=>({...i,group:key==='gece'?'Gece':'Gölge'})):[])];
+ return [...new Map(items.map(i=>[i.id,{id:i.id,name:i.name||i.id,group:i.group}])).values()];
+}
+async function adminGrant(db,b){
+ const {username,kind,requestId}=b;const reason=typeof b.reason==='string'?b.reason.trim():'';
+ if(typeof username!=='string'||!/^[a-z0-9_]{3,24}$/.test(username)||typeof requestId!=='string'||!/^[a-f0-9]{32}$/.test(requestId)||!['kc','xp','item'].includes(kind)||reason.length<3||reason.length>160||/[\x00-\x1f\x7f]/.test(reason))fail('Ödül isteği geçersiz.');
+ const amount=kind==='item'?0:b.amount,itemId=kind==='item'?b.itemId:'';
+ if(kind!=='item'&&(!Number.isSafeInteger(amount)||amount<1||amount>10000))fail('Miktar 1–10.000 arasında tam sayı olmalı.');
+ if(kind==='item'&&(typeof itemId!=='string'||itemId.length>150))fail('Ürün geçersiz.');
+ const c=await db.connect();try{
+  await c.query('BEGIN');
+  const q=await c.query('SELECT id,username,blocked_at FROM kekip_football_accounts WHERE username=$1 FOR UPDATE',[username]);const a=q.rows[0];if(!a)fail('Üye bulunamadı.',404);
+  const prior=await c.query('SELECT account_id,kind,amount,item_id,reason FROM kekip_admin_grants WHERE request_id=$1',[requestId]);
+  if(prior.rows.length){const v=prior.rows[0];if(v.account_id!==a.id||v.kind!==kind||v.amount!==amount||v.item_id!==itemId||v.reason!==reason)fail('İşlem anahtarı farklı bir ödüle ait.',409);await c.query('COMMIT');return {ok:true,duplicate:true};}
+  if(a.blocked_at)fail('Engellenmiş hesaba ödül verilemez.',403);
+  const item=kind==='item'?adminGiftCatalog().find(i=>i.id===itemId):null;
+  if(kind==='item'&&!item)fail('Bu ürün hediye edilemez.',409);
+  await c.query('INSERT INTO kekip_admin_grants(request_id,account_id,kind,amount,item_id,reason) VALUES($1,$2,$3,$4,$5,$6)',[requestId,a.id,kind,amount,itemId,reason]);
+  if(kind==='kc')await c.query("INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'admin_grant',$2,$3,$4)",[a.id,requestId,'Yönetici ödülü',amount]);
+  if(kind==='item'){const r=await c.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING item_id',[a.id,itemId]);if(!r.rows.length)fail('Oyuncu bu ürüne zaten sahip.',409);}
+  await c.query('INSERT INTO kekip_admin_audit(username,action) VALUES($1,$2)',[username,'Ödül · '+(kind==='item'?item.name:amount+' '+kind.toUpperCase())+' · '+reason]);
+  await c.query('COMMIT');return {ok:true,duplicate:false};
+ }catch(e){await c.query('ROLLBACK').catch(()=>{});if(e.code==='23505')fail('İşlem çakıştı. Aynı isteği yeniden dene.',409);throw e;}finally{c.release()}
+}
 
 // Serialize wardrobe writes with purchases and account blocking; validate ownership inside the transaction.
 async function wardrobeWrite(db,a,work){
