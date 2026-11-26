@@ -1,14 +1,14 @@
 'use strict';
-// 0.51.18.1 – Server-side, virtual KC-only chest foundation.
+// 0.51.18.2.1 – Server-side, virtual KC-only chest foundation.
 // Activation is intentionally disabled in accounts.js until the approved assets/UI exist.
 const crypto=require('node:crypto');
 const PRICE=100;
 const CHARACTERS=Object.freeze(['gece','golge']);
 const TIERS=Object.freeze([
- Object.freeze({id:'rare',label:'Nadir',weight:60}),
- Object.freeze({id:'epic',label:'Epik',weight:30}),
- Object.freeze({id:'legendary',label:'Efsanevi',weight:9}),
- Object.freeze({id:'mythic',label:'Mitik',weight:1})
+ Object.freeze({id:'rare',label:'Nadir',weight:60,refund:20}),
+ Object.freeze({id:'epic',label:'Epik',weight:30,refund:40}),
+ Object.freeze({id:'legendary',label:'Efsanevi',weight:9,refund:75}),
+ Object.freeze({id:'mythic',label:'Mitik',weight:1,refund:100})
 ]);
 const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status})};
 function validateCharacter(character){if(!CHARACTERS.includes(character))fail('Sandık karakteri geçersiz.');}
@@ -27,12 +27,12 @@ function eligibleItems(collections,character){
  return marked;
 }
 function groups(items,owned){const set=new Set(owned);return TIERS.map(t=>({...t,items:items.filter(i=>i.chestRarity===t.id&&!set.has(i.id))}));}
-function effectiveOdds(grouped){const total=grouped.reduce((n,t)=>n+(t.items.length?t.weight:0),0);return grouped.map(t=>({id:t.id,label:t.label,basePercent:t.weight,remaining:t.items.length,percent:total&&t.items.length?t.weight*100/total:0}));}
+// Rarity is drawn from the full fixed distribution, even when a tier is exhausted.
+function effectiveOdds(grouped){return grouped.map(t=>({id:t.id,label:t.label,basePercent:t.weight,remaining:t.items.length,percent:t.weight,refundKC:t.refund,refundOnly:t.items.length===0}));}
 function draw(grouped,randomInt=crypto.randomInt){
- const active=grouped.filter(t=>t.items.length);const total=active.reduce((n,t)=>n+t.weight,0);
- if(!total)fail('Bu koleksiyondaki tüm ürünlere sahipsin.',409);
- let roll=randomInt(total);
- for(const t of active){if(roll<t.weight)return t.items[randomInt(t.items.length)];roll-=t.weight;}
+ if(!grouped.some(t=>t.items.length))fail('Bu koleksiyondaki tüm ürünlere sahipsin.',409);
+ let roll=randomInt(100);
+ for(const t of grouped){if(roll<t.weight){return t.items.length?{item:t.items[randomInt(t.items.length)],rewardType:'cosmetic'}:{item:null,rewardType:'refund',rarity:t.id,rarityLabel:t.label,refundKC:t.refund};}roll-=t.weight;}
  throw new Error('Invalid random roll');
 }
 function publicItem(i){const tier=TIERS.find(t=>t.id===i.chestRarity);return {id:i.id,character:i.character,name:i.name,slot:i.slot,thumbnail:i.thumbnail,rarity:tier.id,rarityLabel:tier.label};}
@@ -41,10 +41,12 @@ async function ensureSchema(db){
   account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,
   request_id text NOT NULL CHECK(request_id ~ '^[a-f0-9]{32}$'),
   character text NOT NULL CHECK(character IN ('gece','golge')),
-  item_id text NOT NULL, price integer NOT NULL CHECK(price>0),
+  item_id text, price integer NOT NULL CHECK(price>0),
   reward jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY(account_id,request_id), UNIQUE(account_id,item_id)
  )`);
+ // Existing unique(account_id,item_id) continues to prevent duplicate cosmetics; NULL permits repeated KC refunds.
+ await db.query(`ALTER TABLE kekip_chest_openings ALTER COLUMN item_id DROP NOT NULL`);
 }
 async function inventory(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);return q.rows.map(r=>r.item_id);}
 function createService({collections,coinBalance,write,enabled=false}){
@@ -75,10 +77,12 @@ function createService({collections,coinBalance,write,enabled=false}){
    if(!state.ready)fail('Sandık koleksiyonu henüz hazır değil.',409);
    if(!state.remaining)fail('Bu koleksiyondaki tüm ürünlere sahipsin.',409);
    if(await coinBalance(c,a)<PRICE)fail('Yeterli KC yok.',409);
-   const item=draw(groups(eligibleItems(collections,b.character),owned)),reward=publicItem(item);
-   await c.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) VALUES($1,$2)',[a.id,item.id]);
+   const result=draw(groups(eligibleItems(collections,b.character),owned)),item=result.item;
+   const reward=item?{...publicItem(item),type:'cosmetic'}:{type:'refund',character:b.character,rarity:result.rarity,rarityLabel:result.rarityLabel,refundKC:result.refundKC};
+   if(item)await c.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) VALUES($1,$2)',[a.id,item.id]);
    await c.query("INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'mystery_chest',$2,$3,$4)",[a.id,b.requestId,'Gizemli Sandık · '+(b.character==='gece'?'Gece':'Gölge'),-PRICE]);
-   await c.query('INSERT INTO kekip_chest_openings(account_id,request_id,character,item_id,price,reward) VALUES($1,$2,$3,$4,$5,$6::jsonb)',[a.id,b.requestId,b.character,item.id,PRICE,JSON.stringify(reward)]);
+   if(!item)await c.query("INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'mystery_chest_refund',$2,$3,$4)",[a.id,b.requestId,'Gizemli Sandık · '+result.rarityLabel+' KC telafisi',result.refundKC]);
+   await c.query('INSERT INTO kekip_chest_openings(account_id,request_id,character,item_id,price,reward) VALUES($1,$2,$3,$4,$5,$6::jsonb)',[a.id,b.requestId,b.character,item?.id??null,PRICE,JSON.stringify(reward)]);
    return {ok:true,username:a.username,requestId:b.requestId,price:PRICE,reward,balance:await coinBalance(c,a),duplicate:false};
   });
  };
