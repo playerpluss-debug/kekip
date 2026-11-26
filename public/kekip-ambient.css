@@ -1,0 +1,19 @@
+/* KEKIP 0.51.1.3 — Shared atmospheric background. Decorative only. */
+body.kp-motion-page{isolation:isolate}
+.kp-live-backdrop{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse at 50% 10%,#25163e 0%,#130d22 54%,#0b0814 100%);opacity:1}
+.kp-live-backdrop .kp-light{position:absolute;inset:-22%;pointer-events:none;will-change:transform;transform-origin:50% 50%}
+.kp-live-backdrop .kp-light-a{background:radial-gradient(ellipse at 24% 25%,#9b52e63b 0%,#7941b821 24%,transparent 55%),radial-gradient(ellipse at 78% 74%,#7144d12e 0%,transparent 48%);animation:kp-ambient-a 24s ease-in-out infinite alternate}
+.kp-live-backdrop .kp-light-b{background:radial-gradient(ellipse at 83% 20%,#765afa32 0%,transparent 42%),radial-gradient(ellipse at 22% 82%,#c34aa31e 0%,transparent 40%),linear-gradient(122deg,transparent 30%,#bd83ff09 44%,#9f6bea24 48%,#6943a713 52%,transparent 65%);animation:kp-ambient-b 31s ease-in-out infinite alternate}
+.kp-live-backdrop .kp-rays{position:absolute;inset:-30%;background:repeating-linear-gradient(124deg,transparent 0 116px,#bfa0ff0a 117px,#bfa0ff0a 118px,transparent 119px 238px);opacity:.65;animation:kp-ambient-rays 36s ease-in-out infinite alternate;will-change:transform}
+.kp-live-backdrop .kp-stars{position:absolute;inset:-12%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='430' viewBox='0 0 560 430'%3E%3Cg fill='%23d5b9ff'%3E%3Ccircle cx='21' cy='68' r='1' opacity='.46'/%3E%3Ccircle cx='133' cy='112' r='1.4' opacity='.48'/%3E%3Ccircle cx='249' cy='26' r='.8' opacity='.43'/%3E%3Ccircle cx='407' cy='82' r='1.1' opacity='.44'/%3E%3Ccircle cx='515' cy='177' r='1.3' opacity='.37'/%3E%3Ccircle cx='74' cy='292' r='1.2' opacity='.40'/%3E%3Ccircle cx='180' cy='365' r='.9' opacity='.44'/%3E%3Ccircle cx='303' cy='220' r='1.5' opacity='.50'/%3E%3Ccircle cx='436' cy='340' r='1.1' opacity='.4'/%3E%3Ccircle cx='531' cy='399' r='.8' opacity='.42'/%3E%3Ccircle cx='89' cy='21' r='.6' opacity='.4'/%3E%3Ccircle cx='369' cy='391' r='.9' opacity='.4'/%3E%3C/g%3E%3Cg fill='%239a8bff' opacity='.48'%3E%3Ccircle cx='19' cy='177' r='1.6'/%3E%3Ccircle cx='340' cy='119' r='1.3'/%3E%3Ccircle cx='470' cy='258' r='1.1'/%3E%3C/g%3E%3C/svg%3E");background-size:560px 430px;opacity:.85;animation:kp-ambient-stars 38s linear infinite alternate;will-change:transform}
+.kp-live-backdrop .kp-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 35%,#08061155 100%)}
+/* Supersede only the older page-wide ambient layers, never character backgrounds. */
+body.kp-motion-page > .ambient-scene{display:none!important}
+body.kp-motion-page.kp-motion-legacy-pseudo::before,body.kp-motion-page.kp-motion-legacy-pseudo::after{animation:none!important;content:none!important}
+/* Gameplay uses the existing dark overlay; no change to interaction or boards. */
+@keyframes kp-ambient-a{from{transform:translate3d(-4%,-2%,0) scale(1)}to{transform:translate3d(6%,5%,0) scale(1.12)}}
+@keyframes kp-ambient-b{from{transform:translate3d(3%,4%,0) rotate(-5deg)}to{transform:translate3d(-5%,-3%,0) rotate(7deg)}}
+@keyframes kp-ambient-rays{from{transform:translate3d(-2%,2%,0)}to{transform:translate3d(5%,-5%,0)}}
+@keyframes kp-ambient-stars{from{transform:translate3d(0,3%,0)}to{transform:translate3d(-4%,-5%,0)}}
+@media(max-width:700px){.kp-live-backdrop .kp-light-a{animation-duration:35s}.kp-live-backdrop .kp-light-b{animation-duration:42s}.kp-live-backdrop .kp-rays{display:none}.kp-live-backdrop .kp-stars{opacity:.6;animation-duration:48s}}
+@media(prefers-reduced-motion:reduce){.kp-live-backdrop>*{animation:none!important;will-change:auto!important}}
