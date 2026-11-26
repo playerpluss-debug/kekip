@@ -166,6 +166,9 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
 @media(max-width:620px){.page{padding:12px 10px 26px}.topbar{gap:10px}.header-btn{padding:8px 9px;font-size:11px}.brand-mark{width:40px;height:40px;border-radius:12px}.brand-copy strong{font-size:21px}.brand-copy small{font-size:9px}.hero-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.mini-card{padding:8px 6px}.mini-card strong{font-size:18px}.mini-card span{font-size:10px}.panel{padding:14px 11px}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.summary-card{padding:9px}.summary-card strong{font-size:17px}.panel-head h2{font-size:21px}.podium-wrap{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding-top:0}.podium-card.place-1{grid-row:1;grid-column:1/-1;width:100%}.podium-card.place-1 .podium-avatar{width:190px}.podium-card.place-1 .podium-meta{grid-template-columns:repeat(4,minmax(0,1fr))}.podium-card.place-2{grid-row:2;grid-column:1}.podium-card.place-3{grid-row:2;grid-column:2}.podium-card .podium-avatar{max-width:155px}.podium-card.place-1 .podium-avatar{max-width:190px}.me-card{grid-template-columns:auto minmax(0,1fr);gap:10px}.me-rank{grid-column:2;text-align:left}.me-rank strong{font-size:28px}.row{grid-template-columns:auto minmax(0,1fr);gap:7px}.row-stat{grid-column:1/-1}.row .extra{display:grid}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
+
+/* 0.50.25: secondary analytics, same palette as the podium */
+.game-chips{margin-bottom:18px}.game-chips .chip{border-radius:13px;min-width:130px}.analysis-grid,.compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.analysis-card,.compare-card{min-width:0;border:1px solid #604387;border-radius:18px;background:linear-gradient(150deg,#302047,#1c142b);padding:17px}.analysis-card h3,.compare-card h3{margin:0 0 12px;font-size:18px}.analysis-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.analysis-metrics div{background:#17102088;border:1px solid #ffffff12;border-radius:12px;padding:11px;min-width:0}.analysis-metrics b{font-size:21px;display:block}.analysis-metrics small{color:var(--muted);display:block;margin-top:4px}.analysis-progress{display:block;width:100%;height:8px;margin:10px 0 4px;accent-color:#b788ff}.compare-select{max-width:100%;min-width:220px;border:1px solid #8a63bb;background:#241735;color:#f7f0ff;padding:11px 14px;border-radius:12px;font:inherit}.compare-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}.compare-head .row-avatar{width:68px;height:84px;flex:none}.compare-head strong{overflow-wrap:anywhere}.compare-head small{display:block;color:var(--muted);margin-top:5px}.compare-line{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) minmax(0,1fr);gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #ffffff10;text-align:center}.compare-line strong{font-size:18px}.compare-line span{color:var(--muted);font-size:13px}.compare-line .ahead{color:#9ee7b9}.compare-lines{padding:8px 16px;border:1px solid #5c417d;border-radius:16px;margin-top:12px;background:#1b122a}.badge-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.achievement-card{padding:14px;border:1px solid #644987;border-radius:16px;background:#241733;min-width:0}.achievement-card.earned{background:linear-gradient(150deg,#35234d,#251a39);border-color:#9b76c8}.achievement-card .badge-icon{font-size:26px;display:block;margin-bottom:8px}.achievement-card h3{font-size:15px;margin:0 0 7px}.achievement-card p{font-size:12px;color:var(--muted);line-height:1.5;margin:5px 0}.achievement-card .badge-status{font-size:11px;font-weight:850;color:#c7b1e3}.achievement-card.earned .badge-status{color:#a5e5ba}.analytics-note{font-size:12px;color:var(--muted);line-height:1.6;margin:10px 0 0}.stats-retry{margin-top:10px}.compare-select:focus-visible,.chip:focus-visible{outline:2px solid #d3b7ff;outline-offset:3px}@media(max-width:900px){.badge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.analysis-grid{grid-template-columns:1fr}.compare-grid{gap:8px}.compare-card{padding:10px}.compare-head{flex-direction:column;align-items:start}.compare-select{width:100%;min-width:0}.game-chips .chip{min-width:0;flex:1}.compare-line{gap:5px}.compare-line span{font-size:11px}.achievement-card{padding:10px}}
 </style>
 </head>
 <body>
@@ -201,6 +204,7 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
   </section>
 
   <section class="panel">
+    <div class="toolbar-group game-chips"><label>Oyun seçimi</label><div class="chips" id="gameChips"></div></div>
     <div class="toolbar">
       <div class="toolbar-group">
         <label>Dönem</label>
@@ -243,6 +247,18 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
     <div id="meContent" class="loading">Yükleniyor…</div>
   </section>
 
+  <section class="panel" id="performancePanel">
+    <div class="panel-head"><div><span class="section-kicker">OYUNCU KARNESİ</span><h2>Oyun performansın</h2><p>Seçili dönemdeki kayıtlı oyun istatistiklerin.</p></div><div class="panel-note" id="performanceNote">Yükleniyor…</div></div>
+    <div id="performanceContent" class="loading">Veriler alınıyor…</div>
+  </section>
+  <section class="panel" id="comparisonPanel">
+    <div class="panel-head"><div><span class="section-kicker">KEKIP SOSYAL</span><h2>Arkadaşınla karşılaştır</h2><p>İstatistiklerini bir arkadaşınla yan yana incele.</p></div><select id="friendSelect" class="compare-select" aria-label="Karşılaştırılacak arkadaş" disabled><option>Arkadaşlar yükleniyor…</option></select></div>
+    <div id="comparisonContent" class="loading">Arkadaşlar yükleniyor…</div>
+  </section>
+  <section class="panel" id="achievementPanel">
+    <div class="panel-head"><div><span class="section-kicker">BAŞARI KOLEKSİYONU</span><h2>Başarılar ve rozetler</h2><p>Kalıcı hesap başarıların ve ilerleme durumun.</p></div><div class="panel-note" id="badgeNote">Yükleniyor…</div></div>
+    <div class="chips" id="badgeChips" style="margin-bottom:14px"></div><div id="achievementContent" class="loading">Rozetler yükleniyor…</div>
+  </section>
   <section class="panel">
     <div class="panel-head">
       <div>
@@ -258,7 +274,9 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
 
 <script src="/avatar-portraits.js?v=05024"></script>
 <script>
-const state={period:'all',metric:'xp',viewer:'',all:{viewer:'',players:[]},periods:{},selfStats:null};
+const state={period:'all',metric:'xp',game:'all',viewer:'',all:{viewer:'',players:[]},periods:{},selfStats:null,friends:null,friend:'',badge:'all',loaded:false};
+const GAMES=[{id:'all',label:'Tüm oyunlar'},{id:'battleship',label:'Amiral Battı'},{id:'football',label:'KEKIP Football'}];
+const BADGES=[{id:'all',label:'Tümü'},{id:'earned',label:'Kazanılanlar'},{id:'locked',label:'Devam edenler'}];
 const PERIODS=[
   {id:'all',label:'Genel'},
   {id:'week',label:'Bu Hafta'},
@@ -269,8 +287,12 @@ const METRICS=[
   {id:'wins',label:'Galibiyet'},
   {id:'goals',label:'Gol'},
   {id:'assists',label:'Asist'},
-  {id:'matches',label:'Toplam Maç'}
+  {id:'matches',label:'Toplam Maç'},
+  {id:'battleMatches',label:'Deniz maçı'}, {id:'winRate',label:'Kazanma oranı'}, {id:'accuracy',label:'İsabet oranı'}, {id:'footballMatches',label:'Futbol maçı'}
 ];
+function gameMetrics(){const ids=state.game==='battleship'?['wins','battleMatches','winRate','accuracy']:state.game==='football'?['goals','assists','footballMatches']:['xp','wins','goals','assists','matches'];return METRICS.filter(m=>ids.includes(m.id));}
+function ratio(a,b){return b>0?Math.round(Math.min(1,Math.max(0,(Number(a)||0)/b))*1000)/10:0;}
+function scoreFmt(n){return ['winRate','accuracy'].includes(state.metric)?'%'+fmt(n):fmt(n);}
 const $=id=>document.getElementById(id);
 
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -285,11 +307,15 @@ function playerValue(player,metric,period){
   if(metric==='wins')return player.battle?.wins||0;
   if(metric==='goals')return player.football?.goals||0;
   if(metric==='assists')return player.football?.assists||0;
+  if(metric==='battleMatches')return player.battle?.games||0;
+  if(metric==='footballMatches')return player.football?.games||0;
+  if(metric==='winRate')return ratio(player.battle?.wins,player.battle?.games);
+  if(metric==='accuracy')return ratio(player.battle?.hits,player.battle?.shots);
   if(metric==='matches')return (player.battle?.games||0)+(player.football?.games||0);
   return 0;
 }
 function metricText(metric){return METRICS.find(m=>m.id===metric)?.label||'Puan';}
-function metricShort(metric){return metric==='xp'?'XP':metric==='wins'?'Galibiyet':metric==='goals'?'Gol':metric==='assists'?'Asist':'Maç';}
+function metricShort(metric){return metric==='xp'?'XP':metric==='wins'?'Galibiyet':metric==='goals'?'Gol':metric==='assists'?'Asist':metric==='winRate'?'Kazanma oranı':metric==='accuracy'?'İsabet oranı':'Maç';}
 function getPool(){
   if(state.period==='all')return (state.all.players||[]).map(p=>({...p,__period:'all'}));
   const source=state.periods?.[state.period];
@@ -311,7 +337,7 @@ function comparePlayers(a,b){
   const bg=b.football?.goals||0,ag=a.football?.goals||0;if(bg!==ag)return bg-ag;
   return String(a.username||'').localeCompare(String(b.username||''),'tr');
 }
-function rankedPlayers(){return getPool().sort(comparePlayers).map((p,i)=>({...p,rank:i+1}));}
+function rankedPlayers(){return getPool().filter(p=>state.game==='all'||(state.game==='football'?(p.football?.games||0)>0:state.metric==='accuracy'?(p.battle?.shots||0)>0:(p.battle?.games||0)>0)).sort(comparePlayers).map((p,i)=>({...p,rank:i+1}));}
 function currentRangeText(){
   if(state.period==='all')return 'Tüm zamanlar verisi gösteriliyor.';
   const src=state.periods?.[state.period];
@@ -325,8 +351,8 @@ function renderHero(list){
   const me=list.find(p=>p.username===state.viewer);
   $('heroStats').innerHTML=`
     <div class="mini-card"><small>Durum</small><strong>${fmt(list.length)}</strong><span>${state.period==='all'?'Toplam üye sıralaması hazır.':'Seçili dönem sıralaması hazır.'}</span></div>
-    <div class="mini-card"><small>İlk Sıra</small><strong>${leader?('#'+leader.rank):'—'}</strong><span>${leader?('@'+escapeHtml(leader.username)+' · '+fmt(playerValue(leader,state.metric,state.period))+' '+metricShort(state.metric)):'Henüz veri yok.'}</span></div>
-    <div class="mini-card"><small>Kendi Sıran</small><strong>${me?('#'+me.rank):'—'}</strong><span>${me?fmt(playerValue(me,state.metric,state.period))+' '+metricShort(state.metric):'Henüz sıralamada görünmüyorsun.'}</span></div>`;
+    <div class="mini-card"><small>İlk Sıra</small><strong>${leader?('#'+leader.rank):'—'}</strong><span>${leader?('@'+escapeHtml(leader.username)+' · '+scoreFmt(playerValue(leader,state.metric,state.period))+' '+metricShort(state.metric)):'Henüz veri yok.'}</span></div>
+    <div class="mini-card"><small>Kendi Sıran</small><strong>${me?('#'+me.rank):'—'}</strong><span>${me?scoreFmt(playerValue(me,state.metric,state.period))+' '+metricShort(state.metric):'Henüz sıralamada görünmüyorsun.'}</span></div>`;
 }
 
 function renderSummary(list){
@@ -335,12 +361,12 @@ function renderSummary(list){
   const totalMatches=list.reduce((s,p)=>s+(p.battle?.games||0)+(p.football?.games||0),0);
   const totalWins=list.reduce((s,p)=>s+(p.battle?.wins||0),0);
   const cards=[
-    {title:'Lider',value:leader?'@'+leader.username:'—',desc:leader?fmt(playerValue(leader,state.metric,state.period))+' '+metricShort(state.metric)+' ile zirvede.':'Henüz lider yok.'},
+    {title:'Lider',value:leader?'@'+leader.username:'—',desc:leader?scoreFmt(playerValue(leader,state.metric,state.period))+' '+metricShort(state.metric)+' ile zirvede.':'Henüz lider yok.'},
     {title:'Toplam oyuncu',value:fmt(list.length),desc:'Seçili görünümde sıralamaya giren hesap sayısı.'},
     {title:'Toplam kayıtlı maç',value:fmt(totalMatches),desc:'Amiral Battı ve futbol kariyerinden gelen toplam maç verisi.'},
     {title:'Toplam galibiyet',value:fmt(totalWins),desc:'Topluluk genelinde kayıtlı Amiral Battı galibiyetleri.'}
   ];
-  if(me){cards[1]={title:'Senin yerin',value:'#'+me.rank,desc:fmt(playerValue(me,state.metric,state.period))+' '+metricShort(state.metric)+' · '+(state.period==='all'?'Seviye '+(me.progress?.level||1):'Dönem XP '+fmt(playerXp(me,state.period)))};}
+  if(me){cards[1]={title:'Senin yerin',value:'#'+me.rank,desc:scoreFmt(playerValue(me,state.metric,state.period))+' '+metricShort(state.metric)+' · '+(state.period==='all'?'Seviye '+(me.progress?.level||1):'Dönem XP '+fmt(playerXp(me,state.period)))};}
   $('summaryGrid').innerHTML=cards.map(c=>`<article class="summary-card"><small>${escapeHtml(c.title)}</small><strong>${escapeHtml(c.value)}</strong><span>${escapeHtml(c.desc)}</span></article>`).join('');
 }
 
@@ -361,7 +387,7 @@ function renderMe(list){
       </div>
       <div class="me-rank">
         <strong>#${fmt(me.rank)}</strong>
-        <span>${fmt(value)} ${metricShort(state.metric)}</span>
+        <span>${scoreFmt(value)} ${metricShort(state.metric)}</span>
       </div>
     </div>`;
 }
@@ -379,7 +405,7 @@ function podiumCard(player,rank){
       <div class="podium-info">
         <div class="podium-name">@${escapeHtml(player.username)} ${isViewer?'<span>Sen</span>':''}</div>
         <div class="podium-user">${state.period==='all'?'Seviye '+fmt(progress.level):'Dönem XP '+fmt(playerXp(player,state.period))}</div>
-        <div class="podium-score"><strong>${fmt(score)}</strong><small>${escapeHtml(metricText(state.metric))}</small></div>
+        <div class="podium-score"><strong>${scoreFmt(score)}</strong><small>${escapeHtml(metricText(state.metric))}</small></div>
         <div class="podium-meta">
           <div><b>${fmt(player.battle?.wins||0)}</b><span>Galibiyet</span></div>
           <div><b>${fmt(player.football?.goals||0)}</b><span>Gol</span></div>
@@ -391,7 +417,7 @@ function podiumCard(player,rank){
 }
 
 function renderPodium(list){
-  $('podiumMetricNote').textContent=metricText(state.metric)+' sıralaması';
+  $('podiumMetricNote').textContent=GAMES.find(g=>g.id===state.game).label+' · '+metricText(state.metric)+' sıralaması';
   if(!list.length){$('podiumContent').className='empty';$('podiumContent').innerHTML='Gösterilecek sıralama verisi bulunamadı.';return;}
   const byRank=new Map(list.slice(0,3).map(p=>[p.rank,p]));
   $('podiumContent').className='';
@@ -411,7 +437,7 @@ function rowCard(player){
           <small>${state.period==='all'?'Seviye '+fmt(progress.level)+' · '+fmt(progress.xp)+' XP':'Dönem XP '+fmt(playerXp(player,state.period))}</small>
         </div>
       </div>
-      <div class="row-stat"><b>${fmt(score)}</b><span>${escapeHtml(metricText(state.metric))}</span></div>
+      <div class="row-stat"><b>${scoreFmt(score)}</b><span>${escapeHtml(metricText(state.metric))}</span></div>
       <div class="row-stat"><b>${fmt(player.battle?.wins||0)}</b><span>Galibiyet</span></div>
       <div class="row-stat"><b>${fmt(player.football?.goals||0)}</b><span>Gol</span></div>
       <div class="row-stat"><b>${fmt(player.football?.assists||0)}</b><span>Asist</span></div>
@@ -426,24 +452,43 @@ function renderList(list){
   $('listContent').innerHTML=list.map(rowCard).join('');
 }
 
+function periodPlayer(name){return getPool().find(p=>p.username===name);}
+function allPlayer(name){return (state.all.players||[]).find(p=>p.username===name);}
+function statsFor(name){const p=periodPlayer(name);if(p)return p;if(state.period!=='all'&&allPlayer(name))return {username:name,battle:{},football:{},periodXp:0,progress:{xp:0}};return null;}
+function statTiles(items){return '<div class="analysis-metrics">'+items.map(([label,v])=>`<div><b>${escapeHtml(v)}</b><small>${escapeHtml(label)}</small></div>`).join('')+'</div>';}
+function renderPerformance(){
+ const p=statsFor(state.viewer),root=$('performanceContent');$('performanceNote').textContent=PERIODS.find(x=>x.id===state.period).label;
+ if(!p){root.className='empty';root.textContent='Performans verisi bulunamadı.';return;}
+ const b=p.battle||{},f=p.football||{};const rate=b.games?'%'+fmt(ratio(b.wins,b.games)):'—',acc=b.shots?'%'+fmt(ratio(b.hits,b.shots)):'—';root.className='analysis-grid';
+ root.innerHTML=`<article class="analysis-card"><h3>⚓ Amiral Battı</h3>${statTiles([['Maç',fmt(b.games)],['Galibiyet',fmt(b.wins)],['Mağlubiyet',fmt(b.losses??Math.max(0,(b.games||0)-(b.wins||0)))],['Kazanma oranı',rate],['İsabet',fmt(b.hits)],['İsabet oranı',acc]])}<p class="analytics-note">Kazanma oranı = galibiyet / tamamlanan maç.</p></article><article class="analysis-card"><h3>⚽ KEKIP Football</h3>${statTiles([['Maç',fmt(f.games)],['Gol',fmt(f.goals)],['Asist',fmt(f.assists)],['Maç başına gol',f.games?fmt(Math.round((f.goals||0)/f.games*100)/100):'—']])}<p class="analytics-note">Futbol galibiyet ve mağlubiyet toplamları mevcut hesap verisinde bulunmadığı için gösterilmez.</p></article>`;
+}
+function renderFriendSelect(){const sel=$('friendSelect');sel.replaceChildren();const opt=new Option(state.friends===null?'Arkadaş listesi alınamadı':state.friends.length?'Arkadaşını seç':'Henüz arkadaşın yok','');sel.add(opt);for(const name of state.friends||[])sel.add(new Option('@'+name,name));sel.disabled=!state.friends?.length;sel.value=state.friend;}
+function renderComparison(){const root=$('comparisonContent');root.className='empty';if(state.friends===null){root.textContent='Arkadaş listesi alınamadı. Sayfayı yenileyip tekrar deneyebilirsin.';return;}if(!state.friends.length){root.innerHTML='Karşılaştırmak için önce bir arkadaş ekle. <a href="/friends.html" class="header-btn" style="display:inline-block;margin-left:8px">Arkadaşlar ↗</a>';return;}if(!state.friend){root.textContent='Yukarıdan karşılaştırmak istediğin arkadaşını seç.';return;}const a=statsFor(state.viewer),b=statsFor(state.friend);if(!a||!b){root.textContent='Bu oyuncunun istatistik verisi bulunamadı.';return;}
+ const rows=[['XP',playerXp(a,state.period),playerXp(b,state.period)],['Amiral Battı maçı',a.battle?.games||0,b.battle?.games||0],['Galibiyet',a.battle?.wins||0,b.battle?.wins||0],['Futbol maçı',a.football?.games||0,b.football?.games||0],['Gol',a.football?.goals||0,b.football?.goals||0],['Asist',a.football?.assists||0,b.football?.assists||0]];if(a.battle?.games&&b.battle?.games)rows.push(['Kazanma oranı',ratio(a.battle.wins,a.battle.games),ratio(b.battle.wins,b.battle.games),true]);
+ const head=(p,own)=>`<article class="compare-card"><div class="compare-head"><div class="row-avatar" data-kp-avatar="${escapeHtml(p.username)}" data-kp-avatar-mode="body"></div><div><strong>@${escapeHtml(p.username)}</strong><small>${own?'Sen':'Arkadaşın'} · ${state.period==='all'?'Lv. '+fmt(p.progress?.level||1):PERIODS.find(x=>x.id===state.period).label}</small></div></div></article>`;
+ root.className='';root.innerHTML=`<div class="compare-grid">${head(a,true)}${head(b,false)}</div><div class="compare-lines">${rows.map(([label,x,y,percent])=>`<div class="compare-line"><strong class="${x>y?'ahead':''}">${percent?'%':''}${fmt(x)}</strong><span>${escapeHtml(label)}</span><strong class="${y>x?'ahead':''}">${percent?'%':''}${fmt(y)}</strong></div>`).join('')}</div><p class="analytics-note">${escapeHtml(PERIODS.find(x=>x.id===state.period).label)} · Dönem kaydı olmayan oyuncunun ilgili değerleri sıfır gösterilir.</p>`;
+}
+function renderBadges(){const root=$('achievementContent'),badges=state.selfStats?.achievements||allPlayer(state.viewer)?.achievements;$('badgeNote').textContent=Array.isArray(badges)?`${badges.filter(b=>b.unlocked).length} / ${badges.length} kazanıldı`:'Veri yok';if(!Array.isArray(badges)){root.className='empty';root.textContent='Başarı verisi alınamadı.';return;}const shown=badges.filter(b=>state.badge==='all'||(state.badge==='earned'?b.unlocked:!b.unlocked));if(!shown.length){root.className='empty';root.textContent='Bu filtrede rozet yok.';return;}root.className='badge-grid';root.innerHTML=shown.map(b=>`<article class="achievement-card ${b.unlocked?'earned':''}"><span class="badge-icon" aria-hidden="true">${escapeHtml(b.icon||'✦')}</span><h3>${escapeHtml(b.name)}</h3><div class="badge-status">${b.unlocked?'✓ Kazanıldı':'Devam ediyor'} · ${escapeHtml(b.group||'Genel')}</div><p>${escapeHtml(b.description||'')}</p><progress class="analysis-progress" max="${Math.max(1,Number(b.target)||1)}" value="${Math.min(Math.max(1,Number(b.target)||1),Math.max(0,Number(b.current)||0))}" aria-label="Başarı ilerlemesi"></progress><p>${fmt(b.current)} / ${fmt(b.target)}</p></article>`).join('');}
 function refreshView(){
+  if(!state.loaded)return;
   $('rangeLabel').textContent=currentRangeText();
   const list=rankedPlayers();
-  renderHero(list);renderSummary(list);renderMe(list);renderPodium(list);renderList(list);
+  renderHero(list);renderSummary(list);renderMe(list);renderPodium(list);renderList(list);renderPerformance();renderComparison();renderBadges();
   window.KEKIPPortraits?.refresh();
 }
 
 async function load(){
   try{
-    const [all,periods,stats]=await Promise.all([api('leaderboard'),api('period-leaderboard'),api('stats').catch(()=>null)]);
+    const [all,periods,stats,friends]=await Promise.all([api('leaderboard'),api('period-leaderboard'),api('stats').catch(()=>null),api('friends-list').catch(()=>null)]);
     state.all=all||{viewer:'',players:[]};
     state.periods=periods||{};
     state.viewer=all?.viewer||'';
     state.selfStats=stats;
-    refreshView();
+    state.friends=friends?.username===state.viewer&&Array.isArray(friends.people)?[...new Set(friends.people.filter(p=>p.state==='friend'&&/^[a-z0-9_]{3,24}$/.test(p.username)).map(p=>p.username))]:null;
+    state.loaded=true;renderFriendSelect();refreshView();
   }catch(err){
     const msg=escapeHtml(err.message||'Bir hata oluştu.');
-    for(const id of ['summaryGrid','meContent','podiumContent','listContent']){$(id).className='empty';$(id).innerHTML=msg+(err.message&&/giriş|401|403/i.test(err.message)?'<br><br><a class="header-btn primary" href="/">Ana sayfaya dön</a>':'');}
+    for(const id of ['summaryGrid','meContent','podiumContent','listContent','performanceContent','comparisonContent','achievementContent']){$(id).className='empty';$(id).innerHTML=msg+(err.message&&/giriş|401|403/i.test(err.message)?'<br><br><a class="header-btn primary" href="/">Ana sayfaya dön</a>':'');}
     $('heroStats').innerHTML=`<div class="mini-card"><small>Hata</small><strong>Bağlantı kurulamadı</strong><span>${msg}</span></div><div class="mini-card"><small>Öneri</small><strong>Tekrar dene</strong><span>Giriş durumunu ve sunucu bağlantısını kontrol et.</span></div><div class="mini-card"><small>Durum</small><strong>Bekleniyor</strong><span>İstatistikler henüz alınamadı.</span></div>`;
     $('viewerNote').textContent='Veri alınamadı.';
     $('podiumMetricNote').textContent='Podyum yüklenemedi.';
@@ -453,9 +498,14 @@ async function load(){
 
 (function initChips(){
   const periodHandler=id=>{state.period=id;buildChipBar('periodChips',PERIODS,state.period,periodHandler);refreshView();};
-  const metricHandler=id=>{state.metric=id;buildChipBar('metricChips',METRICS,state.metric,metricHandler);refreshView();};
+  const metricHandler=id=>{state.metric=id;buildChipBar('metricChips',gameMetrics(),state.metric,metricHandler);refreshView();};
+  const gameHandler=id=>{state.game=id;const choices=gameMetrics();if(!choices.some(m=>m.id===state.metric))state.metric=choices[0].id;buildChipBar('gameChips',GAMES,state.game,gameHandler);buildChipBar('metricChips',choices,state.metric,metricHandler);refreshView();};
+  const badgeHandler=id=>{state.badge=id;buildChipBar('badgeChips',BADGES,state.badge,badgeHandler);if(state.loaded)renderBadges();};
   buildChipBar('periodChips',PERIODS,state.period,periodHandler);
-  buildChipBar('metricChips',METRICS,state.metric,metricHandler);
+  buildChipBar('gameChips',GAMES,state.game,gameHandler);
+  buildChipBar('metricChips',gameMetrics(),state.metric,metricHandler);
+  buildChipBar('badgeChips',BADGES,state.badge,badgeHandler);
+  $('friendSelect').addEventListener('change',e=>{state.friend=e.target.value;if(state.loaded){renderComparison();window.KEKIPPortraits?.refresh();}});
 })();
 
 load();
