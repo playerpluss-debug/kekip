@@ -1,0 +1,124 @@
+/* KEKIP 0.51.4.1.1 — Adaptive player UI. No game rules, account data or avatar coordinates changed. */
+body[data-kp-layout] { min-width: 0; }
+body[data-kp-layout] :is(main,header,section,article,aside,nav,footer,form,fieldset) { min-width: 0; }
+body[data-kp-layout] :is(input,select,textarea) { max-width: 100%; }
+body[data-kp-layout] :is(h1,h2,h3,p) { overflow-wrap: break-word; }
+body[data-kp-layout] :is(dialog) { max-width: calc(100% - 24px); max-height: min(90vh,90dvh); overflow: auto; }
+/* Avoid altering any layered avatar image, field, or game board coordinates. */
+body[data-kp-layout="home"] .shell { width: 100%; max-width: 1800px; }
+body[data-kp-layout="home"] .shell > .main { min-width: 0; }
+body[data-kp-layout="home"] .shell .top .profile { min-width: 0; max-width: 100%; flex-wrap: wrap; }
+body[data-kp-layout="home"] .shell .top .profile > * { min-width: 0; }
+body[data-kp-layout="home"] .shell .top .profile #kn-launch { min-width: 48px; }
+body[data-kp-layout="home"] .shell .kp-header-xp { min-width: min(210px,100%); }
+body[data-kp-layout="home"] .shell .kp-hero-copy { min-width: 0; }
+body[data-kp-layout="home"] .shell .kp-hero-actions { flex-wrap: wrap; }
+body[data-kp-layout="home"] .shell .kp-hero-actions .btn { min-width: 0; }
+body[data-kp-layout="home"] .home-games > * { min-width: 0; }
+/* Preserve the full football composition as the card gets narrower, rather than cropping head or ball. */
+body[data-kp-layout="home"] .home-games .football-visual img { object-fit: contain; object-position: center; transform-origin: center; }
+body[data-kp-layout="home"] .home-games .football-visual { background: radial-gradient(ellipse at center,#372647,#1a1229 76%); }
+body[data-kp-layout="home"] .home-games .football-feature:hover .football-visual img { transform: none; }
+body[data-kp-layout="home"] .home-games .battleship-visual { aspect-ratio: 2.35/1; }
+body[data-kp-layout="home"] .game-overlay { padding: clamp(8px,1.5vw,22px); }
+body[data-kp-layout="home"] .game-wrap { width: 100%; min-width: 0; }
+@media (min-width: 1600px) {
+ body[data-kp-layout="home"] .shell { grid-template-columns: 248px minmax(0,1fr); }
+ body[data-kp-layout="home"] .shell>.main { padding-inline: clamp(26px,2vw,40px); }
+ body[data-kp-layout="home"] .home-games .battleship-visual { aspect-ratio: 2.6/1; }
+}
+@media (min-width: 801px) and (max-width: 1200px) {
+ body[data-kp-layout="home"] .shell { grid-template-columns: 205px minmax(0,1fr); }
+ body[data-kp-layout="home"] .shell>.main { padding-inline: 16px; }
+ body[data-kp-layout="home"] .shell .top .profile { justify-content: flex-start; }
+ body[data-kp-layout="home"] .shell .hero.home-launch.kp-focus-hero { padding-inline: 16px; }
+}
+@media (min-width: 801px) and (max-height: 820px) {
+ body[data-kp-layout="home"] .shell>.side { padding-block: 16px; gap: 15px; }
+ body[data-kp-layout="home"] .shell>.main { padding-top: 14px; }
+ body[data-kp-layout="home"] .shell .top { margin-bottom: 10px; padding-bottom: 9px; }
+ body[data-kp-layout="home"] .shell .hero.home-launch.kp-focus-hero { padding-block: 12px; }
+ body[data-kp-layout="home"] .home-games .battleship-visual { aspect-ratio: 2.65/1; }
+}
+@media (min-width: 541px) and (max-width: 800px) {
+ body[data-kp-layout="home"] .home-games { grid-template-columns: repeat(2,minmax(0,1fr)); }
+ body[data-kp-layout="home"] .home-games .battleship-visual { aspect-ratio: 2/1; }
+}
+@media (max-width: 540px) {
+ body[data-kp-layout="home"] .shell .kp-header-xp { flex-basis: 100%; }
+ body[data-kp-layout="home"] .home-games { grid-template-columns: minmax(0,1fr); }
+ body[data-kp-layout="home"] .home-games .battleship-visual { aspect-ratio: 2/1; }
+ body[data-kp-layout="home"] .shell .top .profile { gap: 8px; }
+}
+/* Common page widths: readable line lengths, additional columns on large monitors. */
+body[data-kp-layout="football"] main.shell { width: 100%; max-width: 1680px; }
+body[data-kp-layout="football"] .top { flex-wrap: wrap; }
+body[data-kp-layout="football"] :is(.layout,.career-grid,.online-fields,.account-grid) > * { min-width:0; }
+body[data-kp-layout="football"] :is(.career-nav,.award-selector,.save-actions) { max-width: 100%; }
+body[data-kp-layout="football"] .career-nav { overflow-x: auto; }
+body[data-kp-layout="football"] :is(.career-card,.panel,.controls,.online-person) { overflow-wrap: break-word; }
+@media(min-width:851px) and (max-height:820px) {
+ body[data-kp-layout="football"] main.shell { padding-block: 14px 24px; }
+ body[data-kp-layout="football"] .top { margin-bottom: 14px; }
+ body[data-kp-layout="football"] .intro { margin-bottom: 12px; }
+}
+@media(max-width:850px) {
+ body[data-kp-layout="football"] .layout { grid-template-columns: minmax(0,1fr); }
+}
+body[data-kp-layout="stats"] .page { width: 100%; max-width: 1500px; }
+body[data-kp-layout="shop"] main { width: 100%; max-width: 1560px; }
+body[data-kp-layout="shop"] .header-actions { min-width: 0; max-width: 100%; flex-wrap: wrap; }
+body[data-kp-layout="shop"] :is(.grid,.shop-main-tabs,.product-actions,.dialog-content) > * { min-width: 0; }
+@media(min-width:1500px) {
+ body[data-kp-layout="shop"] .grid.modular-grid { grid-template-columns: repeat(5,minmax(0,1fr)); }
+}
+@media(max-width:370px) {
+ body[data-kp-layout="shop"] .grid.modular-grid { grid-template-columns: minmax(0,1fr); }
+ body[data-kp-layout="shop"] .product-actions { flex-direction: row; }
+}
+body[data-kp-layout="friends"] main { width: 100%; max-width: 1240px; }
+body[data-kp-layout="missions"] main { width: 100%; max-width: 1340px; }
+body[data-kp-layout="daily-rewards"] main { width: 100%; max-width: 1240px; }
+body[data-kp-layout="wallet"] main { width: 100%; max-width: 1180px; }
+body[data-kp-layout="avatar"] main { width: 100%; max-width: 1080px; }
+body[data-kp-layout="welcome"] main { width: 100%; max-width: 1240px; }
+body[data-kp-layout="profile"] main { width: 100%; max-width: 1260px; }
+body[data-kp-layout="profile"] .hero { grid-template-columns: minmax(0,1fr) minmax(140px,240px); }
+@media(max-width:650px) {
+ body[data-kp-layout="profile"] .hero { grid-template-columns: minmax(0,1fr) minmax(80px,115px); }
+}
+@media(max-width:440px) {
+ body[data-kp-layout="profile"] .hero { grid-template-columns: minmax(0,1fr); }
+ body[data-kp-layout="profile"] .portrait { grid-row:1; height:190px; }
+}
+/* Wardrobes: on short screens and tablets use natural page height, not a clipped 100dvh editor. Preserve embedded character-only previews. */
+html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] main { width:100%;max-width:1440px; }
+html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] main>header { flex-wrap:wrap; }
+html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] main>header>* { min-width:0; }
+html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .layout { min-width:0; }
+@media(max-width:850px), (max-height:820px) {
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] main { height:auto;min-height:100dvh; }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .layout { flex:none;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);grid-template-rows:auto;align-items:start; }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .editor-panel { overflow:visible; }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .category-content { overflow:visible;flex:none; }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .preview-panel { position:sticky;top:10px; }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .stage { width:min(100%,calc(max(220px, 100dvh - 210px) * 480 / 660));height:auto;max-height:none; }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .caption { position:static; }
+}
+@media(max-width:850px) {
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .layout { grid-template-columns:minmax(0,1fr); }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .preview-panel { position:relative;top:auto; }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .stage { width:min(100%,clamp(180px,42vw,320px));height:auto; }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .tabs { grid-template-columns:repeat(auto-fit,minmax(min(100%,98px),1fr)); }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .tabs button { min-height:40px;font-size:12px;overflow-wrap:anywhere; }
+ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] :is(.header-actions,#account-bar) { flex-wrap:wrap; }
+}
+@media(max-width:380px) {
+ body[data-kp-layout="welcome"] .options { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ body[data-kp-layout="stats"] .hero-stats { grid-template-columns:minmax(0,1fr); }
+ body[data-kp-layout="stats"] .me-card { grid-template-columns:minmax(0,1fr);justify-items:start; }
+}
+@media(pointer:coarse) {
+ body[data-kp-layout="home"] :is(.kp-hero-actions .btn,.kp-room-join,.kp-coin-info) { min-height:44px; }
+ body[data-kp-layout="shop"] .product-actions button { min-height:40px; }
+}
