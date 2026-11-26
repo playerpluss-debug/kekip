@@ -183,18 +183,18 @@ const incomingInvite=new URLSearchParams(location.search).get('room')?.trim().to
 </script><script src="/avatar-portraits.js?v=05018"></script><script src="/account.js?v=5014"></script><script src="/social.js?v=5014" defer></script><script src="/chat-client.js?v=5014" defer></script><script src="/notifications.js?v=44" defer></script><script>
 (()=>{'use strict';
 const card=document.getElementById('kpSideCharacter'),stage=document.getElementById('kscStage'),image=document.getElementById('kscImage'),name=document.getElementById('kscName'),caption=document.getElementById('kscCaption');
-let current=undefined,sequence=0;
+let current=undefined,sequence=0,lastCheck=0;
 function reset(){card.hidden=true;card.href='/avatar.html';stage.hidden=true;delete image.dataset.kpAvatar;image.replaceChildren();name.textContent='';caption.textContent='';}
 function account(){return window.kpAccount?.username||null;}
 async function refresh(force=false){
- const user=account();if(!force&&current===user)return;const same=current===user;current=user;const seq=++sequence;if(!same||!user)reset();if(!user)return;
+ const user=account();if(!force&&current===user)return;const same=current===user;if(force&&same&&Date.now()-lastCheck<3000)return;lastCheck=Date.now();current=user;const seq=++sequence;if(!same||!user)reset();if(!user)return;
  card.hidden=false;name.textContent='@'+user;
  try{const r=await fetch('/api/account/avatar',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:'{}'});if(seq!==sequence||account()!==user)return;if(r.status===401||r.status===403){reset();return;}if(!r.ok)throw Error('avatar');const a=await r.json();if(seq!==sequence||account()!==user)return;if(a.username!==user){reset();return;}const c=a.appearance?.character;
  if(!['gece','golge'].includes(c)){stage.hidden=true;delete image.dataset.kpAvatar;image.replaceChildren();card.href='/avatar.html';caption.textContent='Gece veya Gölge karakterini seç.';return;}
  card.href='/avatar.html';image.dataset.kpAvatar=user;image.dataset.kpAvatarMode='body';caption.textContent='Kayıtlı karakterin · '+(c==='gece'?'Gece':'Gölge');stage.hidden=false;window.KEKIPPortraits?.refresh();
- }catch(e){if(seq!==sequence||account()!==user)return;stage.hidden=true;delete image.dataset.kpAvatar;image.replaceChildren();card.href='/avatar.html';caption.textContent='Karakterini aç.';}
+ }catch(e){if(seq!==sequence||account()!==user)return;if(image.dataset.kpAvatar===user&&!stage.hidden)return;card.href='/avatar.html';caption.textContent='Karakterini aç.';}
 }
-image.addEventListener('error',()=>{stage.hidden=true;caption.textContent='Karakter görseli yüklenemedi.'},true);
+
 const header=document.getElementById('kpHeaderName');if(header)new MutationObserver(()=>refresh()).observe(header,{childList:true,characterData:true,subtree:true});
 window.addEventListener('focus',()=>refresh(true));document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh(true)});window.addEventListener('pageshow',e=>{if(e.persisted)refresh(true)});setInterval(()=>{if(!document.hidden)refresh(true)},30000);refresh();
 })();
