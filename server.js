@@ -7,7 +7,14 @@ const accounts = require('./accounts');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+// Same-origin browser connections only; non-browser clients still need a valid account.
+function sameOriginSocket(req, done) {
+  const origin=req.headers.origin;
+  if (!origin) return done(null,true);
+  try { const u=new URL(origin); return done(null,['http:','https:'].includes(u.protocol)&&u.host===req.headers.host); }
+  catch { return done(null,false); }
+}
+const io = new Server(server, { allowRequest: sameOriginSocket });
 // Check the HttpOnly session on every protected page. Rendering workers remain available during onboarding.
 app.use(async (req,res,next)=>{
  if(!['GET','HEAD'].includes(req.method))return next();
@@ -116,16 +123,26 @@ function removePlayer(socket) {
     }
   }
 }
+// Validate the envelope before destructuring and catch synchronous/asynchronous handler failures.
+function gameHandler(handler) {
+  return (payload, acknowledgement) => {
+    const cb=typeof acknowledgement==='function'?acknowledgement:()=>{};
+    if (!payload || typeof payload!=='object' || Array.isArray(payload)) return cb({ok:false,error:'Geçersiz oyun isteği.'});
+    if (['name','code'].some(k=>payload[k]!==undefined&&typeof payload[k]!=='string')) return cb({ok:false,error:'Geçersiz oyun isteği.'});
+    try { Promise.resolve(handler(payload,cb)).catch(err=>{console.error('KEKIP oyun isteği:',err.code||err.message);cb({ok:false,error:'Oyun isteği tamamlanamadı.'});}); }
+    catch(err){console.error('KEKIP oyun isteği:',err.code||err.message);cb({ok:false,error:'Oyun isteği tamamlanamadı.'});}
+  };
+}
 io.on('connection', socket => {
-  socket.on('createRoom', async ({ name } = {}, cb = () => {}) => {
+  socket.on('createRoom', gameHandler(async ({ name } = {}, cb = () => {}) => {
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
     if (!socket.connected) return;
     removePlayer(socket);
     const code = makeCode();
     const room = { code, chatId:crypto.randomUUID(), players: [{ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
     rooms.set(code, room); socket.join(code); cb({ ok: true, code }); sendState(room);
-  });
-  socket.on('joinRoom', async ({ code, name } = {}, cb = () => {}) => {
+  }));
+  socket.on('joinRoom', gameHandler(async ({ code, name } = {}, cb = () => {}) => {
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
     if (!socket.connected) return;
     const room = rooms.get(String(code || '').toUpperCase().trim());
@@ -137,8 +154,8 @@ io.on('connection', socket => {
     removePlayer(socket);
     room.players.push({ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 2').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] });
     socket.join(room.code); cb({ ok: true, code: room.code }); sendState(room);
-  });
-  socket.on('ready', ({ ships } = {}, cb = () => {}) => {
+  }));
+  socket.on('ready', gameHandler(({ ships } = {}, cb = () => {}) => {
     const room = [...rooms.values()].find(r => r.players.some(p => p.id === socket.id));
     if (!room || room.players.length !== 2 || room.phase !== 'waiting') return cb({ ok: false, error: 'Önce iki oyuncunun da odaya katılması gerekiyor.' });
     const player = room.players.find(p => p.id === socket.id);
@@ -147,8 +164,8 @@ io.on('connection', socket => {
     player.ships = ships.map((cells, i) => ({ id: i, cells })); player.ready = true;
     if (room.players.every(p => p.ready)) { room.phase = 'playing'; room.turn = room.players[0].id; room.matchId = crypto.randomUUID(); }
     cb({ ok: true }); sendState(room);
-  });
-  socket.on('fire', ({ r, c } = {}, cb = () => {}) => {
+  }));
+  socket.on('fire', gameHandler(({ r, c } = {}, cb = () => {}) => {
     const room = [...rooms.values()].find(rm => rm.players.some(p => p.id === socket.id));
     if (!room || room.phase !== 'playing') return cb({ ok: false, error: 'Oyun şu anda atışa hazır değil.' });
     if (room.turn !== socket.id) return cb({ ok: false, error: 'Şu anda sıra sende değil.' });
@@ -177,7 +194,7 @@ io.on('connection', socket => {
     }
     else room.turn = foe.id;
     cb({ ok: true, hit, sunk: sunkNow }); sendState(room);
-  });
+  }));
   socket.on('leaveRoom', () => removePlayer(socket));
   socket.on('disconnect', () => removePlayer(socket));
 });
