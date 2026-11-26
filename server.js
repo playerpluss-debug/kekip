@@ -152,7 +152,7 @@ io.on('connection', socket => {
       const host=room.players[0];
       if(!host.accountId||host.accountId===account.id||!io.sockets.sockets.get(host.id)?.connected)continue;
       total++;
-      if(open.length<40)open.push({code:room.code,game:'battleship',host:host.name});
+      if(open.length<40)open.push({code:room.code,game:'battleship',host:host.name,players:room.players.length,capacity:2});
     }
     cb({ok:true,rooms:open,total});
   }));
@@ -165,10 +165,18 @@ io.on('connection', socket => {
     const room = { code, visibility, chatId:crypto.randomUUID(), players: [{ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
     rooms.set(code, room); socket.join(code); cb({ ok: true, code }); sendState(room);
   }));
-  socket.on('joinRoom', gameHandler(async ({ code, name } = {}, cb = () => {}) => {
+  const joinRoom = publicOnly => gameHandler(async ({ code, name } = {}, cb = () => {}) => {
+    const started=Date.now();
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
     if (!socket.connected) return;
     const room = rooms.get(String(code || '').toUpperCase().trim());
+    if(publicOnly){
+      if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
+      if(Date.now()-started>8000)return cb({ok:false,error:'Katılım isteğinin süresi doldu. Tekrar dene.'});
+      if(!room||room.visibility!=='public')return cb({ok:false,error:'Bu açık oda artık katılıma uygun değil.'});
+      if(!room.players.length||!io.sockets.sockets.get(room.players[0].id)?.connected)return cb({ok:false,error:'Oda sahibi ayrıldı.'});
+      if([...rooms.values()].some(r=>r!==room&&r.players.some(p=>p.id===socket.id||p.accountId===account.id)))return cb({ok:false,error:'Önce mevcut odandan ayrıl.'});
+    }
     if (!room) return cb({ ok: false, error: 'Bu oda koduyla bir oyun bulunamadı.' });
     if (room.players.some(p => p.id === socket.id)) return cb({ ok: true, code: room.code });
     if (account && room.players.some(p => p.accountId === account.id)) return cb({ok:false,error:'Aynı hesapla iki oyuncu olarak katılamazsın.'});
@@ -177,7 +185,9 @@ io.on('connection', socket => {
     removePlayer(socket);
     room.players.push({ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 2').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] });
     socket.join(room.code); cb({ ok: true, code: room.code }); sendState(room);
-  }));
+  });
+  socket.on('joinRoom',joinRoom(false));
+  socket.on('joinPublicRoom',joinRoom(true));
   socket.on('ready', gameHandler(({ ships } = {}, cb = () => {}) => {
     const room = [...rooms.values()].find(r => r.players.some(p => p.id === socket.id));
     if (!room || room.players.length !== 2 || room.phase !== 'waiting') return cb({ ok: false, error: 'Önce iki oyuncunun da odaya katılması gerekiyor.' });
