@@ -108,15 +108,17 @@ async function createMatchCard(db,accountId,game,matchId){
  if(crypto.randomInt(100)>=MATCH_CARD_CHANCE_PERCENT)return;
  await db.query(`INSERT INTO kekip_match_cards(id,account_id,game,match_id,prizes) VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT(account_id,game,match_id) DO NOTHING`,[crypto.randomUUID(),accountId,game,matchId,JSON.stringify(shuffledMatchPrizes())]);
 }
+function validMatchDeck(prizes){return Array.isArray(prizes)&&[3,4].includes(prizes.length)&&prizes.every(p=>typeof p==='string')&&prizes.slice().sort().join(',')===(prizes.length===4?'empty,kc15,kc5,spin':'kc15,kc5,spin');}
 function cardPrizeText(prize){return prize==='spin'?'1 ekstra çark hakkı':prize==='kc5'?'+5 KC':prize==='kc15'?'+15 KC':'Bu kart boş çıktı. Bir sonraki maçta bol şans!'}
 async function matchCardsAction(db,a,action,b){
  if(action==='match-cards'){const q=await db.query(`SELECT id,game,match_id AS "matchId",jsonb_array_length(prizes) AS "cardCount" FROM kekip_match_cards WHERE account_id=$1 AND chosen IS NULL ORDER BY (game=$3 AND match_id=$2) DESC NULLS LAST,created_at,id LIMIT 20`,[a.id,typeof b.matchId==='string'&&b.matchId.length<=100?b.matchId:null,b.game==='football'?'football':'battleship']);return {username:a.username,offers:q.rows,dailyCap:MATCH_CARD_DAILY_CAP,chancePercent:MATCH_CARD_CHANCE_PERCENT};}
  if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
- if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id)||!Number.isInteger(b.choice)||b.choice<0||b.choice>3)fail('Kart seçimi geçersiz.');
+ if(typeof b.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(b.id)||!Number.isInteger(b.choice)||b.choice<0||b.choice>3)fail('Kart seçimi geçersiz.');
  const c=await db.connect();try{await c.query('BEGIN');
  const lock=await c.query('SELECT id FROM kekip_football_accounts WHERE id=$1 AND blocked_at IS NULL FOR UPDATE',[a.id]);if(!lock.rows.length)fail('Hesap erişimi kapalı.',403);
  const q=await c.query('SELECT id,prizes,chosen FROM kekip_match_cards WHERE id=$1 AND account_id=$2 FOR UPDATE',[b.id,a.id]);const offer=q.rows[0];if(!offer)fail('Ödül kartı bulunamadı.',404);
- if(!Array.isArray(offer.prizes)||b.choice>=offer.prizes.length)fail('Kart seçimi geçersiz.');
+ if(!validMatchDeck(offer.prizes)||(offer.chosen!==null&&(!Number.isInteger(offer.chosen)||offer.chosen<0||offer.chosen>=offer.prizes.length)))fail('Ödül kartı doğrulanamadı.',503);
+ if(b.choice>=offer.prizes.length)fail('Kart seçimi geçersiz.');
  const fresh=offer.chosen===null,choice=fresh?b.choice:offer.chosen,prize=offer.prizes[choice],amount=prize==='kc5'?5:prize==='kc15'?15:0;
  if(fresh){await c.query('UPDATE kekip_match_cards SET chosen=$2,chosen_at=now() WHERE id=$1',[offer.id,choice]);if(amount)await c.query(`INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'match_card',$2,'Maç sonu kart ödülü',$3)`,[a.id,offer.id,amount]);}
  const balance=await coinBalance(c,a);await c.query('COMMIT');return {username:a.username,id:offer.id,choice,prizes:offer.prizes,prize,text:cardPrizeText(prize),amount,balance,fresh};
