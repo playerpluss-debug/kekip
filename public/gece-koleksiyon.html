@@ -183,4 +183,4 @@ const item=collectionItems.find(x=>x.id===requestedItem);
 const tabsFor={av_hair:'hair',av_eye:'eyes',av_brow:'brows',av_expression:'face',av_top:'tops',av_bottom:'bottoms',av_shoes:'shoes',av_ear:'accessories',av_wrist:'accessories'};
 if(item){const target=document.querySelector('[data-product-id="'+item.id+'"]'); if(target){openCategory(tabsFor[item.slot]);target.click();byId('collection-status').textContent='Ürün önizlemesi: '+item.name+' · KC harcanmaz';}}
 // Preview only; no account writes, no purchases, no local balance.
-</script></body></html>
+</script><script src="/avatar-backgrounds.js?v=05022"></script><script>(()=>{const panel=document.getElementById('category-background');const note=panel.querySelector('.note');note.textContent='Tüm temaları ücretsiz dene. Arka planlar bu atölyeden hesaba kaydedilmez.';const control=window.KEKIPBackgrounds.mount(note,document.querySelector('.stage'),[],true);panel.querySelectorAll('[data-bg]').forEach(b=>b.addEventListener('click',()=>control.set(null)));})();</script></body></html>
