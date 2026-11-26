@@ -123,14 +123,14 @@ const validFleet = ships => {
   }
   return true;
 };
-function removePlayer(socket) {
+function removePlayer(socket, departure = 'left') {
   for (const [code, room] of rooms) {
     const idx = room.players.findIndex(p => p.id === socket.id);
     if (idx !== -1) {
       room.players.splice(idx, 1);
       socket.leave(code);
       if (room.players.length === 0) rooms.delete(code);
-      else { room.phase = 'waiting'; room.turn = null; room.winner = null; room.lastShot = null; room.shotCount = 0; Object.assign(room.players[0], { ready: false, ships: [], shots: [], hits: [], sunk: [] }); io.to(room.players[0].id).emit('opponentLeft'); sendState(room); }
+      else { room.phase = 'waiting'; room.turn = null; room.winner = null; room.lastShot = null; room.shotCount = 0; Object.assign(room.players[0], { ready: false, ships: [], shots: [], hits: [], sunk: [] }); io.to(room.players[0].id).emit('opponentLeft', { reason: departure }); sendState(room); }
       break;
     }
   }
@@ -158,7 +158,7 @@ io.on('connection', socket => {
     const done=result=>{if(epoch===membershipEpoch)membershipPending=false;cb(result);};
     try{await handler(payload,done,stillValid);}finally{if(epoch===membershipEpoch)membershipPending=false;}
   });
-  const cancelMembership=()=>{membershipEpoch++;membershipPending=false;removePlayer(socket);};
+  const cancelMembership=(departure='left')=>{membershipEpoch++;membershipPending=false;removePlayer(socket,departure);};
   const accountInOtherSocket=account=>account&&[...rooms.values()].some(r=>r.players.some(p=>p.accountId===account.id&&p.id!==socket.id));
   socket.on('listPublicRooms', gameHandler(async (_payload, cb) => {
     const now=Date.now();
@@ -252,8 +252,8 @@ io.on('connection', socket => {
     else room.turn = foe.id;
     cb({ ok: true, hit, sunk: sunkNow }); sendState(room);
   }));
-  socket.on('leaveRoom', cancelMembership);
-  socket.on('disconnect', cancelMembership);
+  socket.on('leaveRoom', () => cancelMembership('left'));
+  socket.on('disconnect', reason => cancelMembership(reason === 'server namespace disconnect' || reason === 'client namespace disconnect' ? 'left' : 'connection_lost'));
 });
 const port = process.env.PORT || 3000;
 server.listen(port, () => console.log(`KEKIP server listening on ${port}`));
