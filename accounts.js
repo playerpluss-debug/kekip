@@ -300,7 +300,7 @@ const COSMETICS=Object.freeze([
 ]);
 const COSMETIC_SLOTS=[...new Set(COSMETICS.map(x=>x.slot))];
 async function equippedCosmetics(db,id){const q=await db.query('SELECT slot,item_id FROM kekip_cosmetic_equipped WHERE account_id=$1',[id]);return Object.fromEntries(q.rows.filter(r=>COSMETICS.some(c=>c.id===r.item_id&&c.slot===r.slot)).map(r=>[r.slot,r.item_id]));}
-async function shopList(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);return {username:a.username,balance:await coinBalance(db,a),catalog:COSMETICS,geceCollection:GeceCollection,golgeCollection:GolgeCollection,owned:q.rows.map(r=>r.item_id),equipped:await equippedCosmetics(db,a.id)};}
+async function shopList(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);const owned=q.rows.map(r=>r.item_id),ids=new Set(owned);return {username:a.username,balance:await coinBalance(db,a),catalog:COSMETICS.filter(i=>!i.slot.startsWith('av_')||ids.has(i.id)),geceCollection:GeceCollection,golgeCollection:GolgeCollection,owned,equipped:await equippedCosmetics(db,a.id)};}
 async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);if(action==='shop')return shopList(db,a);if(!['shop-buy','shop-equip'].includes(action))fail('İşlem bulunamadı.',404);
  const modularCollection=Object.values(Wardrobe.collections).find(c=>c.items.some(x=>x.id===b.id));
  const modular=modularCollection?.items.find(x=>x.id===b.id);
@@ -309,7 +309,7 @@ async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!=
   if(!modularCollection.saleEnabled||modular.starter||modular.status!=='available'||!Number.isSafeInteger(modular.price)||modular.price<=0)fail('Bu ürün satışta değil.',409);
   if(b.expectedPrice!==modular.price)fail('Fiyat değişti. Mağazayı yenileyip tekrar dene.',409);
  }else{
-  if(action==='shop-buy'&&item?.legacy)fail('Bu ürün eski koleksiyona ait ve artık satışta değil.',409);
+  if(action==='shop-buy'&&(item?.legacy||item?.slot.startsWith('av_')))fail('Bu ürün eski koleksiyona ait ve artık satışta değil.',409);
   if(!COSMETIC_SLOTS.includes(slot)||(action==='shop-buy'&&!item)||(action==='shop-equip'&&b.id!==''&&(!item||item.slot!==slot)))fail('Kozmetik geçersiz.');
  }
  const c=await db.connect();try{await c.query('BEGIN');const lock=await c.query('SELECT id FROM kekip_football_accounts WHERE id=$1 AND blocked_at IS NULL FOR UPDATE',[a.id]);if(!lock.rows.length)fail('Hesap erişimi kapalı.',403);
