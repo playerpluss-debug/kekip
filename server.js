@@ -161,7 +161,8 @@ app.use(async (req,res,next)=>{
   return res.send(data); // Express supplies Content-Length, ETag and HEAD handling.
  }catch(err){
   if(err.code!=='ENOENT'&&err.code!=='ENOTDIR')console.warn('KEKIP static compression:',err.code||err.message);
-  if(!res.headersSent)return next();
+  if(!res.headersSent){res.removeHeader('Content-Encoding');res.removeHeader('Content-Length');res.removeHeader('ETag');return next();}
+  return next(err);
  }
 });
 app.use(express.static(path.join(__dirname, 'public'),{redirect:false,setHeaders(res,file){if(file.endsWith('.html'))res.setHeader('Cache-Control','no-store');}}));
@@ -176,7 +177,15 @@ function adminBattleSnapshot(){
  }
  return result;
 }
-accounts.attachAccounts(app,{adminBattleSnapshot,disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
+// 0.51.12.5: invalidating a session also closes its existing game connections.
+// Match the exact revoked session, not every device of the same account.
+function disconnectSession(token){
+ if(!token)return;
+ for(const sock of [...io.sockets.sockets.values()]){
+  if(accounts.sessionToken({get:k=>sock.request.headers[k.toLowerCase()]})===token)sock.disconnect(true);
+ }
+}
+accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
 require('./football-online').attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
