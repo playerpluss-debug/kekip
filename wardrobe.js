@@ -21,4 +21,28 @@ async function save(db,accountId,character,draft){
  await db.query('INSERT INTO kekip_modular_avatars(account_id,character,appearance) VALUES($1,$2,$3::jsonb) ON CONFLICT(account_id,character) DO UPDATE SET appearance=EXCLUDED.appearance,updated_at=now()',[accountId,character,JSON.stringify(appearance)]);
  return appearance;
 }
-module.exports={collections,collection,access,validate,readSaved,save};
+// Separate saved outfits; the existing active-avatar table is unchanged.
+function slotNumber(v){if(!Number.isInteger(v)||v<1||v>5)error('Kombin slotu geçersiz.');return v;}
+function slotName(v){if(typeof v!=='string')error('Kombin adı geçersiz.');const n=v.trim();if(!n||[...n].length>40||/[\x00-\x1f\x7f]/.test(n))error('Kombin adı 1–40 karakter olmalı.');return n;}
+async function readSlots(db,accountId,character){
+ collection(character);const q=await db.query('SELECT slot,name,appearance,updated_at FROM kekip_avatar_outfits WHERE account_id=$1 AND character=$2 ORDER BY slot',[accountId,character]);
+ return {character,slots:q.rows,active:await readSaved(db,accountId)};
+}
+async function slotAction(db,accountId,character,action,b){
+ collection(character);if(action==='wardrobe-slots')return readSlots(db,accountId,character);
+ const slot=slotNumber(b.slot);const params=[accountId,character,slot];
+ if(action==='wardrobe-slot-save'){
+  const name=slotName(b.name),q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[accountId]);
+  const appearance=validate(character,b.draft,q.rows.map(r=>r.item_id));
+  await db.query('INSERT INTO kekip_avatar_outfits(account_id,character,slot,name,appearance) VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT(account_id,character,slot) DO UPDATE SET name=EXCLUDED.name,appearance=EXCLUDED.appearance,updated_at=now()',[...params,name,JSON.stringify(appearance)]);
+ }else if(action==='wardrobe-slot-rename'){
+  const q=await db.query('UPDATE kekip_avatar_outfits SET name=$4,updated_at=now() WHERE account_id=$1 AND character=$2 AND slot=$3',[...params,slotName(b.name)]);if(!q.rowCount)error('Kombin bulunamadı.',404);
+ }else if(action==='wardrobe-slot-delete'){
+  const q=await db.query('DELETE FROM kekip_avatar_outfits WHERE account_id=$1 AND character=$2 AND slot=$3',params);if(!q.rowCount)error('Kombin bulunamadı.',404);
+ }else if(action==='wardrobe-slot-equip'){
+  const q=await db.query('SELECT appearance FROM kekip_avatar_outfits WHERE account_id=$1 AND character=$2 AND slot=$3',params);if(!q.rows.length)error('Kombin bulunamadı.',404);
+  await save(db,accountId,character,q.rows[0].appearance);
+ }else error('İşlem bulunamadı.',404);
+ return readSlots(db,accountId,character);
+}
+module.exports={collections,collection,access,validate,readSaved,save,readSlots,slotAction};
