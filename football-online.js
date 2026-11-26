@@ -48,10 +48,10 @@ if(action==='join'){const a=await getAccount(client,req);if(a&&room.players.some
 const verified=p||findPlayer(room,key);if(verified.accountId){const signedIn=await requireAccount(client,req);if(signedIn.id!==verified.accountId)fail('Bu kariyer hesabına bağlı değil.',403);}
 // Capture the authoritative submitted match before apply can advance/reset the shared round.
 let matchRecord=null;
-if(action==='apply'){const player=p||findPlayer(room,key);if(player.accountId&&player.submitted){matchRecord={id:room.code+':'+room.world.season+':'+room.world.week,row:{accountId:player.accountId,result:{goals:player.submitted.goals,assists:player.submitted.assists}}}}}
+if(action==='apply'){const player=verified;if(player.accountId&&player.submitted){const eligible=room.stage==='results'&&room.players.every(q=>q.submitted)&&new Set(room.players.map(q=>q.accountId).filter(Boolean)).size>=2;matchRecord={id:room.code+':'+room.world.season+':'+room.world.week,eligible,row:{accountId:player.accountId,result:{goals:player.submitted.goals,assists:player.submitted.assists}}}}}
 result=operate(room,action,b,key,p);
 // Same transaction as career save: no double credit and no orphan result on rollback.
-if(matchRecord)await recordGameResults('football',matchRecord.id,[matchRecord.row],client);
+if(matchRecord){await recordGameResults('football',matchRecord.id,[matchRecord.row],client,matchRecord.eligible);if(matchRecord.eligible)result.matchCardMatchId=matchRecord.id;}
 if(p)result.accountPlayer=p.id;}
 if(action!=='state')await client.query('UPDATE kekip_football_rooms SET data=$2,updated_at=now() WHERE code=$1',[c,JSON.stringify(room)]);await client.query('COMMIT');res.json(await attachAvatarNames(client,room,result))}catch(e){if(client)await client.query('ROLLBACK').catch(()=>{});if(!e.status)console.error('Football DB:',e.code||e.message);res.status(e.status||503).json({error:e.status?e.message:'Kariyer sunucusu/veritabanı erişilemiyor. Tekrar dene.'})}finally{client?.release()}})}
 module.exports={attachFootball,create,operate,summary,baseScores,advance,passwordHash,verifyPassword,claimPlayer,accountPlayer};

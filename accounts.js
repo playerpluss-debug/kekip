@@ -92,12 +92,12 @@ async function recordGameResults(game,matchId,rows,transaction=null,allowCards=f
  GREATEST(0,${MATCH_DAILY_CAP}-COALESCE((SELECT sum(l.amount) FROM kekip_coin_ledger l WHERE l.account_id=f.account_id AND l.source_kind='match' AND l.created_at >= (date_trunc('day',now() AT TIME ZONE 'Europe/Istanbul') AT TIME ZONE 'Europe/Istanbul') AND l.created_at < ((date_trunc('day',now() AT TIME ZONE 'Europe/Istanbul')+interval '1 day') AT TIME ZONE 'Europe/Istanbul')),0)))::integer AS reward FROM fresh f), credited AS (
  INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount)
  SELECT account_id,'match',jsonb_build_array(game,match_id)::text, CASE WHEN game='battleship' AND result->'win'='true'::jsonb THEN 'Amiral Battı · Galibiyet' WHEN game='battleship' THEN 'Amiral Battı · Maç' WHEN game='football' THEN 'Futbol Kariyer · Maç' ELSE 'Oyun · Maç' END,reward FROM awards WHERE reward>0 ON CONFLICT(account_id,source_kind,source_id) DO NOTHING RETURNING id) SELECT account_id FROM fresh`,params);
- if(allowCards && game==='battleship')for(const row of recorded.rows)await createMatchCard(db,row.account_id,game,matchId);
+ if(allowCards && ['battleship','football'].includes(game))for(const row of recorded.rows)await createMatchCard(db,row.account_id,game,matchId);
  if(!transaction)await db.query('COMMIT');
  }catch(e){if(!transaction)await db.query('ROLLBACK').catch(()=>{});throw e;}finally{if(!transaction)db.release();}
 }
 async function recordBattle(matchId,players,winner){return recordGameResults('battleship',matchId,players.filter(p=>p.accountId).map(p=>({accountId:p.accountId,result:{win:p.id===winner,shots:p.shots.length,hits:p.shots.filter(s=>s.hit).length,shipsSunk:players.find(q=>q.id!==p.id)?.sunk.length||0}})),null,players.length===2&&players.every(p=>p.accountId)&&players[0].accountId!==players[1].accountId)}
-// 0.51.17.1.1: only freshly persisted, server-adjudicated battles can create card offers.
+// 0.51.17.2: only fresh, eligible server-recorded game results can create card offers.
 const MATCH_CARD_DAILY_CAP=3;
 const MATCH_CARD_CHANCE_PERCENT=20;
 function shuffledMatchPrizes(){const prizes=['kc5','kc15','spin','empty'];for(let i=prizes.length-1;i>0;i--){const j=crypto.randomInt(i+1);[prizes[i],prizes[j]]=[prizes[j],prizes[i]]}return prizes}
@@ -110,7 +110,7 @@ async function createMatchCard(db,accountId,game,matchId){
 }
 function cardPrizeText(prize){return prize==='spin'?'1 ekstra çark hakkı':prize==='kc5'?'+5 KC':prize==='kc15'?'+15 KC':'Bu kart boş çıktı. Bir sonraki maçta bol şans!'}
 async function matchCardsAction(db,a,action,b){
- if(action==='match-cards'){const q=await db.query(`SELECT id,game,match_id AS "matchId",jsonb_array_length(prizes) AS "cardCount" FROM kekip_match_cards WHERE account_id=$1 AND chosen IS NULL ORDER BY (game='battleship' AND match_id=$2) DESC NULLS LAST,created_at,id LIMIT 20`,[a.id,typeof b.matchId==='string'&&b.matchId.length<=100?b.matchId:null]);return {username:a.username,offers:q.rows,dailyCap:MATCH_CARD_DAILY_CAP,chancePercent:MATCH_CARD_CHANCE_PERCENT};}
+ if(action==='match-cards'){const q=await db.query(`SELECT id,game,match_id AS "matchId",jsonb_array_length(prizes) AS "cardCount" FROM kekip_match_cards WHERE account_id=$1 AND chosen IS NULL ORDER BY (game=$3 AND match_id=$2) DESC NULLS LAST,created_at,id LIMIT 20`,[a.id,typeof b.matchId==='string'&&b.matchId.length<=100?b.matchId:null,b.game==='football'?'football':'battleship']);return {username:a.username,offers:q.rows,dailyCap:MATCH_CARD_DAILY_CAP,chancePercent:MATCH_CARD_CHANCE_PERCENT};}
  if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
  if(typeof b.id!=='string'||!/^[a-f0-9-]{36}$/.test(b.id)||!Number.isInteger(b.choice)||b.choice<0||b.choice>3)fail('Kart seçimi geçersiz.');
  const c=await db.connect();try{await c.query('BEGIN');
