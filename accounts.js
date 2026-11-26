@@ -195,10 +195,25 @@ async function adminAction(db,req,action,b,options){
  if(action==='admin-members'){
   const search=typeof b.search==='string'?b.search.trim().toLowerCase():'';
   if(!/^[a-z0-9_]{0,24}$/.test(search))fail('Arama geçersiz.');
-  const q=await db.query(`SELECT a.username,a.created_at,a.blocked_at,(SELECT count(*)::int FROM kekip_football_sessions s WHERE s.account_id=a.id AND s.expires_at>now()) AS sessions FROM kekip_football_accounts a WHERE strpos(a.username,$1)>0 OR $1='' ORDER BY a.username LIMIT 200`,[search]);
+  const status=b.status===undefined?'all':b.status, sort=b.sort===undefined?'name':b.sort;
+  const orders={name:'a.username ASC',newest:'a.created_at DESC,a.username ASC',oldest:'a.created_at ASC,a.username ASC'};
+  if(!['all','active','blocked'].includes(status)||!Object.hasOwn(orders,sort))fail('Üye filtresi geçersiz.');
+  const page=b.page===undefined?1:b.page, size=b.page===undefined?200:25;
+  if(!Number.isSafeInteger(page)||page<1||page>1000000)fail('Sayfa geçersiz.');
+  const where="(strpos(a.username,$1)>0 OR $1='') AND ($2='all' OR ($2='active' AND a.blocked_at IS NULL) OR ($2='blocked' AND a.blocked_at IS NOT NULL))";
+  const filtered=await db.query(`SELECT count(*)::int AS total FROM kekip_football_accounts a WHERE ${where}`,[search,status]);
+  const count=filtered.rows[0].total, pages=Math.max(1,Math.ceil(count/size)), currentPage=Math.min(page,pages);
+  const q=await db.query(`SELECT a.username,a.created_at,a.blocked_at,(SELECT count(*)::int FROM kekip_football_sessions s WHERE s.account_id=a.id AND s.expires_at>now()) AS sessions FROM kekip_football_accounts a WHERE ${where} ORDER BY ${orders[sort]} LIMIT $3 OFFSET $4`,[search,status,size,(currentPage-1)*size]);
   const totals=await db.query('SELECT count(*)::int AS total,count(*) FILTER (WHERE blocked_at IS NOT NULL)::int AS blocked FROM kekip_football_accounts');
   const audit=await db.query('SELECT username,action,created_at FROM kekip_admin_audit ORDER BY id DESC LIMIT 50');
-  return {members:q.rows,totals:totals.rows[0],audit:audit.rows};
+  return {members:q.rows,totals:totals.rows[0],audit:audit.rows,pagination:{page:currentPage,pages,total:count,size}};
+ }
+ if(action==='admin-member-detail'){
+  if(typeof b.username!=='string'||!/^[a-z0-9_]{3,24}$/.test(b.username))fail('Kullanıcı adı geçersiz.');
+  const q=await db.query(`SELECT a.id,a.username,a.created_at,a.blocked_at,(SELECT count(*)::int FROM kekip_football_sessions s WHERE s.account_id=a.id AND s.expires_at>now()) AS sessions,EXISTS(SELECT 1 FROM kekip_modular_avatars m WHERE m.account_id=a.id AND m.character IN ('gece','golge')) AS onboarded FROM kekip_football_accounts a WHERE a.username=$1`,[b.username]);
+  const a=q.rows[0];if(!a)fail('Üye bulunamadı.',404);
+  const stats=await profileStats(db,a);
+  return {member:{username:a.username,created_at:a.created_at,blocked_at:a.blocked_at,sessions:a.sessions,onboarded:a.onboarded},progress:{level:stats.progress.level,xp:stats.progress.xp},battle:stats.battle,football:stats.football,achievements:{earned:stats.achievements.filter(x=>x.unlocked).length,total:stats.achievements.length}};
  }
  if(!['admin-block','admin-unblock','admin-reset','admin-revoke-sessions'].includes(action))fail('İşlem bulunamadı.',404);
  if(typeof b.username!=='string'||!/^[a-z0-9_]{3,24}$/.test(b.username))fail('Kullanıcı adı geçersiz.');
