@@ -1,48 +1,445 @@
-<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#120d1f"><title>KEKIP • İstatistik Merkezi</title><style>
-:root{color-scheme:dark;--bg:#100c1b;--panel:#21182f;--line:#46355f;--muted:#b9a9cd;--accent:#b28bf8;--white:#f6f0ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 5% 0,#2d1b48,transparent 40%),var(--bg);color:var(--white);font:15px/1.5 system-ui,sans-serif;min-height:100vh}a{color:inherit}button,input,select{font:inherit;color:inherit}button,a.action,select{border:1px solid var(--line);background:#2b2040;padding:10px 15px;border-radius:10px;font-weight:700;cursor:pointer}button:hover,a.action:hover{background:#493565}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:3px}button:disabled{opacity:.5;cursor:wait}.wrap{max-width:1220px;margin:auto;padding:22px 28px 42px}header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:0 0 26px}.brand{text-decoration:none;font-weight:1000;font-size:23px;letter-spacing:-1px}.brand span,.eyebrow{color:var(--accent)}.eyebrow{font-size:11px;letter-spacing:2px;font-weight:900;text-transform:uppercase}.action{text-decoration:none;display:inline-block}.hero{padding:26px 30px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(115deg,#34214e,#20172d 70%);display:flex;justify-content:space-between;align-items:center;gap:15px}h1{font-size:clamp(30px,5vw,50px);line-height:1.1;margin:8px 0 10px;letter-spacing:-1.8px}h2,h3,p{margin:0}p,.muted,small{color:var(--muted)}.hero-mark{font-size:clamp(32px,7vw,74px);filter:drop-shadow(0 0 20px #b28bf844)}.section{margin-top:24px}.section h2{font-size:20px;margin-bottom:12px}.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.tile,.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}.tile strong{display:block;font-size:32px;line-height:1.3;font-variant-numeric:tabular-nums}.tile span{color:var(--muted);font-size:12px}.panel{margin-top:12px}.toolbar,.tabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.tabs{margin-bottom:16px}.tabs button[aria-pressed=true]{background:#7952ba;border-color:#a987e8}.toolbar{justify-content:space-between;margin-bottom:14px}.toolbar input{background:#140e21;border:1px solid var(--line);border-radius:9px;padding:10px 12px;min-width:0;max-width:100%;flex:1}.toolbar select{max-width:100%}.scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;white-space:nowrap;font-variant-numeric:tabular-nums}th,td{padding:12px;text-align:right;border-bottom:1px solid #40314f}th{font-size:12px;color:var(--muted)}th:nth-child(-n+2),td:nth-child(-n+2){text-align:left}td:nth-child(2) button{padding:3px 0;background:none;border:0;color:var(--white);text-align:left;overflow-wrap:anywhere;white-space:normal}td:nth-child(2) button:hover{text-decoration:underline}tr.self{background:#392650}td.rank{color:var(--accent);font-weight:900}.selected{color:var(--accent);font-weight:800}.details{display:grid;grid-template-columns:1fr 1fr;gap:12px}.game{background:#191224;border:1px solid var(--line);border-radius:12px;padding:15px}.game h3{font-size:16px;margin-bottom:10px}.game dl{margin:0}.game dl div{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #322641}.game dl div:last-child{border:0}.game dt{color:var(--muted)}.game dd{margin:0;font-weight:800}.notice{padding:18px;margin-top:18px;border:1px solid var(--line);background:var(--panel);border-radius:14px}.notice a{color:var(--accent)}.note{font-size:12px;color:var(--muted);margin-top:12px}.line{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.hidden,[hidden]{display:none!important}footer{margin-top:24px;font-size:12px;color:var(--muted)}@media(max-width:700px){.wrap{padding:16px}.hero{padding:20px}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.tile{padding:14px}.panel{padding:12px}.details{grid-template-columns:1fr}.toolbar{align-items:stretch}.toolbar input,.toolbar select{width:100%;flex-basis:100%}.tabs button{flex:1;padding:9px 8px;font-size:13px}.hero-mark{display:none}th,td{padding:10px}.tile strong{font-size:27px}}
-.xp-card{display:flex;align-items:center;gap:16px;background:linear-gradient(115deg,#33214c,#22172f);border:1px solid #63488a;border-radius:14px;padding:18px;margin-top:14px}.xp-badge{flex:0 0 auto;width:72px;height:72px;display:grid;place-content:center;text-align:center;border:1px solid #b18bed;border-radius:18px;background:linear-gradient(145deg,#8251ca,#432b73);box-shadow:0 0 20px #a273e322;font-size:28px;font-weight:900;line-height:1.15}.xp-badge small{font-size:10px;letter-spacing:1.5px;color:#f0e3ff}.xp-body{flex:1;min-width:0}.xp-body strong{font-size:20px;overflow-wrap:anywhere}.xp-meta{font-size:12px;color:var(--muted);margin-top:6px;overflow-wrap:anywhere}.xp-track{height:10px;border-radius:99px;background:#130c20;overflow:hidden;margin-top:10px}.xp-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#7951c2,#c19aff)}.xp-rules{margin-top:12px;font-size:13px;color:var(--muted)}.xp-rules summary{cursor:pointer;color:var(--accent);font-weight:700}.xp-rules p{margin-top:8px}@media(max-width:700px){.xp-card{padding:12px;gap:10px}.xp-badge{width:56px;height:62px;font-size:23px}.xp-body strong{font-size:17px}}
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KEKIP Games · İstatistikler</title>
+<style>
+:root{
+  --bg:#0d0818;--bg2:#1a1029;--panel:#221533;--panel2:#2a1b40;--panel3:#35204f;
+  --line:#65468d;--line2:#8f66c6;--text:#f7f0ff;--muted:#bfaed7;--soft:#9d86bd;
+  --accent:#b788ff;--accent2:#e0c4ff;--gold:#ffd96d;--silver:#d9ddf0;--bronze:#d69b69;
+  --green:#7ff4bd;--danger:#ff98ad;--shadow:0 18px 46px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(circle at top,#3a215d 0,#171024 36%,#0b0715 100%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+body{min-height:100vh}
+.page{max-width:1320px;margin:0 auto;padding:28px 18px 40px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.brand{display:inline-flex;align-items:center;gap:12px;font-weight:950;letter-spacing:.3px}
+.brand-mark{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(145deg,#7f51cf,#4a2b7a);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 22px rgba(137,89,222,.35);font-size:21px}
+.brand-copy strong{display:block;font-size:27px;line-height:1}
+.brand-copy strong span{color:#7fe5ff}
+.brand-copy small{display:block;margin-top:4px;color:var(--muted);font-weight:700;letter-spacing:1.2px}
+.header-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.header-btn{border:1px solid var(--line);background:#26183a;padding:11px 14px;border-radius:14px;color:var(--text);font-weight:800;transition:.15s ease}
+.header-btn:hover{border-color:#bc99ff;background:#2d1e45}
+.header-btn.primary{background:linear-gradient(135deg,#7d58c8,#54308c);border-color:#ae84ef}
+.hero{display:grid;grid-template-columns:1.4fr .9fr;gap:18px;margin-bottom:18px}
+.hero-card,.panel{background:linear-gradient(180deg,rgba(43,27,67,.96),rgba(27,18,43,.96));border:1px solid rgba(135,96,191,.78);border-radius:26px;box-shadow:var(--shadow)}
+.hero-card{padding:24px}
+.kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#34214e;border:1px solid #6d4ea1;color:#ceb1fb;font-weight:900;font-size:12px;letter-spacing:1.3px;text-transform:uppercase}
+.hero-title{font-size:clamp(28px,4.8vw,46px);line-height:1.03;margin:16px 0 10px;font-weight:980}
+.hero-title span{color:#f2da74}
+.hero-text{margin:0;color:var(--muted);max-width:720px;font-size:15px;line-height:1.7}
+.hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+.mini-card{background:linear-gradient(180deg,#2f1e46,#241738);border:1px solid #66478f;border-radius:20px;padding:14px 15px}
+.mini-card small{display:block;color:#bea8dc;font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.mini-card strong{display:block;font-size:28px;line-height:1.05}
+.mini-card span{display:block;color:#cfc0e5;margin-top:7px;font-size:13px}
+.hero-side{display:grid;gap:12px}
+.status-card{padding:18px 18px 16px}
+.status-card h3{margin:0 0 10px;font-size:16px}
+.status-card p{margin:0;color:var(--muted);line-height:1.6;font-size:14px}
+.status-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:#34214d;border:1px solid #7858ab;font-weight:900;color:#e3d1ff;margin-bottom:12px}
+.toolbar{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;margin-bottom:18px}
+.toolbar-group{display:grid;gap:10px}
+.toolbar label{font-size:12px;font-weight:900;color:#c4b0df;letter-spacing:1.1px;text-transform:uppercase}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{border:1px solid #6b4a96;background:#26193d;color:#eedfff;padding:11px 16px;border-radius:999px;font-weight:850;cursor:pointer;transition:.15s ease}
+.chip:hover{border-color:#d8b8ff}
+.chip.active{background:linear-gradient(135deg,#8659d8,#5a3496);border-color:#caa8ff;box-shadow:0 12px 26px rgba(138,96,223,.26)}
+.range-label{font-size:13px;color:#cebce7;font-weight:650}
+.panel{padding:22px;margin-bottom:18px}
+.panel-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:18px}
+.panel-head h2{margin:0;font-size:27px;line-height:1.1}
+.panel-head p{margin:8px 0 0;color:var(--muted);max-width:700px;line-height:1.6}
+.panel-note{padding:10px 12px;border:1px solid #65468d;background:#2d1d44;border-radius:14px;color:#dac6f5;font-size:13px;font-weight:700}
+.summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.summary-card{padding:16px 16px 15px;border-radius:20px;background:linear-gradient(180deg,#2d1d44,#221633);border:1px solid #614487}
+.summary-card small{display:block;color:#bea6db;font-weight:900;text-transform:uppercase;letter-spacing:1.05px;font-size:11px}
+.summary-card strong{display:block;font-size:26px;margin-top:8px}
+.summary-card span{display:block;color:#d1c0e7;font-size:13px;margin-top:8px;line-height:1.5}
+.me-card{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;background:linear-gradient(135deg,rgba(177,136,255,.16),rgba(102,73,150,.2));border:1px solid #9e78dc;border-radius:24px;padding:18px;margin-bottom:18px}
+.me-avatar{width:86px;height:86px;border-radius:22px;background:#21152e;border:1px solid #7b58ad;display:grid;place-items:center;overflow:hidden;flex:none}
+.me-text h3{margin:0 0 4px;font-size:24px}
+.me-text p{margin:0;color:#cfbfe5;line-height:1.6}
+.me-rank{min-width:164px;text-align:right}
+.me-rank strong{display:block;font-size:38px;line-height:1}
+.me-rank span{display:block;color:#ccb7e8;margin-top:6px;font-weight:700}
+.podium-wrap{display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:16px;align-items:end}
+.podium-card{position:relative;overflow:hidden;border-radius:26px;padding:18px 18px 16px;background:linear-gradient(180deg,#312048,#251836);border:1px solid #6a4b92;min-height:340px;display:flex;flex-direction:column;justify-content:flex-end;box-shadow:var(--shadow)}
+.podium-card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top,rgba(255,255,255,.08),transparent 55%);pointer-events:none}
+.podium-card.place-1{min-height:396px;border-color:#e5c86a;background:linear-gradient(180deg,rgba(122,91,26,.38),rgba(38,25,57,.98) 42%,rgba(28,19,43,.98));transform:translateY(-10px)}
+.podium-card.place-2{border-color:#b8bfd6;background:linear-gradient(180deg,rgba(118,126,148,.23),rgba(39,25,59,.98) 42%,rgba(28,19,43,.98))}
+.podium-card.place-3{border-color:#b67d56;background:linear-gradient(180deg,rgba(160,94,48,.24),rgba(39,25,59,.98) 42%,rgba(28,19,43,.98))}
+.medal{position:absolute;top:14px;right:14px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:900;box-shadow:0 10px 20px rgba(0,0,0,.24)}
+.place-1 .medal{background:linear-gradient(145deg,#ffe892,#dbad28);color:#5a4100}
+.place-2 .medal{background:linear-gradient(145deg,#f8fbff,#a9b5d0);color:#4b556c}
+.place-3 .medal{background:linear-gradient(145deg,#f6c29d,#ab6030);color:#4a250d}
+.podium-rank{position:absolute;left:18px;top:16px;color:#f6ebff;font-weight:950;font-size:13px;letter-spacing:1.1px;text-transform:uppercase}
+.podium-avatar{align-self:center;width:162px;height:214px;border-radius:26px;border:1px solid rgba(255,255,255,.1);background:radial-gradient(circle at top,#3f2860 0,#1b1228 100%);display:grid;place-items:center;overflow:hidden;margin:40px auto 14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.place-1 .podium-avatar{width:182px;height:236px}
+.podium-info{position:relative;z-index:1}
+.podium-name{display:flex;align-items:center;justify-content:center;gap:8px;font-size:22px;font-weight:950;text-align:center}
+.podium-name span{display:inline-flex;padding:5px 10px;border-radius:999px;background:#ffffff12;border:1px solid #ffffff1a;font-size:11px;font-weight:900;letter-spacing:.8px;text-transform:uppercase}
+.podium-user{color:#ceb9e8;text-align:center;margin-top:6px;font-size:14px}
+.podium-score{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);display:grid;gap:10px;text-align:center}
+.podium-score strong{font-size:34px;line-height:1;color:#fff}
+.podium-score small{font-size:12px;color:#e5d4ff;text-transform:uppercase;letter-spacing:1.2px;font-weight:900}
+.podium-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:2px}
+.podium-meta div{background:#ffffff0a;border:1px solid #ffffff14;border-radius:14px;padding:10px 8px}
+.podium-meta b{display:block;font-size:17px}
+.podium-meta span{display:block;color:#d9caee;font-size:11px;margin-top:4px}
+.board{display:grid;gap:12px}
+.row{display:grid;grid-template-columns:66px minmax(0,1.2fr) repeat(5,minmax(0,1fr));gap:12px;align-items:center;padding:14px;border-radius:20px;background:linear-gradient(180deg,#2c1c42,#231733);border:1px solid #5c417d}
+.row.viewer{border-color:#ba93ff;background:linear-gradient(135deg,rgba(176,132,255,.18),rgba(39,26,57,.98))}
+.rank-pill{display:inline-flex;justify-content:center;align-items:center;min-width:52px;height:42px;padding:0 12px;border-radius:14px;background:#191022;border:1px solid #694a95;font-weight:950;font-size:18px}
+.row-user{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;align-items:center;min-width:0}
+.row-avatar{width:56px;height:56px;border-radius:16px;overflow:hidden;background:#191121;border:1px solid #6e4d9d;display:grid;place-items:center}
+.row-name{min-width:0}
+.row-name strong{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-name small{display:block;color:#c8b5e3;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-stat{text-align:center;background:#1e132d;border:1px solid #493267;border-radius:16px;padding:11px 8px}
+.row-stat b{display:block;font-size:19px;line-height:1.1}
+.row-stat span{display:block;margin-top:5px;color:#c8b4e4;font-size:11px;text-transform:uppercase;letter-spacing:.9px}
+.row .delta{color:var(--green)}
+.empty{padding:30px;border:1px dashed #6c4d97;border-radius:22px;color:#cbb9e4;background:#26193b;text-align:center;line-height:1.8}
+.loading{display:grid;place-items:center;min-height:240px;color:#dac8f2}
+.footnote{color:#b6a4cf;font-size:13px;line-height:1.7;margin-top:4px}
+.hidden{display:none!important}
+@media(max-width:1150px){
+  .hero{grid-template-columns:1fr}
+  .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .row{grid-template-columns:64px minmax(0,1.2fr) repeat(3,minmax(0,1fr));grid-auto-flow:row}
+  .row .extra{display:none}
+}
+@media(max-width:900px){
+  .hero-stats{grid-template-columns:1fr}
+  .podium-wrap{grid-template-columns:1fr;align-items:stretch}
+  .podium-card,.podium-card.place-1{min-height:auto;transform:none}
+  .me-card{grid-template-columns:1fr;justify-items:start}
+  .me-rank{text-align:left;min-width:0}
+}
+@media(max-width:700px){
+  .page{padding:18px 14px 34px}
+  .brand-copy strong{font-size:24px}
+  .header-actions{width:100%}
+  .header-btn{flex:1 1 auto;text-align:center}
+  .toolbar{align-items:flex-start}
+  .summary-grid{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr;gap:10px;padding:13px}
+  .rank-pill{width:max-content}
+  .row-user{grid-template-columns:54px minmax(0,1fr)}
+  .row-stat{display:grid;grid-template-columns:1fr auto;align-items:center;text-align:left;padding:11px 12px}
+  .row-stat span{margin-top:0}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Ana sayfaya dön">
+      <span class="brand-mark">K</span>
+      <span class="brand-copy">
+        <strong>KEKIP<span>.</span> GAMES</strong>
+        <small>İSTATİSTİK MERKEZİ</small>
+      </span>
+    </a>
+    <div class="header-actions">
+      <a class="header-btn" href="/">Ana Sayfa</a>
+      <a class="header-btn" href="/friends.html">Arkadaşlar</a>
+      <a class="header-btn" href="/avatar.html">Karakterim</a>
+      <a class="header-btn" href="/shop.html">Mağaza</a>
+      <a class="header-btn primary" href="/football.html">Futbol Kariyeri</a>
+    </div>
+  </header>
 
-.badge-section{margin-top:24px;scroll-margin-top:16px}.badge-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.badge-head h3{font-size:18px}.badge-count{color:var(--muted);font-size:13px}.badge-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr));gap:10px}.achievement{--rarity:#9ca3af;display:grid;gap:9px;min-width:0;background:#191224;border:1px solid var(--line);border-radius:13px;padding:14px}.achievement.earned{border-color:var(--rarity);background:linear-gradient(140deg,#30213f,#1b1428)}.achievement[data-rarity=rare]{--rarity:#78b5ff}.achievement[data-rarity=epic]{--rarity:#c09bff}.achievement[data-rarity=legendary]{--rarity:#f5ce73}.achievement[data-rarity=mythic]{--rarity:#ff929d}.achievement-top{display:flex;align-items:center;gap:10px}.achievement-icon{display:grid;place-items:center;font-size:26px;width:46px;height:46px;flex:none;background:#332345;border:1px solid var(--rarity);border-radius:12px}.achievement:not(.earned) .achievement-icon{filter:saturate(.45);opacity:.7}.achievement-name{font-size:15px;font-weight:800;overflow-wrap:anywhere}.achievement-rarity{font-size:11px;font-weight:750;color:var(--rarity)}.achievement p{font-size:12px;min-height:36px}.achievement-meter{width:100%;height:8px;accent-color:var(--rarity);margin:0}.achievement-status{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:6px}.achievement.earned .achievement-status{color:var(--rarity)}.badge-note{font-size:12px;color:var(--muted);margin-top:12px}.badge-filter{max-width:100%;font-size:12px;padding:7px 10px}@media(max-width:400px){.badge-grid{grid-template-columns:1fr}.achievement p{min-height:0}}
+  <section class="hero">
+    <div class="hero-card">
+      <span class="kicker">🏆 Liderlik Tablosu</span>
+      <h1 class="hero-title">İlk 3 şimdi <span>karakterleriyle</span> sahnede.</h1>
+      <p class="hero-text">Platform XP, Amiral Battı galibiyetleri, futbol performansı ve dönemsel sıralamalar tek yerde. Genel, haftalık ve aylık görünüm arasında geçiş yap; ilk 3 oyuncuyu podyumda karakterleriyle birlikte gör.</p>
+      <div class="hero-stats" id="heroStats">
+        <div class="mini-card"><small>Durum</small><strong>Yükleniyor…</strong><span>Veriler alınıyor.</span></div>
+        <div class="mini-card"><small>İlk Sıra</small><strong>—</strong><span>Sıralama hazırlanıyor.</span></div>
+        <div class="mini-card"><small>Kendi Sıran</small><strong>—</strong><span>Hesabın kontrol ediliyor.</span></div>
+      </div>
+    </div>
+    <div class="hero-side">
+      <div class="hero-card status-card">
+        <div class="status-badge">✨ Yeni görünüm</div>
+        <h3>Podyum düzeni</h3>
+        <p>Birinci, ikinci ve üçüncü oyuncu; kayıtlı KEKIP karakterleriyle özel kartlarda gösterilir. Böylece sıralama daha canlı ve daha okunabilir hale gelir.</p>
+      </div>
+      <div class="hero-card status-card">
+        <div class="status-badge">📊 Çoklu filtre</div>
+        <h3>Dönem ve metrik seçimi</h3>
+        <p>Genel, bu hafta ve bu ay görünümleri arasında geçiş yap. İstersen platform XP, galibiyet, gol, asist veya toplam maç sayısına göre sıralamayı yeniden düzenle.</p>
+      </div>
+    </div>
+  </section>
 
-.period-tabs{margin-bottom:12px}.period-info{padding:12px 14px;background:#21182f;border:1px solid #493861;border-radius:12px;margin:0 0 14px;line-height:1.55}.period-info strong{display:block;color:#e4d2ff}.period-info p{margin:5px 0 0}.period-leader{margin-top:8px;color:#d9baff;font-weight:700}.period-tabs button{flex:1;min-width:0}.period-tabs{display:flex;gap:8px;flex-wrap:wrap}
+  <section class="panel">
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <label>Dönem</label>
+        <div class="chips" id="periodChips"></div>
+        <div class="range-label" id="rangeLabel">Tüm zamanlar verisi gösteriliyor.</div>
+      </div>
+      <div class="toolbar-group">
+        <label>Sıralama metriği</label>
+        <div class="chips" id="metricChips"></div>
+      </div>
+    </div>
 
-.player-cover{position:relative;min-height:145px;border-radius:13px;padding:20px 18px 16px;overflow:hidden;border:1px solid #ffffff25;background:linear-gradient(120deg,#382251,#7952ad);display:flex;align-items:flex-end;gap:15px;margin:4px 0 14px}.player-cover[data-cover=midnight]{background:linear-gradient(115deg,#171b2a,#41436b)}.player-cover[data-cover=ocean]{background:linear-gradient(115deg,#15293c,#246d8e)}.player-cover[data-cover=ember]{background:linear-gradient(115deg,#391e2d,#8a4448)}.player-cover[data-cover=forest]{background:linear-gradient(115deg,#14352d,#326b50)}.player-cover[data-cover=aurora]{background:linear-gradient(115deg,#2e2057,#34706c)}.player-cover:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(125deg,transparent 0 28px,#ffffff08 29px 30px,transparent 31px 70px);pointer-events:none}.player-avatar{position:relative;flex:0 0 auto;width:76px;height:76px;display:grid;place-items:center;border-radius:19px;border:2px solid #e8d6ff88;background:#160f25;overflow:hidden;font-size:33px;font-weight:900}.player-avatar img{width:100%;height:100%;object-fit:cover}.player-identity{position:relative;min-width:0;flex:1}.player-identity strong{font-size:clamp(19px,4vw,27px);display:block;overflow-wrap:anywhere}.player-identity p{color:#f4e9ff;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.showcase{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.showcase span{padding:5px 9px;background:#140e24a8;border:1px solid #ffffff24;border-radius:20px;font-size:11px}.profile-editor{border:1px solid var(--line);padding:15px;border-radius:13px;background:#191224;margin:12px 0;display:grid;gap:12px}.profile-editor label{display:grid;gap:5px;font-size:13px;color:var(--muted)}.profile-editor textarea{font:inherit;color:var(--white);background:#100c1b;border:1px solid var(--line);border-radius:9px;padding:10px;resize:vertical;width:100%;min-height:80px}.profile-editor input[type=file]{max-width:100%;font-size:12px}.profile-editor .badge-choice{display:flex;align-items:center;gap:8px;padding:5px 0}.profile-editor .badge-choice input{accent-color:var(--accent)}.profile-editor fieldset{border:1px solid var(--line);border-radius:9px;min-width:0}.profile-editor legend{font-size:13px;color:var(--muted)}.profile-message{font-size:13px;color:#dfc5ff;overflow-wrap:anywhere}.profile-message.error{color:#ffacb5}@media(max-width:480px){.player-cover{padding:14px;gap:10px;align-items:center;min-height:126px}.player-avatar{width:56px;height:56px;border-radius:13px}.profile-editor{padding:12px}}
- #modularProfile:not([hidden]){display:flex}</style><link rel="stylesheet" href="/cosmetics.css?v=47"></head><body><main class="wrap"><header><a class="brand" href="/">KEKIP<span>.</span> GAMES</a><div class="line"><span id="member" class="muted"></span><a class="action" href="/">← Ana sayfa</a></div></header><section class="hero"><div><div class="eyebrow">KEKIP • OYUNCU İSTATİSTİKLERİ</div><h1>İstatistik merkezi.</h1><p>Gerçek maçlar, gerçek ilerleme. Arkadaşlarınla performansını karşılaştır.</p></div><div class="hero-mark" aria-hidden="true">🏆</div></section><div id="notice" class="notice" role="status">İstatistikler yükleniyor…</div><div id="content" hidden><section class="section"><div class="line"><h2>Platform özeti</h2><button id="refresh">↻ Yenile</button></div><div id="summary" class="tiles"></div><div id="myProgress"></div><details class="xp-rules"><summary>KEKIP XP nasıl kazanılır?</summary><p>Her kayıtlı tamamlanan maç +20 XP. Amiral Battı galibiyeti +10 XP; futbolda her gol ve asist +5 XP. Seviye 1, 0 XP ile başlar; ilk geçiş 100 XP, sonraki her geçiş 25 XP daha fazla gerektirir. Geçmiş kayıtlar da dahil. Bu puan futbolcunun gelişim XP'sinden ayrıdır. Misafir ve yerel kariyer maçları sayılmaz.</p></details></section><section class="section"><h2>Oyuncu sıralaması</h2><div class="panel"><div class="tabs period-tabs" role="group" aria-label="Sıralama dönemi"><button data-period="all" aria-pressed="true">Tüm zamanlar</button><button data-period="week" aria-pressed="false">Bu hafta</button><button data-period="month" aria-pressed="false">Bu ay</button></div><div class="period-info" id="periodInfo" hidden aria-live="polite"></div><div class="tabs" role="group" aria-label="Oyun seçimi"><button data-game="all" aria-pressed="true">Genel</button><button data-game="battle" aria-pressed="false">⚓ Amiral Battı</button><button data-game="football" aria-pressed="false">⚽ Futbol Kariyer</button></div><div class="toolbar"><input id="search" type="search" placeholder="Oyuncu adı ara…" aria-label="Oyuncu adı ara"><select id="sort" aria-label="Sıralama ölçütü"></select></div><p id="ranknote" class="note" style="margin:0 0 10px"></p><div class="scroll"><table><thead id="head"></thead><tbody id="rows"></tbody></table></div><p class="note" id="count"></p><p class="note">Bir oyuncunun adına dokunarak profilini açabilirsin. Eşit değerler kullanıcı adına göre sıralanır.</p></div></section><section class="section" id="profile"><div class="line"><h2 id="profileTitle">Oyuncu profili</h2><div class="line"><button id="editProfile" hidden>✎ Profili düzenle</button><button id="myProfile">Kendi profilim</button></div></div><div class="panel"><div class="player-cover" id="playerCover" data-cover="violet"><div class="player-avatar" id="playerAvatar" aria-hidden="true"></div><div class="player-identity"><div class="eyebrow" id="playerTitle">KEKIP OYUNCUSU</div><strong id="profileName"></strong><p id="playerBio"></p><div id="featuredBadges" class="showcase"></div></div></div><div id="modularProfile" hidden style="align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0" ><div id="modularProfileFrame" data-kp-avatar-mode="body" style="width:180px;height:248px;border:0;border-radius:12px;background:#21182f"></div><div><strong>Kayıtlı avatar</strong><p class="muted">Oyuncunun son kaydettiği kombin.</p><a id="modularEdit" href="/gece-gardirop.html" hidden>Gardırobu aç ↗</a></div></div><p class="profile-message" id="profileStatus" role="status"></p><form id="profileEditor" class="profile-editor" hidden><h3>Profilini özelleştir</h3><label>Profil fotoğrafı <input type="file" id="profilePhoto" accept="image/jpeg,image/png,image/webp"></label><p class="note" style="margin:0">Fotoğraf kare olarak kırpılır ve 160 × 160 boyutuna küçültülür. En fazla 8 MB kaynak dosya.</p><div class="line"><div class="player-avatar" id="photoPreview"></div><button type="button" id="removePhoto">Fotoğrafı kaldır</button></div><label>Kapak teması <select id="coverChoice"><option value="violet">KEKIP Moru</option><option value="midnight">Gece</option><option value="ocean">Okyanus</option><option value="ember">Kor</option><option value="forest">Orman</option><option value="aurora">Aurora</option></select></label><label>Biyografi <textarea id="bioChoice" maxlength="160" placeholder="Kendini tanıt…"></textarea></label><label>Oyuncu unvanı <select id="titleChoice"></select></label><fieldset><legend>Sergilenecek rozetler (en fazla 3)</legend><div id="featuredChoices"></div></fieldset><p id="editStatus" class="profile-message" role="status"></p><div class="line"><button type="submit" id="saveProfile">Değişiklikleri kaydet</button><button type="button" id="cancelProfile">Vazgeç</button></div></form><div id="profileProgress"></div><div class="details" id="profileDetails" style="margin-top:14px"></div><section class="badge-section" id="achievements"><div class="badge-head"><div><h3>🏅 Başarılar ve rozetler</h3><span class="badge-count" id="badgeCount"></span></div><select id="badgeFilter" class="badge-filter" aria-label="Rozet filtresi"><option value="all">Tüm rozetler</option><option value="earned">Kazanılanlar</option><option value="locked">Henüz kazanılmayanlar</option></select></div><div id="badgeGrid" class="badge-grid"></div><p class="badge-note">Rozetler kayıtlı oyun istatistiklerinden hesaplanır. Misafir ve yerel kariyer maçları dahil değildir.</p></section></div></section><footer>Yalnızca KEKIP hesabına kayıtlı tamamlanmış maçlar ve ortak futbol kariyerleri. Misafir maçları ve yerel futbol kariyerleri dahil değildir. Profil, seviye ve rozetler tüm zamanlara aittir. Dönem sıralamaları Türkiye saatine göre hesaplanır.</footer></div></main><script>
-'use strict';
-(()=>{const $=id=>document.getElementById(id),fmt=n=>new Intl.NumberFormat('tr-TR').format(n),pct=(a,b)=>b?Math.round(a/b*100):0;let players=[],viewer='',game='all',period='all',periods={},periodError='',selected='',loading=false;
-const total=p=>p.battle.games+p.football.games;
-const fields={all:[['xp','KEKIP XP',p=>p.progress?.xp||0],['level','Seviye',p=>p.progress?.level||1],['total','Toplam maç',total],['battle','Amiral Battı',p=>p.battle.games],['football','Futbol Kariyer',p=>p.football.games]],battle:[['wins','Galibiyet',p=>p.battle.wins],['games','Maç',p=>p.battle.games],['losses','Mağlubiyet',p=>p.battle.losses],['winrate','Kazanma %',p=>pct(p.battle.wins,p.battle.games),'%'],['hits','İsabet',p=>p.battle.hits],['accuracy','İsabet %',p=>pct(p.battle.hits,p.battle.shots),'%'],['ships','Batırılan gemi',p=>p.battle.shipsSunk]],football:[['goals','Gol',p=>p.football.goals],['assists','Asist',p=>p.football.assists],['games','Maç',p=>p.football.games],['careers','Kariyer',p=>p.football.careers]]};
-const sorts={all:['xp','total','battle','football'],battle:['wins','games','winrate','hits','accuracy','ships'],football:['goals','assists','games','careers']};
-function make(tag,text,cls){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e}
-function setNotice(text,link=false,retry=false){const n=$('notice');n.hidden=false;n.replaceChildren(make('span',text));if(link){const a=make('a',' Ana sayfaya dön ve giriş yap.');a.href='/';n.append(a)}if(retry){const b=make('button','Tekrar dene');b.style.marginLeft='10px';b.onclick=load;n.append(b)}}
-function progressCard(p){const x=p.progress;if(!x)return make('p','XP bilgisi henüz alınamadı.','note');const box=make('div',undefined,'xp-card'),badge=make('div',undefined,'xp-badge'),body=make('div',undefined,'xp-body');badge.append(make('small','SEVİYE'),make('div',fmt(x.level)));body.append(make('strong',fmt(x.xp)+' KEKIP XP'));const track=make('div',undefined,'xp-track'),fill=make('div',undefined,'xp-fill');track.setAttribute('role','progressbar');track.setAttribute('aria-label','Bir sonraki seviyeye ilerleme');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(x.nextLevelXp));track.setAttribute('aria-valuenow',String(x.levelXp));fill.style.width=Math.max(0,Math.min(100,100*x.levelXp/x.nextLevelXp))+'%';track.append(fill);body.append(track,make('div',`${fmt(x.levelXp)} / ${fmt(x.nextLevelXp)} XP · Seviye ${fmt(x.level+1)} için ${fmt(x.remainingXp)} XP kaldı`,'xp-meta'),make('div',`Amiral Battı: ${fmt(x.battleXp)} XP · Futbol Kariyer: ${fmt(x.footballXp)} XP · Görev: ${fmt(x.missionXp||0)} XP`,'xp-meta'));box.append(badge,body);return box}
-function overview(){const sum=f=>players.reduce((n,p)=>n+f(p),0);$('summary').replaceChildren(...[['Kayıtlı oyuncu',players.length],['Kayıtlı oyuncu-maçı',sum(total)],['Amiral Battı galibiyeti',sum(p=>p.battle.wins)],['Futbol Kariyer golü',sum(p=>p.football.goals)]].map(([label,value])=>{const e=make('div',undefined,'tile');e.append(make('span',label),make('strong',fmt(value)));return e}))}
-function activeFields(){if(period==='all')return fields[game];if(game==='all')return [['xp','Dönem XP',p=>p.periodXp||0],...fields.all.filter(f=>!['xp','level'].includes(f[0]))];return fields[game].filter(f=>f[0]!=='careers')}
-function periodInfo(){const el=$('periodInfo');el.hidden=period==='all';if(el.hidden)return;el.replaceChildren();const p=periods[period];if(!p){el.append(make('strong',periodError||'Dönem verileri yükleniyor…'));return}const d=new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',day:'numeric',month:'long',year:'numeric'});el.append(make('strong',d.format(new Date(p.start))+' – '+d.format(new Date(new Date(p.end).getTime()-1))),make('p','Türkiye saati · '+(period==='week'?'Pazartesi–Pazar':'Takvim ayı')+'. Eski tarihsiz futbol maçları yalnızca tüm zamanlarda yer alır.','note'));const leader=p.players.slice().sort((a,b)=>b.periodXp-a.periodXp||a.username.localeCompare(b.username,'tr'))[0];el.append(make('div',leader?'🏆 '+(period==='week'?'Haftanın':'Ayın')+' XP lideri: @'+leader.username+' · '+fmt(leader.periodXp)+' XP':'Bu dönemde henüz kayıtlı maç yok.','period-leader'))}
-function tabs(){for(const b of document.querySelectorAll('[data-period]'))b.setAttribute('aria-pressed',String(b.dataset.period===period));periodInfo();for(const b of document.querySelectorAll('[data-game]'))b.setAttribute('aria-pressed',String(b.dataset.game===game));$('sort').replaceChildren(...sorts[game].filter(k=>activeFields().some(f=>f[0]===k)).map(k=>{const f=activeFields().find(x=>x[0]===k),o=make('option',f[1]+' sıralaması');o.value=k;return o}));rank()}
-function rank(){const cols=activeFields(),sort=cols.find(f=>f[0]===$('sort').value)||cols[0],q=$('search').value.trim().toLowerCase();const source=period==='all'?players:(periods[period]?.players||[]);const active=source.filter(p=>game==='all'||(game==='battle'?p.battle.games>0:p.football.games>0||p.football.careers>0));const ordered=active.slice().sort((a,b)=>sort[2](b)-sort[2](a)||a.username.localeCompare(b.username,'tr'));const shown=ordered.map((p,i)=>({p,i})).filter(({p})=>p.username.toLowerCase().includes(q));const h=make('tr');for(const label of ['#','Oyuncu',...cols.map(c=>c[1])])h.append(make('th',label));$('head').replaceChildren(h);const rows=shown.map(({p,i})=>{const tr=make('tr');if(p.username===viewer)tr.className='self';const name=make('td'),b=make('button','@'+p.username+(p.username===viewer?' (sen)':''));b.onclick=()=>{profile(p.username);$('profile').scrollIntoView({behavior:'smooth',block:'start'})};const icon=make('span',p.username.slice(0,2).toUpperCase(),'kp-avatar-inline');icon.dataset.kpAvatar=p.username;b.prepend(icon);name.append(b);tr.append(make('td',String(i+1),'rank'),name);for(const c of cols)tr.append(make('td',fmt(c[2](p))+(c[3]||''),c===sort?'selected':''));return tr});if(!rows.length){const tr=make('tr'),td=make('td',q?'Aramana uygun oyuncu bulunamadı.':'Henüz bu oyun için kayıtlı istatistik yok.');td.colSpan=cols.length+2;td.style.textAlign='center';tr.append(td);rows.push(tr)}$('rows').replaceChildren(...rows);$('count').textContent=`${shown.length} / ${ordered.length} oyuncu`;$('ranknote').textContent=period!=='all'?'Sadece bu dönemde kaydedilen maçlar ve bunlardan kazanılan XP. Oyuncu profili, toplam seviye ve rozetler tüm zamanları gösterir.':game==='all'?'Genel KEKIP XP sıralaması kayıtlı aktivite ve performans bonuslarını gösterir; oyunlar arası beceri puanı değildir.':game==='battle'?'Yalnızca tamamlanmış kayıtlı Amiral Battı maçları. Oranlar en yakın tam yüzdeye yuvarlanır.':'Hesaba bağlı ortak kariyerlerin toplamları.'}
+    <div class="summary-grid" id="summaryGrid">
+      <div class="summary-card"><small>Hazırlanıyor</small><strong>…</strong><span>İstatistik kartları yükleniyor.</span></div>
+      <div class="summary-card"><small>Hazırlanıyor</small><strong>…</strong><span>İstatistik kartları yükleniyor.</span></div>
+      <div class="summary-card"><small>Hazırlanıyor</small><strong>…</strong><span>İstatistik kartları yükleniyor.</span></div>
+      <div class="summary-card"><small>Hazırlanıyor</small><strong>…</strong><span>İstatistik kartları yükleniyor.</span></div>
+    </div>
+  </section>
 
-const rarityNames={normal:'Normal',rare:'Nadir',epic:'Epik',legendary:'Efsanevi',mythic:'Mitik'};
-function renderAchievements(p){const items=p.achievements;if(!Array.isArray(items)){$('badgeCount').textContent='';$('badgeGrid').replaceChildren(make('p','Rozet bilgisi henüz alınamadı.','note'));return}const earned=items.filter(x=>x.unlocked).length;$('badgeCount').textContent=`${earned} / ${items.length} kazanıldı`;const filter=$('badgeFilter').value;const visible=items.filter(x=>filter==='all'||(filter==='earned'?x.unlocked:!x.unlocked));$('badgeGrid').replaceChildren(...visible.map(x=>{const card=make('article',undefined,'achievement'+(x.unlocked?' earned':''));card.dataset.rarity=x.rarity;const top=make('div',undefined,'achievement-top'),icon=make('div',x.icon,'achievement-icon'),name=make('div');icon.setAttribute('aria-hidden','true');name.append(make('div',x.name,'achievement-name'),make('div',(rarityNames[x.rarity]||'Normal')+' · '+x.group,'achievement-rarity'));top.append(icon,name);const meter=make('progress',undefined,'achievement-meter');meter.max=x.target;meter.value=x.current;meter.setAttribute('aria-label',x.name+' ilerlemesi');const status=make('div',undefined,'achievement-status');status.append(make('span',x.unlocked?'✓ Kazanıldı':'Henüz kazanılmadı'),make('span',fmt(x.current)+' / '+fmt(x.target)));card.append(top,make('p',x.description),meter,status);return card}));if(!visible.length)$('badgeGrid').append(make('p','Bu filtrede rozet bulunmuyor.','note'));}
+  <section class="panel" id="mePanel">
+    <div class="panel-head">
+      <div>
+        <h2>Senin sıran</h2>
+        <p>Kendi konumun seçili dönem ve seçili metrik için burada öne çıkarılır.</p>
+      </div>
+      <div class="panel-note" id="viewerNote">Hesap bilgisi bekleniyor…</div>
+    </div>
+    <div id="meContent" class="loading">Yükleniyor…</div>
+  </section>
 
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>İlk 3 podyumu</h2>
+        <p>En güçlü üç oyuncu; karakterleri, kullanıcı adları ve temel performans bilgileriyle sahnede.</p>
+      </div>
+      <div class="panel-note" id="podiumMetricNote">Platform XP'ye göre sıralanıyor.</div>
+    </div>
+    <div id="podiumContent" class="loading">Podyum hazırlanıyor…</div>
+  </section>
 
-let profileRequest=0,profileData=null,photoDraft='',photoJob=0,savingProfile=false,readingPhoto=false;
-const emptyProfile=()=>({bio:'',cover:'violet',title:'',featured:[],photo:''});
-async function profileApi(action,data){const r=await fetch('/api/account/'+action,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});let j;try{j=await r.json()}catch{throw Error('Profil servisi yanıt vermedi.')}if(!r.ok)throw Error(j.error||'Profil işlemi başarısız.');return j}
-function photoView(el,data,name){el.replaceChildren();if(typeof data==='string'&&data.startsWith('data:image/jpeg;base64,')){const img=make('img');img.alt='';img.src=data;el.append(img)}else el.textContent=(name||'?').charAt(0).toUpperCase()}
-function applyCosmetics(d,avatars,cover,names,title){const c=d.cosmetics||{};for(const node of avatars)node.dataset.kcFrame=c.frame||'';cover.dataset.kcCover=c.cover||'';cover.dataset.kcEffect=c.effect||'';for(const node of names)node.dataset.kcName=c.name||'';const labels={title_pioneer:'Öncü',title_night:'Gece Oyuncusu'};if(labels[c.title])title.textContent=labels[c.title];}
-function drawIdentity(p,d){const panel=$('modularProfile'),frame=$('modularProfileFrame');const character=d.modularAvatar?.character;const show=['gece','golge'].includes(character);panel.hidden=!show;$('modularEdit').hidden=p.username!==viewer;if(show){$('modularEdit').href='/'+character+'-gardirop.html';frame.dataset.kpAvatar=p.username;}else{delete frame.dataset.kpAvatar;frame.replaceChildren();}const earned=new Map((p.achievements||[]).filter(x=>x.unlocked).map(x=>[x.id,x]));$('playerCover').dataset.cover=d.cover||'violet';photoView($('playerAvatar'),d.photo,p.username);$('playerAvatar').dataset.kpAvatar=p.username;$('playerTitle').textContent=earned.get(d.title)?.name||'KEKIP Oyuncusu';$('playerBio').textContent=d.bio||'Henüz biyografi eklenmedi.';applyCosmetics(d,[$('playerAvatar')],$('playerCover'),[$('profileName')],$('playerTitle'));$('featuredBadges').replaceChildren(...(d.featured||[]).filter(x=>earned.has(x)).map(x=>make('span',earned.get(x).icon+' '+earned.get(x).name)))}
-function closeEditor(){photoJob++;readingPhoto=false;$('profileEditor').hidden=true;$('editStatus').textContent='';$('profilePhoto').value='';$('saveProfile').disabled=savingProfile;}
-async function loadIdentity(p){const id=++profileRequest;closeEditor();profileData=null;drawIdentity(p,emptyProfile());$('editProfile').hidden=true;$('profileStatus').textContent='Profil yükleniyor…';try{const r=await profileApi('profile',{username:p.username});if(id!==profileRequest||selected!==p.username)return;profileData={...emptyProfile(),...r.profile};drawIdentity(p,profileData);$('profileStatus').textContent='';$('editProfile').hidden=p.username!==viewer;if(location.hash==='#edit-profile'&&p.username===viewer){openEditor();$('profile').scrollIntoView({block:'start'});history.replaceState(null,'','#profile')}}catch(e){if(id===profileRequest)$('profileStatus').textContent=e.message}}
-function openEditor(){if(selected!==viewer||!profileData||savingProfile)return;const p=players.find(x=>x.username===viewer);const earned=(p?.achievements||[]).filter(x=>x.unlocked);photoDraft=profileData.photo||'';photoView($('photoPreview'),photoDraft,viewer);$('coverChoice').value=profileData.cover;$('bioChoice').value=profileData.bio;$('titleChoice').replaceChildren(new Option('KEKIP Oyuncusu',''),...earned.map(x=>new Option(x.name,x.id)));$('titleChoice').value=earned.some(x=>x.id===profileData.title)?profileData.title:'';$('featuredChoices').replaceChildren(...earned.map(x=>{const label=make('label',undefined,'badge-choice'),box=make('input');box.type='checkbox';box.value=x.id;box.checked=profileData.featured.includes(x.id);box.onchange=()=>{if(document.querySelectorAll('#featuredChoices input:checked').length>3){box.checked=false;$('editStatus').textContent='En fazla 3 rozet seçebilirsin.'}else $('editStatus').textContent=''};label.append(box,make('span',x.icon+' '+x.name));return label}));if(!earned.length)$('featuredChoices').append(make('p','Henüz kazanılmış rozet yok.','note'));$('profileEditor').hidden=false;$('editStatus').textContent='';$('profileEditor').scrollIntoView({block:'nearest'});}
-$('editProfile').onclick=openEditor;$('cancelProfile').onclick=closeEditor;
-$('removePhoto').onclick=()=>{photoJob++;readingPhoto=false;photoDraft='';$('profilePhoto').value='';photoView($('photoPreview'),'',viewer);$('saveProfile').disabled=savingProfile;};
-$('profilePhoto').onchange=async()=>{const f=$('profilePhoto').files[0];if(!f)return;const id=++photoJob;readingPhoto=true;$('saveProfile').disabled=true;let url;try{if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>8*1024*1024)throw Error('JPG, PNG veya WebP seç (en fazla 8 MB).');url=URL.createObjectURL(f);const img=new Image();img.src=url;await img.decode();if(!img.naturalWidth||!img.naturalHeight||img.naturalWidth*img.naturalHeight>40000000)throw Error('Fotoğraf çözünürlüğü çok büyük.');const canvas=document.createElement('canvas');canvas.width=canvas.height=160;const ctx=canvas.getContext('2d');ctx.fillStyle='#20142e';ctx.fillRect(0,0,160,160);const size=Math.min(img.naturalWidth,img.naturalHeight);ctx.drawImage(img,(img.naturalWidth-size)/2,(img.naturalHeight-size)/2,size,size,0,0,160,160);let data=canvas.toDataURL('image/jpeg',.82);if(data.length>44000)data=canvas.toDataURL('image/jpeg',.6);if(!data.startsWith('data:image/jpeg;base64,')||data.length>44000)throw Error('Fotoğraf sıkıştırılamadı.');if(id!==photoJob)return;photoDraft=data;photoView($('photoPreview'),data,viewer);$('editStatus').textContent='Fotoğraf hazır. Kaydetmeyi unutma.'}catch(e){if(id===photoJob)$('editStatus').textContent=e.message||'Fotoğraf açılamadı.'}finally{if(url)URL.revokeObjectURL(url);if(id===photoJob){readingPhoto=false;$('saveProfile').disabled=savingProfile}}};
-$('profileEditor').onsubmit=async e=>{e.preventDefault();if(savingProfile||readingPhoto||selected!==viewer)return;savingProfile=true;$('saveProfile').disabled=true;const name=viewer,id=profileRequest;try{const r=await profileApi('profile-save',{bio:$('bioChoice').value,cover:$('coverChoice').value,title:$('titleChoice').value,featured:[...document.querySelectorAll('#featuredChoices input:checked')].map(x=>x.value),photo:photoDraft});if(id!==profileRequest||selected!==name)return;profileData=r.profile;drawIdentity(players.find(p=>p.username===name),profileData);closeEditor();$('profileStatus').textContent='Profil kaydedildi.'}catch(e){if(id===profileRequest)$('editStatus').textContent=e.message}finally{savingProfile=false;$('saveProfile').disabled=readingPhoto}};
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Tam sıralama</h2>
+        <p>Topluluk sıralamasının tamamı. Kendi satırın otomatik olarak vurgulanır.</p>
+      </div>
+      <div class="panel-note" id="listNote">Liste hazırlanıyor…</div>
+    </div>
+    <div id="listContent" class="loading">Oyuncular yükleniyor…</div>
+    <p class="footnote">Not: Platform XP değeri kalıcı maç kayıtları, futbol kariyeri istatistikleri ve görev XP kazanımlarına göre hesaplanır. Dönemsel görünümde sadece ilgili zaman aralığındaki kayıtlar dikkate alınır.</p>
+  </section>
+</div>
 
-function profile(name){const p=players.find(p=>p.username===name);if(!p)return;selected=name;loadIdentity(p);renderAchievements(p);$('profileProgress').replaceChildren(progressCard(p));$('profileName').textContent='@'+p.username+(p.username===viewer?' • SEN':'');$('myProfile').hidden=name===viewer;const b=p.battle,f=p.football;const groups=[['⚓ Amiral Battı',[['Maç',b.games],['Galibiyet',b.wins],['Mağlubiyet',b.losses],['Kazanma oranı',b.games?pct(b.wins,b.games)+'%':'—'],['Atış',b.shots],['İsabet',b.hits],['İsabet oranı',b.shots?pct(b.hits,b.shots)+'%':'—'],['Batırılan gemi',b.shipsSunk]]],['⚽ KEKIP Futbol Kariyer',[['Ortak kariyer',f.careers],['Maç',f.games],['Gol',f.goals],['Asist',f.assists],['Maç başına gol',f.games?(f.goals/f.games).toLocaleString('tr-TR',{maximumFractionDigits:2}):'—'],['Maç başına asist',f.games?(f.assists/f.games).toLocaleString('tr-TR',{maximumFractionDigits:2}):'—']]]];$('profileDetails').replaceChildren(...groups.map(([name,items])=>{const box=make('div',undefined,'game'),dl=make('dl');box.append(make('h3',name));for(const [k,v] of items){const row=make('div');row.append(make('dt',k),make('dd',typeof v==='number'?fmt(v):v));dl.append(row)}box.append(dl);return box}))}
-async function load(){if(loading)return;loading=true;$('refresh').disabled=true;try{const r=await fetch('/api/account/leaderboard',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:'{}'});if(r.status===401){$('content').hidden=true;$('member').textContent='';setNotice('İstatistik merkezi yalnızca KEKIP üyelerine açıktır.',true);return}if(!r.ok)throw Error('İstatistikler şu anda alınamadı.');const d=await r.json();if(!Array.isArray(d.players)||typeof d.viewer!=='string')throw Error('İstatistik verisi geçersiz.');players=d.players;viewer=d.viewer;$('member').textContent='@'+viewer;$('notice').hidden=true;$('content').hidden=false;overview();const self=players.find(p=>p.username===viewer);$('myProgress').replaceChildren(...(self?[progressCard(self)]:[]));if(!$('sort').options.length)tabs();else {periodInfo();rank();}profile(players.some(p=>p.username===selected)?selected:viewer);if(location.hash==='#achievements')$('achievements').scrollIntoView({block:'start'});await loadPeriods()}catch(e){$('content').hidden=true;setNotice(e.message||'Bağlantı kurulamadı.',false,true)}finally{loading=false;$('refresh').disabled=false}}
-async function loadPeriods(){periodError='';try{const r=await fetch('/api/account/period-leaderboard',{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:'{}'});if(!r.ok)throw Error('Dönem sıralamaları alınamadı. Yenile ile tekrar dene.');const data=await r.json();if(!['week','month'].every(k=>data[k]&&Array.isArray(data[k].players)&&Number.isFinite(Date.parse(data[k].start))&&Number.isFinite(Date.parse(data[k].end))))throw Error('Dönem bilgisi alınamadı.');periods=data}catch(e){periods={};periodError=e.message||'Dönem verileri alınamadı.'}if(period!=='all'){periodInfo();rank()}}
-for(const b of document.querySelectorAll('[data-period]'))b.onclick=()=>{period=b.dataset.period;tabs()};
-for(const b of document.querySelectorAll('[data-game]'))b.onclick=()=>{game=b.dataset.game;tabs()};$('badgeFilter').onchange=()=>{const p=players.find(p=>p.username===selected);if(p)renderAchievements(p)};$('sort').onchange=rank;$('search').oninput=rank;$('myProfile').onclick=()=>profile(viewer);$('refresh').onclick=load;window.addEventListener('pageshow',e=>{if(e.persisted)load()});load();})();
-</script><script src="/avatar-portraits.js?v=05018"></script><script src="/social.js?v=5014" defer></script><script src="/chat-client.js?v=5014" defer></script></body></html>
+<script src="/avatar-portraits.js?v=05024"></script>
+<script>
+const state={period:'all',metric:'xp',viewer:'',all:{viewer:'',players:[]},periods:{},selfStats:null};
+const PERIODS=[
+  {id:'all',label:'Genel'},
+  {id:'week',label:'Bu Hafta'},
+  {id:'month',label:'Bu Ay'}
+];
+const METRICS=[
+  {id:'xp',label:'Platform XP'},
+  {id:'wins',label:'Galibiyet'},
+  {id:'goals',label:'Gol'},
+  {id:'assists',label:'Asist'},
+  {id:'matches',label:'Toplam Maç'}
+];
+const $=id=>document.getElementById(id);
+
+function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function fmt(n){const num=Number(n)||0;return new Intl.NumberFormat('tr-TR').format(num);}
+function pad(n){return String(n).padStart(2,'0');}
+function dateLabel(iso){const d=new Date(iso);if(Number.isNaN(+d))return '';return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();}
+function api(action,body={}){return fetch('/api/account/'+action,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(async r=>{const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'Sunucuya erişilemedi.');return data;});}
+function progressFromXp(xp){xp=Math.max(0,Math.floor(Number(xp)||0));const threshold=n=>100*n+25*n*(n-1)/2;let n=Math.max(0,Math.floor((Math.sqrt(87.5**2+50*xp)-87.5)/25));while(n>0&&threshold(n)>xp)n--;while(threshold(n+1)<=xp)n++;const level=n+1,levelXp=xp-threshold(n),nextLevelXp=100+25*n;return {xp,level,levelXp,nextLevelXp,remainingXp:nextLevelXp-levelXp,percent:Math.max(0,Math.min(100,Math.floor(100*levelXp/nextLevelXp)))};}
+function playerXp(player,period){return period==='all'?(player.progress?.xp||0):(player.periodXp||player.progress?.xp||0);}
+function playerValue(player,metric,period){
+  if(metric==='xp')return playerXp(player,period);
+  if(metric==='wins')return player.battle?.wins||0;
+  if(metric==='goals')return player.football?.goals||0;
+  if(metric==='assists')return player.football?.assists||0;
+  if(metric==='matches')return (player.battle?.games||0)+(player.football?.games||0);
+  return 0;
+}
+function metricText(metric){return METRICS.find(m=>m.id===metric)?.label||'Puan';}
+function metricShort(metric){return metric==='xp'?'XP':metric==='wins'?'Galibiyet':metric==='goals'?'Gol':metric==='assists'?'Asist':'Maç';}
+function getPool(){
+  if(state.period==='all')return (state.all.players||[]).map(p=>({...p,__period:'all'}));
+  const source=state.periods?.[state.period];
+  return (source?.players||[]).map(p=>({
+    username:p.username,
+    battle:p.battle||{games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0},
+    football:p.football||{games:0,goals:0,assists:0,careers:0},
+    periodXp:p.periodXp||0,
+    progress:progressFromXp(p.periodXp||0),
+    __period:state.period
+  }));
+}
+function comparePlayers(a,b){
+  const av=playerValue(a,state.metric,state.period),bv=playerValue(b,state.metric,state.period);
+  if(bv!==av)return bv-av;
+  const bx=playerXp(b,state.period),ax=playerXp(a,state.period);
+  if(bx!==ax)return bx-ax;
+  const bw=b.battle?.wins||0,aw=a.battle?.wins||0;if(bw!==aw)return bw-aw;
+  const bg=b.football?.goals||0,ag=a.football?.goals||0;if(bg!==ag)return bg-ag;
+  return String(a.username||'').localeCompare(String(b.username||''),'tr');
+}
+function rankedPlayers(){return getPool().sort(comparePlayers).map((p,i)=>({...p,rank:i+1}));}
+function currentRangeText(){
+  if(state.period==='all')return 'Tüm zamanlar verisi gösteriliyor.';
+  const src=state.periods?.[state.period];
+  if(!src?.start||!src?.end)return 'Seçili dönem verisi gösteriliyor.';
+  return (state.period==='week'?'Haftalık':'Aylık')+' aralık: '+dateLabel(src.start)+' – '+dateLabel(new Date(new Date(src.end).getTime()-86400000).toISOString())
+}
+function buildChipBar(rootId,items,active,handler){const root=$(rootId);root.replaceChildren(...items.map(item=>{const b=document.createElement('button');b.className='chip'+(item.id===active?' active':'');b.type='button';b.textContent=item.label;b.onclick=()=>handler(item.id);return b;}));}
+
+function renderHero(list){
+  const leader=list[0];
+  const me=list.find(p=>p.username===state.viewer);
+  $('heroStats').innerHTML=`
+    <div class="mini-card"><small>Durum</small><strong>${fmt(list.length)}</strong><span>${state.period==='all'?'Toplam üye sıralaması hazır.':'Seçili dönem sıralaması hazır.'}</span></div>
+    <div class="mini-card"><small>İlk Sıra</small><strong>${leader?('#'+leader.rank):'—'}</strong><span>${leader?('@'+escapeHtml(leader.username)+' · '+fmt(playerValue(leader,state.metric,state.period))+' '+metricShort(state.metric)):'Henüz veri yok.'}</span></div>
+    <div class="mini-card"><small>Kendi Sıran</small><strong>${me?('#'+me.rank):'—'}</strong><span>${me?fmt(playerValue(me,state.metric,state.period))+' '+metricShort(state.metric):'Henüz sıralamada görünmüyorsun.'}</span></div>`;
+}
+
+function renderSummary(list){
+  const leader=list[0];
+  const me=list.find(p=>p.username===state.viewer);
+  const totalMatches=list.reduce((s,p)=>s+(p.battle?.games||0)+(p.football?.games||0),0);
+  const totalWins=list.reduce((s,p)=>s+(p.battle?.wins||0),0);
+  const cards=[
+    {title:'Lider',value:leader?'@'+leader.username:'—',desc:leader?fmt(playerValue(leader,state.metric,state.period))+' '+metricShort(state.metric)+' ile zirvede.':'Henüz lider yok.'},
+    {title:'Toplam oyuncu',value:fmt(list.length),desc:'Seçili görünümde sıralamaya giren hesap sayısı.'},
+    {title:'Toplam kayıtlı maç',value:fmt(totalMatches),desc:'Amiral Battı ve futbol kariyerinden gelen toplam maç verisi.'},
+    {title:'Toplam galibiyet',value:fmt(totalWins),desc:'Topluluk genelinde kayıtlı Amiral Battı galibiyetleri.'}
+  ];
+  if(me){cards[1]={title:'Senin yerin',value:'#'+me.rank,desc:fmt(playerValue(me,state.metric,state.period))+' '+metricShort(state.metric)+' · '+(state.period==='all'?'Seviye '+(me.progress?.level||1):'Dönem XP '+fmt(playerXp(me,state.period)))};}
+  $('summaryGrid').innerHTML=cards.map(c=>`<article class="summary-card"><small>${escapeHtml(c.title)}</small><strong>${escapeHtml(c.value)}</strong><span>${escapeHtml(c.desc)}</span></article>`).join('');
+}
+
+function renderMe(list){
+  const me=list.find(p=>p.username===state.viewer);
+  $('viewerNote').textContent=state.viewer?('@'+state.viewer+' hesabı aktif.'):'Hesap bulunamadı.';
+  if(!state.viewer){$('meContent').className='empty';$('meContent').innerHTML='Bu sayfayı kullanmak için önce KEKIP hesabınla giriş yapmalısın.';return;}
+  if(!me){$('meContent').className='empty';$('meContent').innerHTML='Henüz bu görünümde sıralamaya girecek kayıtlı verin yok. Maç yaptıkça veya görev tamamladıkça burada görüneceksin.';return;}
+  const p=me.progress||progressFromXp(playerXp(me,state.period));
+  const value=playerValue(me,state.metric,state.period);
+  $('meContent').className='';
+  $('meContent').innerHTML=`
+    <div class="me-card">
+      <div class="me-avatar" data-kp-avatar="${escapeHtml(me.username)}" data-kp-avatar-mode="body">🎮</div>
+      <div class="me-text">
+        <h3>@${escapeHtml(me.username)}</h3>
+        <p>${state.period==='all'?'Platform seviyesi <b>Lv. '+fmt(p.level)+'</b> · Toplam XP <b>'+fmt(p.xp)+'</b>':'Bu dönemde <b>'+fmt(playerXp(me,state.period))+' XP</b> topladın.'}<br>${fmt(me.battle?.wins||0)} galibiyet · ${fmt(me.football?.goals||0)} gol · ${fmt(me.football?.assists||0)} asist · ${fmt((me.battle?.games||0)+(me.football?.games||0))} toplam maç</p>
+      </div>
+      <div class="me-rank">
+        <strong>#${fmt(me.rank)}</strong>
+        <span>${fmt(value)} ${metricShort(state.metric)}</span>
+      </div>
+    </div>`;
+}
+
+function podiumCard(player,rank){
+  if(!player)return `<article class="podium-card place-${rank}"><div class="podium-rank">#${rank}</div><div class="medal">${rank===1?'🥇':rank===2?'🥈':'🥉'}</div><div class="podium-avatar">—</div><div class="podium-info"><div class="podium-name">Boş yer</div><div class="podium-user">Henüz veri yok</div><div class="podium-score"><strong>0</strong><small>${escapeHtml(metricText(state.metric))}</small></div><div class="podium-meta"><div><b>0</b><span>Galibiyet</span></div><div><b>0</b><span>Gol</span></div></div></div></article>`;
+  const isViewer=player.username===state.viewer;
+  const score=playerValue(player,state.metric,state.period);
+  const progress=player.progress||progressFromXp(playerXp(player,state.period));
+  return `<article class="podium-card place-${rank}">
+      <div class="podium-rank">#${rank}</div>
+      <div class="medal">${rank===1?'🥇':rank===2?'🥈':'🥉'}</div>
+      <div class="podium-avatar" data-kp-avatar="${escapeHtml(player.username)}" data-kp-avatar-mode="body">${escapeHtml(player.username.slice(0,2).toUpperCase())}</div>
+      <div class="podium-info">
+        <div class="podium-name">@${escapeHtml(player.username)} ${isViewer?'<span>Sen</span>':''}</div>
+        <div class="podium-user">${state.period==='all'?'Seviye '+fmt(progress.level):'Dönem XP '+fmt(playerXp(player,state.period))}</div>
+        <div class="podium-score"><strong>${fmt(score)}</strong><small>${escapeHtml(metricText(state.metric))}</small></div>
+        <div class="podium-meta">
+          <div><b>${fmt(player.battle?.wins||0)}</b><span>Galibiyet</span></div>
+          <div><b>${fmt(player.football?.goals||0)}</b><span>Gol</span></div>
+          <div><b>${fmt(player.football?.assists||0)}</b><span>Asist</span></div>
+          <div><b>${fmt((player.battle?.games||0)+(player.football?.games||0))}</b><span>Toplam Maç</span></div>
+        </div>
+      </div>
+    </article>`;
+}
+
+function renderPodium(list){
+  $('podiumMetricNote').textContent=metricText(state.metric)+' metricine göre sıralanıyor.';
+  if(!list.length){$('podiumContent').className='empty';$('podiumContent').innerHTML='Gösterilecek sıralama verisi bulunamadı.';return;}
+  const byRank=new Map(list.slice(0,3).map(p=>[p.rank,p]));
+  $('podiumContent').className='';
+  $('podiumContent').innerHTML=`<div class="podium-wrap">${podiumCard(byRank.get(2),2)}${podiumCard(byRank.get(1),1)}${podiumCard(byRank.get(3),3)}</div>`;
+}
+
+function rowCard(player){
+  const isViewer=player.username===state.viewer;
+  const score=playerValue(player,state.metric,state.period);
+  const progress=player.progress||progressFromXp(playerXp(player,state.period));
+  return `<article class="row${isViewer?' viewer':''}">
+      <div class="rank-pill">#${fmt(player.rank)}</div>
+      <div class="row-user">
+        <div class="row-avatar" data-kp-avatar="${escapeHtml(player.username)}" data-kp-avatar-mode="body">${escapeHtml(player.username.slice(0,2).toUpperCase())}</div>
+        <div class="row-name">
+          <strong>@${escapeHtml(player.username)} ${isViewer?'· Sen':''}</strong>
+          <small>${state.period==='all'?'Seviye '+fmt(progress.level)+' · '+fmt(progress.xp)+' XP':'Dönem XP '+fmt(playerXp(player,state.period))}</small>
+        </div>
+      </div>
+      <div class="row-stat"><b>${fmt(score)}</b><span>${escapeHtml(metricText(state.metric))}</span></div>
+      <div class="row-stat"><b>${fmt(player.battle?.wins||0)}</b><span>Galibiyet</span></div>
+      <div class="row-stat"><b>${fmt(player.football?.goals||0)}</b><span>Gol</span></div>
+      <div class="row-stat"><b>${fmt(player.football?.assists||0)}</b><span>Asist</span></div>
+      <div class="row-stat extra"><b>${fmt((player.battle?.games||0)+(player.football?.games||0))}</b><span>Toplam Maç</span></div>
+    </article>`;
+}
+
+function renderList(list){
+  $('listNote').textContent=fmt(list.length)+' oyuncu listeleniyor.';
+  if(!list.length){$('listContent').className='empty';$('listContent').innerHTML='Henüz oyuncu verisi bulunmuyor.';return;}
+  $('listContent').className='board';
+  $('listContent').innerHTML=list.map(rowCard).join('');
+}
+
+function refreshView(){
+  $('rangeLabel').textContent=currentRangeText();
+  const list=rankedPlayers();
+  renderHero(list);renderSummary(list);renderMe(list);renderPodium(list);renderList(list);
+  window.KEKIPPortraits?.refresh();
+}
+
+async function load(){
+  try{
+    const [all,periods,stats]=await Promise.all([api('leaderboard'),api('period-leaderboard'),api('stats').catch(()=>null)]);
+    state.all=all||{viewer:'',players:[]};
+    state.periods=periods||{};
+    state.viewer=all?.viewer||'';
+    state.selfStats=stats;
+    refreshView();
+  }catch(err){
+    const msg=escapeHtml(err.message||'Bir hata oluştu.');
+    for(const id of ['summaryGrid','meContent','podiumContent','listContent']){$(id).className='empty';$(id).innerHTML=msg+(err.message&&/giriş|401|403/i.test(err.message)?'<br><br><a class="header-btn primary" href="/">Ana sayfaya dön</a>':'');}
+    $('heroStats').innerHTML=`<div class="mini-card"><small>Hata</small><strong>Bağlantı kurulamadı</strong><span>${msg}</span></div><div class="mini-card"><small>Öneri</small><strong>Tekrar dene</strong><span>Giriş durumunu ve sunucu bağlantısını kontrol et.</span></div><div class="mini-card"><small>Durum</small><strong>Bekleniyor</strong><span>İstatistikler henüz alınamadı.</span></div>`;
+    $('viewerNote').textContent='Veri alınamadı.';
+    $('podiumMetricNote').textContent='Podyum yüklenemedi.';
+    $('listNote').textContent='Liste yüklenemedi.';
+  }
+}
+
+(function initChips(){
+  const periodHandler=id=>{state.period=id;buildChipBar('periodChips',PERIODS,state.period,periodHandler);refreshView();};
+  const metricHandler=id=>{state.metric=id;buildChipBar('metricChips',METRICS,state.metric,metricHandler);refreshView();};
+  buildChipBar('periodChips',PERIODS,state.period,periodHandler);
+  buildChipBar('metricChips',METRICS,state.metric,metricHandler);
+})();
+
+load();
+</script>
+</body>
+</html>
