@@ -16,13 +16,14 @@
       "slot": "av_hair",
       "key": "double",
       "name": "Çift topuz",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 80,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_hair_double",
       "colorCustomization": true,
       "thumbnail": "/images/gece-shop/gece_hair_double.webp",
-      "rarity": "Standart"
+      "rarity": "Yaygın",
+      "onboardingEligible": true
     },
     {
       "id": "gece_hair_pony",
@@ -58,13 +59,14 @@
       "slot": "av_hair",
       "key": "bob",
       "name": "Tokalı bob",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 100,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_hair_bob",
       "colorCustomization": true,
       "thumbnail": "/images/gece-shop/gece_hair_bob.webp",
-      "rarity": "Standart"
+      "rarity": "Nadir",
+      "onboardingEligible": true
     },
     {
       "id": "gece_hair_bun",
@@ -86,13 +88,14 @@
       "slot": "av_hair",
       "key": "short",
       "name": "Kısa ve katlı saç",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 80,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_hair_short",
       "colorCustomization": true,
       "thumbnail": "/images/gece-shop/gece_hair_short.webp",
-      "rarity": "Standart"
+      "rarity": "Nadir",
+      "onboardingEligible": true
     },
     {
       "id": "gece_eye_original",
@@ -100,13 +103,14 @@
       "slot": "av_eye",
       "key": "original",
       "name": "Orijinal altın göz",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 50,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_eye_original",
       "colorCustomization": true,
       "thumbnail": "/images/gece-shop/gece_eye_original.webp",
-      "rarity": "Standart"
+      "rarity": "Yaygın",
+      "onboardingEligible": true
     },
     {
       "id": "gece_eye_round",
@@ -114,13 +118,14 @@
       "slot": "av_eye",
       "key": "round",
       "name": "Sevimli yuvarlak göz",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 60,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_eye_round",
       "colorCustomization": true,
       "thumbnail": "/images/gece-shop/gece_eye_round.webp",
-      "rarity": "Standart"
+      "rarity": "Nadir",
+      "onboardingEligible": true
     },
     {
       "id": "gece_eye_sharp",
@@ -156,13 +161,14 @@
       "slot": "av_eye",
       "key": "sleepy",
       "name": "Uykulu göz",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 50,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_eye_sleepy",
       "colorCustomization": true,
       "thumbnail": "/images/gece-shop/gece_eye_sleepy.webp",
-      "rarity": "Standart"
+      "rarity": "Standart",
+      "onboardingEligible": true
     },
     {
       "id": "gece_eye_star",
@@ -184,13 +190,14 @@
       "slot": "av_brow",
       "key": "original",
       "name": "Orijinal kaş",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 30,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_brow_original",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_brow_original.webp",
-      "rarity": "Standart"
+      "rarity": "Yaygın",
+      "onboardingEligible": true
     },
     {
       "id": "gece_brow_thin",
@@ -198,13 +205,14 @@
       "slot": "av_brow",
       "key": "thin",
       "name": "İnce kaş",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 30,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_brow_thin",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_brow_thin.webp",
-      "rarity": "Standart"
+      "rarity": "Standart",
+      "onboardingEligible": true
     },
     {
       "id": "gece_brow_thick",
@@ -268,13 +276,14 @@
       "slot": "av_expression",
       "key": "original",
       "name": "Doğal gülümseme",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 40,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_mouth_original",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_mouth_original.webp",
-      "rarity": "Standart"
+      "rarity": "Yaygın",
+      "onboardingEligible": true
     },
     {
       "id": "gece_mouth_happy",
@@ -282,13 +291,14 @@
       "slot": "av_expression",
       "key": "happy",
       "name": "Mutlu",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 40,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_mouth_happy",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_mouth_happy.webp",
-      "rarity": "Standart"
+      "rarity": "Standart",
+      "onboardingEligible": true
     },
     {
       "id": "gece_mouth_sad",
@@ -296,13 +306,14 @@
       "slot": "av_expression",
       "key": "sad",
       "name": "Üzgün",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 50,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_mouth_sad",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_mouth_sad.webp",
-      "rarity": "Standart"
+      "rarity": "Standart",
+      "onboardingEligible": true
     },
     {
       "id": "gece_mouth_angry",
@@ -352,13 +363,14 @@
       "slot": "av_top",
       "key": "heart",
       "name": "Pembe kalpli tişört",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 100,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_top_heart",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_top_heart.webp",
-      "rarity": "Standart"
+      "rarity": "Yaygın",
+      "onboardingEligible": true
     },
     {
       "id": "gece_top_hoodie",
@@ -380,13 +392,14 @@
       "slot": "av_top",
       "key": "star",
       "name": "Beyaz yıldızlı sweatshirt",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 140,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_top_star",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_top_star.webp",
-      "rarity": "Standart"
+      "rarity": "Epik",
+      "onboardingEligible": true
     },
     {
       "id": "gece_top_sport",
@@ -394,13 +407,14 @@
       "slot": "av_top",
       "key": "sport",
       "name": "Siyah sportif atlet",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 100,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_top_sport",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_top_sport.webp",
-      "rarity": "Standart"
+      "rarity": "Nadir",
+      "onboardingEligible": true
     },
     {
       "id": "gece_top_bomber",
@@ -436,13 +450,14 @@
       "slot": "av_bottom",
       "key": "cargo",
       "name": "Zincirli mavi kargo pantolon",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 100,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_bottom_cargo",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_bottom_cargo.webp",
-      "rarity": "Standart"
+      "rarity": "Yaygın",
+      "onboardingEligible": true
     },
     {
       "id": "gece_bottom_tactical",
@@ -478,13 +493,14 @@
       "slot": "av_bottom",
       "key": "pleat",
       "name": "Siyah pileli etek",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 130,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_bottom_pleat",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_bottom_pleat.webp",
-      "rarity": "Standart"
+      "rarity": "Epik",
+      "onboardingEligible": true
     },
     {
       "id": "gece_bottom_plaid",
@@ -506,13 +522,14 @@
       "slot": "av_bottom",
       "key": "sport",
       "name": "Sportif siyah şort",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 100,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_bottom_sport",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_bottom_sport.webp",
-      "rarity": "Standart"
+      "rarity": "Nadir",
+      "onboardingEligible": true
     },
     {
       "id": "gece_shoe_classic",
@@ -520,13 +537,14 @@
       "slot": "av_shoes",
       "key": "classic",
       "name": "Siyah-beyaz sneaker",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 80,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_shoe_classic",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_shoe_classic.webp",
-      "rarity": "Standart"
+      "rarity": "Yaygın",
+      "onboardingEligible": true
     },
     {
       "id": "gece_shoe_purple",
@@ -534,13 +552,14 @@
       "slot": "av_shoes",
       "key": "purple",
       "name": "Mor detaylı sneaker",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 120,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_shoe_purple",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_shoe_purple.webp",
-      "rarity": "Standart"
+      "rarity": "Epik",
+      "onboardingEligible": true
     },
     {
       "id": "gece_shoe_boots",
@@ -576,13 +595,14 @@
       "slot": "av_shoes",
       "key": "casual",
       "name": "Siyah günlük ayakkabı",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 80,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_shoe_casual",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_shoe_casual.webp",
-      "rarity": "Standart"
+      "rarity": "Nadir",
+      "onboardingEligible": true
     },
     {
       "id": "gece_shoe_platform",
@@ -604,13 +624,14 @@
       "slot": "av_ear",
       "key": "hoop",
       "name": "Altın halka küpe",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 60,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_ear_hoop",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_ear_hoop.webp",
-      "rarity": "Standart"
+      "rarity": "Nadir",
+      "onboardingEligible": true
     },
     {
       "id": "gece_ear_star",
@@ -632,13 +653,14 @@
       "slot": "av_wrist",
       "key": "cuff",
       "name": "Pembe bileklik",
-      "starter": true,
-      "price": 0,
-      "status": "starter",
+      "starter": false,
+      "price": 40,
+      "status": "available",
       "previewPath": "/gece-koleksiyon.html?item=gece_wrist_cuff",
       "colorCustomization": false,
       "thumbnail": "/images/gece-shop/gece_wrist_cuff.webp",
-      "rarity": "Standart"
+      "rarity": "Standart",
+      "onboardingEligible": true
     },
     {
       "id": "gece_wrist_studs",
