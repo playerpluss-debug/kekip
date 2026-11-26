@@ -93,7 +93,23 @@ const ACHIEVEMENTS = [
   {id:'goal_machine',name:'Gol Makinesi',icon:'⚽',group:'Futbol Kariyer',rarity:'epic',target:50,description:'Futbol Kariyer’de 50 gol at.',value:s=>s.football.goals},
   {id:'playmaker',name:'Oyun Kurucu',icon:'👟',group:'Futbol Kariyer',rarity:'rare',target:25,description:'Futbol Kariyer’de 25 asist yap.',value:s=>s.football.assists},
   {id:'game_fan',name:'Oyun Tutkunu',icon:'🔥',group:'Genel',rarity:'legendary',target:100,description:'Toplam 100 kayıtlı maç tamamla.',value:s=>s.battle.games+s.football.games},
-  {id:'kekip_legend',name:'KEKIP Efsanesi',icon:'💎',group:'Genel',rarity:'mythic',target:50,description:'KEKIP hesabında 50. seviyeye ulaş.',value:s=>s.progress.level}
+  {id:'kekip_legend',name:'KEKIP Efsanesi',icon:'💎',group:'Genel',rarity:'mythic',target:50,description:'KEKIP hesabında 50. seviyeye ulaş.',value:s=>s.progress.level},
+  {id:'ten_matches',name:'Sahaya Alıştın',icon:'🎮',group:'Genel',rarity:'normal',target:10,description:'Toplam 10 kayıtlı maç tamamla.',value:s=>s.battle.games+s.football.games},
+  {id:'level_five',name:'Yükselen Yıldız',icon:'🌟',group:'Genel',rarity:'normal',target:5,description:'KEKIP hesabında 5. seviyeye ulaş.',value:s=>s.progress.level},
+  {id:'level_fifteen',name:'Seçkin Oyuncu',icon:'👑',group:'Genel',rarity:'epic',target:15,description:'KEKIP hesabında 15. seviyeye ulaş.',value:s=>s.progress.level},
+  {id:'mission_xp_500',name:'Görev Avcısı',icon:'📋',group:'Genel',rarity:'rare',target:500,description:'Görevlerden toplam 500 XP kazan.',value:s=>s.progress.missionXp},
+  {id:'matches_250',name:'Durmak Yok',icon:'🚀',group:'Genel',rarity:'mythic',target:250,description:'Toplam 250 kayıtlı maç tamamla.',value:s=>s.battle.games+s.football.games},
+  {id:'battle_wins_5',name:'Denizci',icon:'🛟',group:'Amiral Battı',rarity:'normal',target:5,description:'Amiral Battı’da 5 galibiyet kazan.',value:s=>s.battle.wins},
+  {id:'battle_wins_10',name:'Filo Komutanı',icon:'🧭',group:'Amiral Battı',rarity:'rare',target:10,description:'Amiral Battı’da 10 galibiyet kazan.',value:s=>s.battle.wins},
+  {id:'battle_wins_50',name:'Okyanusun Hâkimi',icon:'🌊',group:'Amiral Battı',rarity:'legendary',target:50,description:'Amiral Battı’da 50 galibiyet kazan.',value:s=>s.battle.wins},
+  {id:'battle_hits_20',name:'Hedef Kilitli',icon:'💥',group:'Amiral Battı',rarity:'normal',target:20,description:'Amiral Battı’da 20 isabetli atış yap.',value:s=>s.battle.hits},
+  {id:'battle_hits_250',name:'Kusursuz Nişancı',icon:'🏹',group:'Amiral Battı',rarity:'epic',target:250,description:'Amiral Battı’da 250 isabetli atış yap.',value:s=>s.battle.hits},
+  {id:'battle_ships_50',name:'Filo Avcısı',icon:'🚢',group:'Amiral Battı',rarity:'epic',target:50,description:'Amiral Battı’da toplam 50 gemi batır.',value:s=>s.battle.shipsSunk},
+  {id:'football_first_goal',name:'İlk Gol',icon:'🥅',group:'Futbol Kariyer',rarity:'normal',target:1,description:'Futbol Kariyer’de ilk golünü at.',value:s=>s.football.goals},
+  {id:'football_matches_10',name:'İlk 11',icon:'👕',group:'Futbol Kariyer',rarity:'normal',target:10,description:'Futbol Kariyer’de 10 maç tamamla.',value:s=>s.football.games},
+  {id:'football_assists_10',name:'Takım Oyuncusu',icon:'🤝',group:'Futbol Kariyer',rarity:'normal',target:10,description:'Futbol Kariyer’de 10 asist yap.',value:s=>s.football.assists},
+  {id:'football_goals_100',name:'Gol Kralı',icon:'🏅',group:'Futbol Kariyer',rarity:'legendary',target:100,description:'Futbol Kariyer’de toplam 100 gol at.',value:s=>s.football.goals},
+  {id:'football_matches_100',name:'Saha Efsanesi',icon:'🏟️',group:'Futbol Kariyer',rarity:'legendary',target:100,description:'Futbol Kariyer’de 100 maç tamamla.',value:s=>s.football.games}
 ];
 function accountAchievements(stats){
   return ACHIEVEMENTS.map(({value,...definition})=>{
