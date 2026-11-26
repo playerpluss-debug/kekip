@@ -9,7 +9,12 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 app.get(["/avatar-core-lab.html", "/avatar-original-workshop.html", "/avatar-premium-fullbody.html", "/avatar-premium-modular.html", "/avatar-premium-preview.html"], (_req,res)=>res.redirect(302,'/avatar.html'));
-app.use('/avatar-assets-v1', express.static(path.join(__dirname, 'public', 'avatar-assets-v1'), {maxAge: '1y', immutable: true, index: false, fallthrough: false}));
+// 0.50.18.1: support parts uploaded directly inside public, as well as the original layout.
+const avatarAssetOptions = {maxAge: '1y', immutable: true, index: false};
+for (const part of ['part-1', 'part-2', 'part-3', 'part-4']) {
+  app.use('/avatar-assets-v1/' + part, express.static(path.join(__dirname, 'public', part), {...avatarAssetOptions, fallthrough: true}));
+}
+app.use('/avatar-assets-v1', express.static(path.join(__dirname, 'public', 'avatar-assets-v1'), {...avatarAssetOptions, fallthrough: false}));
 app.use(express.static(path.join(__dirname, 'public')));
 accounts.attachAccounts(app,{disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id)io.sockets.sockets.get(p.id)?.disconnect(true);},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));}});
 require('./football-online').attachFootball(app);
