@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const root=document.documentElement,experienceKeys=['sound','ambient','effects'],notificationKeys=['social','messages','achievements'],keys=[...experienceKeys,...notificationKeys],defaults=Object.fromEntries(keys.map(k=>[k,true]));
 const deviceKeys=['kekip.experience.v1','kekip.notification-popups.v1'],signal='kekip.preferences.changed.v1',sessionSignal='kekip.preferences.session.v1';
-let state={...defaults},mode='loading',username=null,busy=false,reading=false,queued=false,message='Tercihler yükleniyor…',error=false,epoch=0;
+let state={...defaults},mode='loading',username=null,busy=false,reading=false,queued=false,message='Tercihler yükleniyor…',error=false,epoch=0,lastReadAt=null;
 const pick=(obj,subset)=>Object.fromEntries(subset.map(k=>[k,typeof obj?.[k]==='boolean'?obj[k]:true]));
 function guest(){let result={...defaults};for(const [i,subset] of [experienceKeys,notificationKeys].entries()){try{Object.assign(result,pick(JSON.parse(localStorage.getItem(deviceKeys[i])),subset))}catch{}}return result;}
 function emit(){for(const k of experienceKeys)root.dataset['kp'+k[0].toUpperCase()+k.slice(1)]=state[k]?'on':'off';window.dispatchEvent(new CustomEvent('kekip:experience',{detail:pick(state,experienceKeys)}));window.dispatchEvent(new CustomEvent('kekip:notification-preferences',{detail:pick(state,notificationKeys)}));window.dispatchEvent(new CustomEvent('kekip:preferences-status',{detail:info()}));}
@@ -11,7 +11,7 @@ function report(text,failed=false){message=text;error=failed;emit();}
 async function request(action,body={}){const c=new AbortController(),timer=setTimeout(()=>c.abort(),10000);try{const r=await fetch('/api/account/'+action,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:c.signal});const d=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(Error(d.error||'Tercihler alınamadı.'),{status:r.status});return d}finally{clearTimeout(timer)}}
 function valid(d){return d&&typeof d.username==='string'&&/^[a-z0-9_]{3,24}$/.test(d.username)&&keys.every(k=>typeof d.preferences?.[k]==='boolean');}
 function finish(){if(queued){queued=false;void refresh();}}
-async function refresh(){if(busy||reading){queued=true;return;}reading=true;const stamp=epoch;emit();try{const d=await request('ui-preferences-read');if(stamp!==epoch)return;if(d.username===null&&d.preferences===null){mode='guest';username=null;state=guest();report('Misafir tercihleri bu tarayıcıda saklanır.');}else if(valid(d)){mode='member';username=d.username;state=pick(d.preferences,keys);report('Hesabına kayıtlı tercihler.');}else throw Error('Tercihler doğrulanamadı.');}catch{if(stamp===epoch){mode='error';username=null;state={...defaults};report('Tercihler yüklenemedi. Yeniden dene.',true);}}finally{reading=false;emit();finish();}}
+async function refresh(){if(busy||reading){queued=true;return;}reading=true;lastReadAt=Date.now();const stamp=epoch;emit();try{const d=await request('ui-preferences-read');if(stamp!==epoch)return;if(d.username===null&&d.preferences===null){mode='guest';username=null;state=guest();report('Misafir tercihleri bu tarayıcıda saklanır.');}else if(valid(d)){mode='member';username=d.username;state=pick(d.preferences,keys);report('Hesabına kayıtlı tercihler.');}else throw Error('Tercihler doğrulanamadı.');}catch{if(stamp===epoch){mode='error';username=null;state={...defaults};report('Tercihler yüklenemedi. Yeniden dene.',true);}}finally{reading=false;emit();finish();}}
 function announce(key=signal){try{localStorage.setItem(key,String(Date.now())+':'+Math.random())}catch{}}
 function invalidate(){++epoch;mode='loading';username=null;state={...defaults};report('Oturum değişti. Tercihler yeniden yükleniyor…');void refresh();}
 function set(patch,subset){const clean=Object.fromEntries(subset.filter(k=>typeof patch?.[k]==='boolean').map(k=>[k,patch[k]]));if(!Object.keys(clean).length)return false;
@@ -32,6 +32,8 @@ window.KEKIPExperience=Object.freeze({get:()=>pick(state,experienceKeys),set:p=>
 window.KEKIPNotificationPrefs=Object.freeze({get:()=>pick(state,notificationKeys),allows:k=>mode!=='loading'&&mode!=='error'&&state[k]!==false,set:p=>set(p,notificationKeys),reset:()=>set(defaults,notificationKeys)});
 window.KEKIPPreferences=Object.freeze({status:info,refresh,sessionChanged(){announce(sessionSignal);invalidate();}});
 window.addEventListener('storage',e=>{if(e.key===sessionSignal||e.key===null){invalidate();}else if(e.key===signal){void refresh();}else if(mode==='guest'&&deviceKeys.includes(e.key)){state=guest();emit();}});
-window.addEventListener('focus',()=>{void refresh()});window.addEventListener('pageshow',e=>{if(e.persisted)void refresh()});document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refresh()});setInterval(()=>{if(!document.hidden)void refresh()},60000);
+// Coalesce focus and visibility events; explicit refresh and session/storage changes stay immediate.
+function autoRefresh(){if(document.hidden||reading||busy||(lastReadAt!==null&&Date.now()-lastReadAt<3000))return;void refresh();}
+window.addEventListener('focus',autoRefresh);window.addEventListener('pageshow',e=>{if(e.persisted)autoRefresh()});document.addEventListener('visibilitychange',autoRefresh);setInterval(autoRefresh,60000);
 emit();void refresh();
 })();
