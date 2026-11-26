@@ -30,6 +30,7 @@ function achievementBlock(items){
   const unlocked=items.filter(x=>x.unlocked),box=block('🏅 Başarılar ve rozetler',[`${unlocked.length} / ${items.length} rozet kazanıldı`,unlocked.length?unlocked.map(x=>x.icon+' '+x.name).join(' · '):'İlk rozetini kazanmak için bir maç tamamla.']);
   const link=document.createElement('a');link.href='/achievements.html';link.textContent='Rozet koleksiyonunu aç ↗';link.style.cssText='display:inline-block;color:#e1c9ff;font-weight:800;font-size:13px;margin-top:8px;';box.append(link);return box;
 }
+window.addEventListener('kekip:notification-preferences',()=>{if(window.KEKIPNotificationPrefs?.allows('achievements')===false){document.getElementById('kpBadgeToast')?.remove();clearTimeout(badgeTimer)}});
 function notifyAchievements(items,username){
   if(!Array.isArray(items)||!username)return;
   const key='kekip.achievements.seen.v1.'+username;
@@ -40,7 +41,7 @@ function notifyAchievements(items,username){
   const newOnes=previous?unlocked.filter(x=>!previous.includes(x.id)):[];
   const next=[...new Set([...(previous||[]),...ids])];seenMemory.set(key,next);
   try{localStorage.setItem(key,JSON.stringify(next))}catch{}
-  if(!newOnes.length)return;
+  if(!newOnes.length||window.KEKIPNotificationPrefs?.allows('achievements')===false)return;
   document.getElementById('kpBadgeToast')?.remove();clearTimeout(badgeTimer);
   const toast=document.createElement('div');toast.id='kpBadgeToast';toast.className='kp-badge-toast';toast.setAttribute('role','status');
   const title=document.createElement('strong');title.textContent='🏅 Yeni rozet kazandın!';
