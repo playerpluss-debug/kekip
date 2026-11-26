@@ -1,5 +1,5 @@
 'use strict';
-if(!window.KEKIPPortraits&&!document.querySelector('script[src^="/avatar-portraits.js"]')){const script=document.createElement('script');script.src='/avatar-portraits.js?v=05014';document.head.append(script);}
+if(!window.KEKIPPortraits&&!document.querySelector('script[src^="/avatar-portraits.js"]')){const script=document.createElement('script');script.src='/avatar-portraits.js?v=05018';document.head.append(script);}
 (()=>{
 const $=id=>document.getElementById(id),footballPage=!!$('onlineRoom'),battlePage=!!$('gameOverlay'),home=$('kpSocialHome');
 const labels={home:'Çevrimiçi',football:'Futbol Kariyer oynuyor',battleship:'Amiral Battı oynuyor',offline:'Çevrimdışı'};const games={football:'KEKIP Futbol Kariyer',battleship:'Amiral Battı'};
