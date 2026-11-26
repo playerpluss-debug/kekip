@@ -70,12 +70,14 @@ function adminBattleSnapshot(){
  }
  return result;
 }
-accounts.attachAccounts(app,{adminBattleSnapshot,disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id)io.sockets.sockets.get(p.id)?.disconnect(true);},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));}});
+accounts.attachAccounts(app,{adminBattleSnapshot,disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
 require('./football-online').attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 const rooms = new Map();
-require("./chat").attachChat(app,{battleRoom:(code,id)=>{const r=rooms.get(code);return r?.players.some(p=>p.accountId===id)?r.chatId:null;}});
+const REJOIN_GRACE_MS = 90000;
+const connectedPlayer = p => !!p && !p.disconnectedUntil && !!io.sockets.sockets.get(p.id)?.connected;
+require("./chat").attachChat(app,{battleRoom:(code,id)=>{const r=rooms.get(code);return r?.players.some(p=>p.accountId===id&&connectedPlayer(p))?r.chatId:null;}});
 const SHIPS = [5, 4, 3, 3, 2];
 const makeCode = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -87,7 +89,7 @@ const makeCode = () => {
 const publicState = room => ({
   code: room.code,
   visibility: room.visibility === 'public' ? 'public' : 'private',
-  players: room.players.map(p => ({ id: p.id, name: p.name, ready: p.ready, avatarUsername: p.accountId ? p.name : null })),
+  players: room.players.map(p => ({ id: p.id, name: p.name, ready: p.ready, disconnectedUntil: p.disconnectedUntil || null, avatarUsername: p.accountId ? p.name : null })),
   phase: room.phase,
   turn: room.turn,
   winner: room.winner,
@@ -100,7 +102,7 @@ const publicState = room => ({
     opponentShots: room.players[1 - i] ? room.players[1 - i].shots : []
   }))
 });
-const sendState = room => room.players.forEach((p, i) => io.to(p.id).emit('gameState', { ...publicState(room), you: i }));
+const sendState = room => room.players.forEach((p, i) => {if(connectedPlayer(p))io.to(p.id).emit('gameState', { ...publicState(room), you: i });});
 const validFleet = ships => {
   if (!Array.isArray(ships) || ships.length !== SHIPS.length) return false;
   const occupied = new Set();
@@ -123,17 +125,34 @@ const validFleet = ships => {
   }
   return true;
 };
-function removePlayer(socket, departure = 'left') {
-  for (const [code, room] of rooms) {
-    const idx = room.players.findIndex(p => p.id === socket.id);
-    if (idx !== -1) {
-      room.players.splice(idx, 1);
-      socket.leave(code);
-      if (room.players.length === 0) rooms.delete(code);
-      else { room.phase = 'waiting'; room.turn = null; room.winner = null; room.lastShot = null; room.shotCount = 0; Object.assign(room.players[0], { ready: false, ships: [], shots: [], hits: [], sunk: [] }); io.to(room.players[0].id).emit('opponentLeft', { reason: departure }); sendState(room); }
-      break;
-    }
-  }
+// Reserved seats remain in the original room; no shots or ready changes while paused.
+function removeRoomPlayer(room, player, departure='left') {
+ if(rooms.get(room.code)!==room || !room.players.includes(player))return;
+ clearTimeout(player.rejoinTimer);delete player.rejoinTimer;
+ room.players.splice(room.players.indexOf(player),1);
+ io.sockets.sockets.get(player.id)?.leave(room.code);
+ if(!room.players.length){rooms.delete(room.code);return;}
+ room.phase='waiting';room.turn=null;room.winner=null;room.lastShot=null;room.shotCount=0;delete room.matchId;
+ Object.assign(room.players[0],{ready:false,ships:[],shots:[],hits:[],sunk:[]});
+ if(connectedPlayer(room.players[0]))io.to(room.players[0].id).emit('opponentLeft',{reason:departure});
+ sendState(room);
+}
+function removePlayer(socket, departure='left'){
+ for(const room of rooms.values()){
+  const p=room.players.find(p=>p.id===socket.id);
+  if(p){removeRoomPlayer(room,p,departure);break;}
+ }
+}
+function reservePlayer(socket){
+ for(const room of rooms.values()){
+  const p=room.players.find(p=>p.id===socket.id);
+  if(!p)continue;
+  if(!p.accountId||room.phase==='finished'){removeRoomPlayer(room,p,'connection_lost');return;}
+  if(p.disconnectedUntil)return;
+  p.disconnectedUntil=Date.now()+REJOIN_GRACE_MS;
+  p.rejoinTimer=setTimeout(()=>{if(p.disconnectedUntil&&p.disconnectedUntil<=Date.now())removeRoomPlayer(room,p,'rejoin_expired');},REJOIN_GRACE_MS+25);
+  p.rejoinTimer.unref?.();sendState(room);return;
+ }
 }
 // Validate the envelope before destructuring and catch synchronous/asynchronous handler failures.
 function gameHandler(handler) {
@@ -195,6 +214,7 @@ io.on('connection', socket => {
     if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
     if(accountInOtherSocket(account))return cb({ok:false,error:'Bu hesap başka bir sekmede odada. Önce oradan ayrıl.'});
     const room = rooms.get(String(code || '').toUpperCase().trim());
+    if(room?.players.some(p=>p.disconnectedUntil))return cb({ok:false,error:'Odada bağlantısı kesilmiş oyuncu bekleniyor.'});
     if(publicOnly){
       if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
       if(!room||room.visibility!=='public')return cb({ok:false,error:'Bu açık oda artık katılıma uygun değil.'});
@@ -210,11 +230,32 @@ io.on('connection', socket => {
     room.players.push({ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 2').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] });
     socket.join(room.code); cb({ ok: true, code: room.code }); sendState(room);
   });
+  // Manual reattachment for the same authenticated account, not a fresh room join.
+  socket.on('resumeRoom',membershipHandler(async ({code},cb,stillValid)=>{
+    let a;try{a=await accounts.socketAccount(socket);}catch(e){return cb({ok:false,error:'Hesap bağlantısı kurulamadı. Tekrar dene.'});}
+    if(!stillValid())return cb({ok:false,error:'Oda isteğinin süresi doldu.'});
+    if(!a)return cb({ok:false,error:'Önce hesabına giriş yap.'});
+    const room=rooms.get(String(code||'').trim().toUpperCase());
+    const p=room?.players.find(p=>p.accountId===a.id);
+    if(!p)return cb({ok:false,expired:true,error:'Korunan oda oturumu bulunamadı.'});
+    if([...rooms.values()].some(r=>r!==room&&r.players.some(x=>x.id===socket.id||x.accountId===a.id)))return cb({ok:false,error:'Başka bir oda oturumun var.'});
+    if(p.id!==socket.id){
+      if(!p.disconnectedUntil)return cb({ok:false,error:'Bu hesap başka bir bağlantıyla odada.'});
+      if(p.disconnectedUntil<=Date.now()){removeRoomPlayer(room,p,'rejoin_expired');return cb({ok:false,expired:true,error:'Oda koruma süresi doldu.'});}
+      const oldId=p.id;clearTimeout(p.rejoinTimer);delete p.rejoinTimer;delete p.disconnectedUntil;p.id=socket.id;
+      if(room.turn===oldId)room.turn=socket.id;
+      if(room.winner===oldId)room.winner=socket.id;
+      if(room.lastShot?.playerId===oldId)room.lastShot.playerId=socket.id;
+    }
+    socket.join(room.code);
+    cb({ok:true,code:room.code,phase:room.phase,ready:p.ready,ownFleet:p.ships.map(ship=>ship.cells)});sendState(room);
+  }));
   socket.on('joinRoom',joinRoom(false));
   socket.on('joinPublicRoom',joinRoom(true));
   socket.on('ready', gameHandler(({ ships } = {}, cb = () => {}) => {
     const room = [...rooms.values()].find(r => r.players.some(p => p.id === socket.id));
     if (!room || room.players.length !== 2 || room.phase !== 'waiting') return cb({ ok: false, error: 'Önce iki oyuncunun da odaya katılması gerekiyor.' });
+    if(!room.players.every(connectedPlayer))return cb({ok:false,error:'Rakibinin bağlantısı bekleniyor.'});
     const player = room.players.find(p => p.id === socket.id);
     if (player.ready) return cb({ ok: false, error: 'Zaten hazırsın.' });
     if (!validFleet(ships)) return cb({ ok: false, error: 'Gemilerin yerleşimi geçersiz.' });
@@ -225,6 +266,7 @@ io.on('connection', socket => {
   socket.on('fire', gameHandler(({ r, c } = {}, cb = () => {}) => {
     const room = [...rooms.values()].find(rm => rm.players.some(p => p.id === socket.id));
     if (!room || room.phase !== 'playing') return cb({ ok: false, error: 'Oyun şu anda atışa hazır değil.' });
+    if(!room.players.every(connectedPlayer))return cb({ok:false,error:'Rakibinin bağlantısı bekleniyor.'});
     if (room.turn !== socket.id) return cb({ ok: false, error: 'Şu anda sıra sende değil.' });
     if (!Number.isInteger(r) || !Number.isInteger(c) || r < 0 || r > 9 || c < 0 || c > 9) return cb({ ok: false, error: 'Geçersiz koordinat.' });
     const me = room.players.find(p => p.id === socket.id);
@@ -253,7 +295,7 @@ io.on('connection', socket => {
     cb({ ok: true, hit, sunk: sunkNow }); sendState(room);
   }));
   socket.on('leaveRoom', () => cancelMembership('left'));
-  socket.on('disconnect', reason => cancelMembership(reason === 'server namespace disconnect' || reason === 'client namespace disconnect' ? 'left' : 'connection_lost'));
+  socket.on('disconnect', reason => {membershipEpoch++;membershipPending=false;if(reason==='server namespace disconnect'||reason==='client namespace disconnect')removePlayer(socket,'left');else reservePlayer(socket);});
 });
 const port = process.env.PORT || 3000;
 server.listen(port, () => console.log(`KEKIP server listening on ${port}`));
