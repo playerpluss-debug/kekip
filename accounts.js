@@ -104,6 +104,7 @@ async function leaderboardStats(db, viewer){
   ) SELECT a.username, b.games AS battle_games, b.wins, b.shots, b.hits, b.ships_sunk,
     f.careers, f.games AS football_games, f.goals, f.assists, COALESCE(m.xp,0) AS mission_xp
     FROM kekip_football_accounts a LEFT JOIN battle b ON b.account_id=a.id LEFT JOIN football f ON f.account_id=a.id LEFT JOIN (SELECT account_id,sum(xp) AS xp FROM kekip_mission_claims GROUP BY account_id) m ON m.account_id=a.id
+    WHERE a.blocked_at IS NULL
     ORDER BY a.username`);
   return {viewer:viewer.username,players:q.rows.map(r=>{
     const games=statNumber(r.battle_games), wins=Math.min(games,statNumber(r.wins)), shots=statNumber(r.shots), hits=Math.min(shots,statNumber(r.hits));
@@ -127,7 +128,7 @@ async function periodLeaderboard(db){
     FROM bounds b JOIN kekip_game_results r ON r.created_at>=b.starts_at AND r.created_at<b.ends_at AND r.created_at<=now()
     WHERE r.game IN ('battleship','football') GROUP BY b.period,r.account_id,r.game), mission_totals AS (SELECT b.period,c.account_id,sum(c.xp) AS xp FROM bounds b JOIN kekip_mission_claims c ON c.claimed_at>=b.starts_at AND c.claimed_at<b.ends_at AND c.claimed_at<=now() GROUP BY b.period,c.account_id), entries AS (SELECT period,account_id,game,games,wins,shots,hits,ships_sunk,goals,assists,0::bigint AS mission_xp FROM totals UNION ALL SELECT period,account_id,'mission',0,0,0,0,0,0,0,xp FROM mission_totals)
   SELECT b.period,b.starts_at,b.ends_at,a.username,t.game,t.games,t.wins,t.shots,t.hits,t.ships_sunk,t.goals,t.assists,t.mission_xp
-  FROM bounds b LEFT JOIN entries t ON t.period=b.period LEFT JOIN kekip_football_accounts a ON a.id=t.account_id
+  FROM bounds b LEFT JOIN entries t ON t.period=b.period LEFT JOIN kekip_football_accounts a ON a.id=t.account_id AND a.blocked_at IS NULL
   ORDER BY b.period,a.username,t.game`);
   const periods={};
   for(const r of q.rows){
