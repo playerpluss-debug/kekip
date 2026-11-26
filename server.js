@@ -135,6 +135,27 @@ function gameHandler(handler) {
   };
 }
 io.on('connection', socket => {
+  // Only authenticated members can discover joinable public Battleship rooms.
+  // Never serialize private rooms, account IDs, socket IDs or game boards.
+  let lastPublicList=0;
+  socket.on('listPublicRooms', gameHandler(async (_payload, cb) => {
+    const now=Date.now();
+    if(now-lastPublicList<3000)return cb({ok:false,error:'Biraz sonra tekrar yenile.'});
+    lastPublicList=now;
+    let account;try{account=await accounts.socketAccount(socket);}catch(e){return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı.'});}
+    if(!socket.connected)return;
+    if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
+    const open=[];
+    let total=0;
+    for(const room of [...rooms.values()].reverse()){
+      if(room.visibility!=='public'||room.phase!=='waiting'||room.players.length!==1)continue;
+      const host=room.players[0];
+      if(!host.accountId||host.accountId===account.id||!io.sockets.sockets.get(host.id)?.connected)continue;
+      total++;
+      if(open.length<40)open.push({code:room.code,game:'battleship',host:host.name});
+    }
+    cb({ok:true,rooms:open,total});
+  }));
   socket.on('createRoom', gameHandler(async ({ name, visibility = 'private' } = {}, cb = () => {}) => {
     if (!['public','private'].includes(visibility)) return cb({ok:false,error:'Geçersiz oda türü.'});
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
