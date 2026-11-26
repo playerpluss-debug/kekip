@@ -75,6 +75,7 @@ const makeCode = () => {
 };
 const publicState = room => ({
   code: room.code,
+  visibility: room.visibility === 'public' ? 'public' : 'private',
   players: room.players.map(p => ({ id: p.id, name: p.name, ready: p.ready, avatarUsername: p.accountId ? p.name : null })),
   phase: room.phase,
   turn: room.turn,
@@ -134,19 +135,20 @@ function gameHandler(handler) {
   };
 }
 io.on('connection', socket => {
-  socket.on('createRoom', gameHandler(async ({ name } = {}, cb = () => {}) => {
+  socket.on('createRoom', gameHandler(async ({ name, visibility = 'private' } = {}, cb = () => {}) => {
+    if (!['public','private'].includes(visibility)) return cb({ok:false,error:'Geçersiz oda türü.'});
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
     if (!socket.connected) return;
     removePlayer(socket);
     const code = makeCode();
-    const room = { code, chatId:crypto.randomUUID(), players: [{ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
+    const room = { code, visibility, chatId:crypto.randomUUID(), players: [{ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
     rooms.set(code, room); socket.join(code); cb({ ok: true, code }); sendState(room);
   }));
   socket.on('joinRoom', gameHandler(async ({ code, name } = {}, cb = () => {}) => {
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
     if (!socket.connected) return;
     const room = rooms.get(String(code || '').toUpperCase().trim());
-    if (!room) return cb({ ok: false, error: 'Bu oda koduyla açık bir oyun bulunamadı.' });
+    if (!room) return cb({ ok: false, error: 'Bu oda koduyla bir oyun bulunamadı.' });
     if (room.players.some(p => p.id === socket.id)) return cb({ ok: true, code: room.code });
     if (account && room.players.some(p => p.accountId === account.id)) return cb({ok:false,error:'Aynı hesapla iki oyuncu olarak katılamazsın.'});
     if (room.players.length >= 2) return cb({ ok: false, error: 'Bu oda zaten dolu.' });
