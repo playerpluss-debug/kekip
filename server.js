@@ -206,7 +206,7 @@ io.on('connection', socket => {
     removePlayer(socket);
     const code = makeCode();
     const room = { code, visibility, chatId:crypto.randomUUID(), players: [{ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 1').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] }], phase: 'waiting', turn: null, winner: null, lastShot: null, shotCount: 0 };
-    rooms.set(code, room); socket.join(code); cb({ ok: true, code }); sendState(room);
+    rooms.set(code, room); socket.join(code); cb({ ok: true, code, username:account.username }); sendState(room);
   }));
   const joinRoom = publicOnly => membershipHandler(async ({ code, name }, cb, stillValid) => {
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
@@ -222,19 +222,20 @@ io.on('connection', socket => {
       if([...rooms.values()].some(r=>r!==room&&r.players.some(p=>p.id===socket.id||p.accountId===account.id)))return cb({ok:false,error:'Önce mevcut odandan ayrıl.'});
     }
     if (!room) return cb({ ok: false, error: 'Bu oda koduyla bir oyun bulunamadı.' });
-    if (room.players.some(p => p.id === socket.id)) return cb({ ok: true, code: room.code });
+    if (room.players.some(p => p.id === socket.id)) return cb({ ok: true, code: room.code, username:account.username });
     if (account && room.players.some(p => p.accountId === account.id)) return cb({ok:false,error:'Aynı hesapla iki oyuncu olarak katılamazsın.'});
     if (room.players.length >= 2) return cb({ ok: false, error: 'Bu oda zaten dolu.' });
     if (room.phase !== 'waiting') return cb({ ok: false, error: 'Bu oyun başlamış.' });
     removePlayer(socket);
     room.players.push({ id: socket.id, accountId: account?.id || null, name: account?.username || String(name || 'Oyuncu 2').slice(0, 18), ready: false, ships: [], shots: [], hits: [], sunk: [] });
-    socket.join(room.code); cb({ ok: true, code: room.code }); sendState(room);
+    socket.join(room.code); cb({ ok: true, code: room.code, username:account.username }); sendState(room);
   });
   // Manual reattachment for the same authenticated account, not a fresh room join.
-  socket.on('resumeRoom',membershipHandler(async ({code},cb,stillValid)=>{
+  socket.on('resumeRoom',membershipHandler(async ({code,username},cb,stillValid)=>{
     let a;try{a=await accounts.socketAccount(socket);}catch(e){return cb({ok:false,error:'Hesap bağlantısı kurulamadı. Tekrar dene.'});}
     if(!stillValid())return cb({ok:false,error:'Oda isteğinin süresi doldu.'});
-    if(!a)return cb({ok:false,error:'Önce hesabına giriş yap.'});
+    if(!a)return cb({ok:false,expired:true,error:'Maça dönmek için aynı hesabına giriş yap.'});
+    if(username!==undefined&&(typeof username!=='string'||username!==a.username))return cb({ok:false,expired:true,error:'Oda oturumu farklı bir hesaba ait.'});
     const room=rooms.get(String(code||'').trim().toUpperCase());
     const p=room?.players.find(p=>p.accountId===a.id);
     if(!p)return cb({ok:false,expired:true,error:'Korunan oda oturumu bulunamadı.'});
@@ -248,7 +249,7 @@ io.on('connection', socket => {
       if(room.lastShot?.playerId===oldId)room.lastShot.playerId=socket.id;
     }
     socket.join(room.code);
-    cb({ok:true,code:room.code,phase:room.phase,ready:p.ready,ownFleet:p.ships.map(ship=>ship.cells)});sendState(room);
+    cb({ok:true,code:room.code,username:a.username,phase:room.phase,ready:p.ready,ownFleet:p.ships.map(ship=>ship.cells),state:{...publicState(room),you:room.players.indexOf(p)}});sendState(room);
   }));
   socket.on('joinRoom',joinRoom(false));
   socket.on('joinPublicRoom',joinRoom(true));
