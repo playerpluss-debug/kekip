@@ -88,6 +88,7 @@ const makeCode = () => {
 };
 const publicState = room => ({
   code: room.code,
+  serverNow: Date.now(),
   visibility: room.visibility === 'public' ? 'public' : 'private',
   players: room.players.map(p => ({ id: p.id, name: p.name, ready: p.ready, disconnectedUntil: p.disconnectedUntil || null, avatarUsername: p.accountId ? p.name : null })),
   phase: room.phase,
@@ -143,6 +144,12 @@ function removePlayer(socket, departure='left'){
   if(p){removeRoomPlayer(room,p,departure);break;}
  }
 }
+// Timer callbacks can run late under load. Membership checks must enforce the deadline too.
+function expireReservations(now=Date.now()){
+ for(const room of [...rooms.values()])for(const p of [...room.players]){
+  if(p.disconnectedUntil&&p.disconnectedUntil<=now)removeRoomPlayer(room,p,'rejoin_expired');
+ }
+}
 function reservePlayer(socket){
  for(const room of rooms.values()){
   const p=room.players.find(p=>p.id===socket.id);
@@ -186,6 +193,7 @@ io.on('connection', socket => {
     let account;try{account=await accounts.socketAccount(socket);}catch(e){return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı.'});}
     if(!socket.connected)return;
     if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
+    expireReservations();
     const open=[];
     let total=0;
     for(const room of [...rooms.values()].reverse()){
@@ -202,6 +210,7 @@ io.on('connection', socket => {
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
     if(!stillValid())return cb({ok:false,error:'Oda isteğinin süresi doldu veya iptal edildi.'});
     if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
+    expireReservations();
     if(accountInOtherSocket(account))return cb({ok:false,error:'Bu hesap başka bir sekmede odada. Önce oradan ayrıl.'});
     removePlayer(socket);
     const code = makeCode();
@@ -212,6 +221,7 @@ io.on('connection', socket => {
     let account; try { account = await accounts.socketAccount(socket); } catch(e) { return cb({ok:false,error:e.status?e.message:'Hesap bağlantısı kurulamadı. Tekrar dene.'}); }
     if(!stillValid())return cb({ok:false,error:'Oda isteğinin süresi doldu veya iptal edildi.'});
     if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});
+    expireReservations();
     if(accountInOtherSocket(account))return cb({ok:false,error:'Bu hesap başka bir sekmede odada. Önce oradan ayrıl.'});
     const room = rooms.get(String(code || '').toUpperCase().trim());
     if(room?.players.some(p=>p.disconnectedUntil))return cb({ok:false,error:'Odada bağlantısı kesilmiş oyuncu bekleniyor.'});
@@ -222,7 +232,8 @@ io.on('connection', socket => {
       if([...rooms.values()].some(r=>r!==room&&r.players.some(p=>p.id===socket.id||p.accountId===account.id)))return cb({ok:false,error:'Önce mevcut odandan ayrıl.'});
     }
     if (!room) return cb({ ok: false, error: 'Bu oda koduyla bir oyun bulunamadı.' });
-    if (room.players.some(p => p.id === socket.id)) return cb({ ok: true, code: room.code, username:account.username });
+    const seat=room.players.find(p=>p.id===socket.id);
+    if(seat)return seat.accountId===account.id?cb({ok:true,code:room.code,username:account.username}):cb({ok:false,error:'Bu bağlantı farklı bir hesapla odada. Önce odadan ayrıl.'});
     if (account && room.players.some(p => p.accountId === account.id)) return cb({ok:false,error:'Aynı hesapla iki oyuncu olarak katılamazsın.'});
     if (room.players.length >= 2) return cb({ ok: false, error: 'Bu oda zaten dolu.' });
     if (room.phase !== 'waiting') return cb({ ok: false, error: 'Bu oyun başlamış.' });
@@ -239,6 +250,10 @@ io.on('connection', socket => {
     const room=rooms.get(String(code||'').trim().toUpperCase());
     const p=room?.players.find(p=>p.accountId===a.id);
     if(!p)return cb({ok:false,expired:true,error:'Korunan oda oturumu bulunamadı.'});
+    if(p.disconnectedUntil&&p.disconnectedUntil<=Date.now()){removeRoomPlayer(room,p,'rejoin_expired');return cb({ok:false,expired:true,error:'Oda koruma süresi doldu.'});}
+    expireReservations();
+    if(!room.players.includes(p))return cb({ok:false,expired:true,error:'Oda koruma süresi doldu.'});
+    if(room.players.some(x=>x!==p&&x.id===socket.id))return cb({ok:false,error:'Bu bağlantı farklı bir oyuncu yerine bağlı. Önce odadan ayrıl.'});
     if([...rooms.values()].some(r=>r!==room&&r.players.some(x=>x.id===socket.id||x.accountId===a.id)))return cb({ok:false,error:'Başka bir oda oturumun var.'});
     if(p.id!==socket.id){
       if(!p.disconnectedUntil)return cb({ok:false,error:'Bu hesap başka bir bağlantıyla odada.'});
