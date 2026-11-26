@@ -25,7 +25,7 @@ const makeCode = () => {
 };
 const publicState = room => ({
   code: room.code,
-  players: room.players.map(p => ({ id: p.id, name: p.name, ready: p.ready })),
+  players: room.players.map(p => ({ id: p.id, name: p.name, ready: p.ready, avatarUsername: p.accountId ? p.name : null })),
   phase: room.phase,
   turn: room.turn,
   winner: room.winner,
