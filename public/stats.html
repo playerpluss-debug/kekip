@@ -274,7 +274,7 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
 
 <script src="/avatar-portraits.js?v=05024"></script>
 <script>
-const state={period:'all',metric:'xp',game:'all',viewer:'',all:{viewer:'',players:[]},periods:{},selfStats:null,friends:null,friend:'',badge:'all',loaded:false};
+const state={period:'all',metric:'xp',game:'all',viewer:'',all:{viewer:'',players:[]},periods:{},periodAvailable:true,selfStats:null,friends:null,friend:'',badge:'all',loaded:false};
 const GAMES=[{id:'all',label:'Tüm oyunlar'},{id:'battleship',label:'Amiral Battı'},{id:'football',label:'KEKIP Football'}];
 const BADGES=[{id:'all',label:'Tümü'},{id:'earned',label:'Kazanılanlar'},{id:'locked',label:'Devam edenler'}];
 const PERIODS=[
@@ -298,7 +298,7 @@ const $=id=>document.getElementById(id);
 function escapeHtml(v){return String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function fmt(n){const num=Number(n)||0;return new Intl.NumberFormat('tr-TR').format(num);}
 function pad(n){return String(n).padStart(2,'0');}
-function dateLabel(iso){const d=new Date(iso);if(Number.isNaN(+d))return '';return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();}
+function dateLabel(iso){const d=new Date(iso);if(Number.isNaN(+d))return '';return new Intl.DateTimeFormat('tr-TR',{timeZone:'Europe/Istanbul',day:'2-digit',month:'2-digit',year:'numeric'}).format(d);}
 function api(action,body={}){return fetch('/api/account/'+action,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(async r=>{const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'Sunucuya erişilemedi.');return data;});}
 function progressFromXp(xp){xp=Math.max(0,Math.floor(Number(xp)||0));const threshold=n=>100*n+25*n*(n-1)/2;let n=Math.max(0,Math.floor((Math.sqrt(87.5**2+50*xp)-87.5)/25));while(n>0&&threshold(n)>xp)n--;while(threshold(n+1)<=xp)n++;const level=n+1,levelXp=xp-threshold(n),nextLevelXp=100+25*n;return {xp,level,levelXp,nextLevelXp,remainingXp:nextLevelXp-levelXp,percent:Math.max(0,Math.min(100,Math.floor(100*levelXp/nextLevelXp)))};}
 function playerXp(player,period){return period==='all'?(player.progress?.xp||0):(player.periodXp||player.progress?.xp||0);}
@@ -339,12 +339,12 @@ function comparePlayers(a,b){
 }
 function rankedPlayers(){return getPool().filter(p=>state.game==='all'||(state.game==='football'?(p.football?.games||0)>0:state.metric==='accuracy'?(p.battle?.shots||0)>0:(p.battle?.games||0)>0)).sort(comparePlayers).map((p,i)=>({...p,rank:i+1}));}
 function currentRangeText(){
-  if(state.period==='all')return 'Tüm zamanlar verisi gösteriliyor.';
+  if(state.period==='all')return state.periodAvailable?'Tüm zamanlar verisi gösteriliyor.':'Dönem verisi alınamadı. Genel sıralama kullanılabilir; tekrar denemek için sayfayı yenile.';
   const src=state.periods?.[state.period];
   if(!src?.start||!src?.end)return 'Seçili dönem verisi gösteriliyor.';
   return (state.period==='week'?'Haftalık':'Aylık')+' aralık: '+dateLabel(src.start)+' – '+dateLabel(new Date(new Date(src.end).getTime()-86400000).toISOString())
 }
-function buildChipBar(rootId,items,active,handler){const root=$(rootId);root.replaceChildren(...items.map(item=>{const b=document.createElement('button');b.className='chip'+(item.id===active?' active':'');b.type='button';b.setAttribute('aria-pressed',String(item.id===active));b.textContent=item.label;b.onclick=()=>handler(item.id);return b;}));}
+function buildChipBar(rootId,items,active,handler){const root=$(rootId);root.replaceChildren(...items.map(item=>{const b=document.createElement('button');b.className='chip'+(item.id===active?' active':'');b.type='button';b.setAttribute('aria-pressed',String(item.id===active));b.textContent=item.label;if(rootId==='periodChips'&&item.id!=='all'&&!state.periodAvailable){b.disabled=true;b.title='Dönem verisi alınamadı.';}b.onclick=()=>handler(item.id);return b;}));}
 
 function renderHero(list){
   const leader=list[0];
@@ -474,14 +474,13 @@ function refreshView(){
   $('rangeLabel').textContent=currentRangeText();
   const list=rankedPlayers();
   renderHero(list);renderSummary(list);renderMe(list);renderPodium(list);renderList(list);renderPerformance();renderComparison();renderBadges();
-  window.KEKIPPortraits?.refresh();
 }
 
 async function load(){
   try{
-    const [all,periods,stats,friends]=await Promise.all([api('leaderboard'),api('period-leaderboard'),api('stats').catch(()=>null),api('friends-list').catch(()=>null)]);
+    const [all,periods,stats,friends]=await Promise.all([api('leaderboard'),api('period-leaderboard').catch(()=>null),api('stats').catch(()=>null),api('friends-list').catch(()=>null)]);
     state.all=all||{viewer:'',players:[]};
-    state.periods=periods||{};
+    state.periods=periods||{};state.periodAvailable=!!periods;if(!state.periodAvailable){state.period='all';for(const b of $('periodChips').children){b.disabled=b.textContent!=='Genel';b.classList.toggle('active',!b.disabled);b.setAttribute('aria-pressed',String(!b.disabled));if(b.disabled)b.title='Dönem verisi alınamadı.';}}
     state.viewer=all?.viewer||'';
     state.selfStats=stats;
     state.friends=friends?.username===state.viewer&&Array.isArray(friends.people)?[...new Set(friends.people.filter(p=>p.state==='friend'&&/^[a-z0-9_]{3,24}$/.test(p.username)).map(p=>p.username))]:null;
@@ -505,7 +504,7 @@ async function load(){
   buildChipBar('gameChips',GAMES,state.game,gameHandler);
   buildChipBar('metricChips',gameMetrics(),state.metric,metricHandler);
   buildChipBar('badgeChips',BADGES,state.badge,badgeHandler);
-  $('friendSelect').addEventListener('change',e=>{state.friend=e.target.value;if(state.loaded){renderComparison();window.KEKIPPortraits?.refresh();}});
+  $('friendSelect').addEventListener('change',e=>{state.friend=e.target.value;if(state.loaded){renderComparison();}});
 })();
 
 load();
