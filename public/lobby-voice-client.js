@@ -19,6 +19,10 @@
  }
  voice.onMicrophone=setMicrophone;
  function room(){
+  if(game==='arena'){
+   const arena=root.closest('#arenaRoom');
+   return !arena.hidden&&arena.dataset.phase==='lobby'?arena.dataset.code:null;
+  }
   if(game==='party')return root.closest('#party').hidden?null:'';
   if(game==='football'){
    const panel=root.closest('#onlinePanel');
@@ -101,11 +105,11 @@
  socket.on('disconnect',()=>{if(active)stop('Ses bağlantısı kesildi. Tekrar bağlanabilirsin.');});
  listen.addEventListener('click',()=>open(false));
  mic.addEventListener('click',()=>open(true));
- const watch=game==='party'?['party']:game==='football'?['onlinePanel','onlineRoom','onlineCode']:['gameOverlay','roomArea','roomCode','playArea'];
+ const watch=game==='arena'?['arenaRoom']:game==='party'?['party']:game==='football'?['onlinePanel','onlineRoom','onlineCode']:['gameOverlay','roomArea','roomCode','playArea'];
  const observer=new MutationObserver(syncRoom);
  for(const id of watch){
   const node=document.getElementById(id);
-  if(node)observer.observe(node,{attributes:true,attributeFilter:['hidden','class','data-lobby'],childList:true});
+  if(node)observer.observe(node,{attributes:true,attributeFilter:['hidden','class','data-lobby','data-code','data-phase'],childList:true});
  }
  window.addEventListener('pagehide',()=>stop());
  syncRoom();

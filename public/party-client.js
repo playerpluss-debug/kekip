@@ -1,7 +1,7 @@
 'use strict';
 (() => {
  const $=id=>document.getElementById(id);
- const games={battleship:[2,2],football:[2,8],late_answer:[3,8]};
+ const games={battleship:[2,2],football:[2,8],late_answer:[3,8],arena:[2,8]};
  let data=null,busy=false,polling=false,identity=null,lastLaunch=null,revision=0;
  const lists=new Map();
  const node=(tag,text)=>{const el=document.createElement(tag);if(text!==undefined)el.textContent=text;return el;};
@@ -29,7 +29,7 @@
     $('game').value==='football'?'Yeni ortak kariyer açılır. Başlangıç mevkisi forvet, kulüpler üyelere sırayla atanır.':'Tüm üyeler için aynı özel odada yer ayrılır.';
  }
  function navigate(launch){
-  if(!launch||typeof launch.id!=='string'||!/^\/(?:\?partyRoom=[A-Z2-9]{5}|late-answer\.html\?partyRoom=[A-Z2-9]{5}|football\.html\?footballRoom=[A-F0-9]{10}&party=1)$/.test(launch.url))return;
+  if(!launch||typeof launch.id!=='string'||!/^\/(?:\?partyRoom=[A-Z2-9]{5}|(?:late-answer|arena)\.html\?partyRoom=[A-Z2-9]{5}|football\.html\?footballRoom=[A-F0-9]{10}&party=1)$/.test(launch.url))return;
   $('returnToGame').hidden=false;$('returnToGame').href=launch.url;
   const key='kekip.party.launch.'+data.username;
   try{lastLaunch=sessionStorage.getItem(key)||lastLaunch;}catch{}

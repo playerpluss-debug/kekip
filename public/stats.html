@@ -317,7 +317,7 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
 <script src="/avatar-portraits.js?v=05024"></script>
 <script>
 const state={period:'all',metric:'xp',game:'all',viewer:'',all:{viewer:'',players:[]},periods:{},periodAvailable:true,selfStats:null,friends:null,friend:'',badge:'all',loaded:false};
-const GAMES=[{id:'all',label:'Tüm oyunlar'},{id:'battleship',label:'Amiral Battı'},{id:'football',label:'KEKIP Football'},{id:'late_answer',label:'Gecikmeli Cevap'}];
+const GAMES=[{id:'all',label:'Tüm oyunlar'},{id:'battleship',label:'Amiral Battı'},{id:'football',label:'KEKIP Football'},{id:'late_answer',label:'Gecikmeli Cevap'},{id:'arena',label:'KEKIP Arena'}];
 const BADGES=[{id:'all',label:'Tümü'},{id:'earned',label:'Kazanılanlar'},{id:'locked',label:'Devam edenler'}];
 const PERIODS=[
   {id:'all',label:'Genel'},
@@ -330,9 +330,9 @@ const METRICS=[
   {id:'goals',label:'Gol'},
   {id:'assists',label:'Asist'},
   {id:'matches',label:'Toplam Maç'},
-  {id:'battleMatches',label:'Deniz maçı'}, {id:'winRate',label:'Kazanma oranı'}, {id:'accuracy',label:'İsabet oranı'}, {id:'footballMatches',label:'Futbol maçı'}, {id:'lateMatches',label:'Gecikmeli Cevap maçı'}, {id:'lateWins',label:'Gecikmeli Cevap galibiyeti'}, {id:'lateCorrect',label:'Doğru cevap'}
+  {id:'battleMatches',label:'Deniz maçı'}, {id:'winRate',label:'Kazanma oranı'}, {id:'accuracy',label:'İsabet oranı'}, {id:'footballMatches',label:'Futbol maçı'}, {id:'lateMatches',label:'Gecikmeli Cevap maçı'}, {id:'lateWins',label:'Gecikmeli Cevap galibiyeti'}, {id:'lateCorrect',label:'Doğru cevap'}, {id:'arenaMatches',label:'Arena maçı'}, {id:'arenaWins',label:'Arena galibiyeti'}
 ];
-function gameMetrics(){const ids=state.game==='battleship'?['wins','battleMatches','winRate','accuracy']:state.game==='football'?['goals','assists','footballMatches']:state.game==='late_answer'?['lateCorrect','lateWins','lateMatches']:['xp','wins','goals','assists','matches'];return METRICS.filter(m=>ids.includes(m.id));}
+function gameMetrics(){const ids=state.game==='battleship'?['wins','battleMatches','winRate','accuracy']:state.game==='football'?['goals','assists','footballMatches']:state.game==='late_answer'?['lateCorrect','lateWins','lateMatches']:state.game==='arena'?['arenaWins','arenaMatches']:['xp','wins','goals','assists','matches'];return METRICS.filter(m=>ids.includes(m.id));}
 function ratio(a,b){return b>0?Math.round(Math.min(1,Math.max(0,(Number(a)||0)/b))*1000)/10:0;}
 function scoreFmt(n){return ['winRate','accuracy'].includes(state.metric)?'%'+fmt(n):fmt(n);}
 const $=id=>document.getElementById(id);
@@ -353,10 +353,12 @@ function playerValue(player,metric,period){
   if(metric==='footballMatches')return player.football?.games||0;
   if(metric==='lateMatches')return player.lateAnswer?.games||0;
   if(metric==='lateWins')return player.lateAnswer?.wins||0;
+  if(metric==='arenaMatches')return player.arena?.games||0;
+  if(metric==='arenaWins')return player.arena?.wins||0;
   if(metric==='lateCorrect')return player.lateAnswer?.correct||0;
   if(metric==='winRate')return ratio(player.battle?.wins,player.battle?.games);
   if(metric==='accuracy')return ratio(player.battle?.hits,player.battle?.shots);
-  if(metric==='matches')return (player.battle?.games||0)+(player.football?.games||0)+(player.lateAnswer?.games||0);
+  if(metric==='matches')return (player.battle?.games||0)+(player.football?.games||0)+(player.lateAnswer?.games||0)+(player.arena?.games||0);
   return 0;
 }
 function metricText(metric){return METRICS.find(m=>m.id===metric)?.label||'Puan';}
@@ -369,6 +371,7 @@ function getPool(){
     battle:p.battle||{games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0},
     football:p.football||{games:0,goals:0,assists:0,careers:0},
     lateAnswer:p.lateAnswer||{games:0,wins:0,correct:0,forfeits:0},
+    arena:p.arena||{games:0,wins:0},
     periodXp:p.periodXp||0,
     progress:progressFromXp(p.periodXp||0),
     __period:state.period
@@ -383,7 +386,7 @@ function comparePlayers(a,b){
   const bg=b.football?.goals||0,ag=a.football?.goals||0;if(bg!==ag)return bg-ag;
   return String(a.username||'').localeCompare(String(b.username||''),'tr');
 }
-function rankedPlayers(){return getPool().filter(p=>state.game==='all'||(state.game==='football'?(p.football?.games||0)>0:state.game==='late_answer'?(p.lateAnswer?.games||0)>0:state.metric==='accuracy'?(p.battle?.shots||0)>0:(p.battle?.games||0)>0)).sort(comparePlayers).map((p,i)=>({...p,rank:i+1}));}
+function rankedPlayers(){return getPool().filter(p=>state.game==='all'||(state.game==='football'?(p.football?.games||0)>0:state.game==='late_answer'?(p.lateAnswer?.games||0)>0:state.game==='arena'?(p.arena?.games||0)>0:state.metric==='accuracy'?(p.battle?.shots||0)>0:(p.battle?.games||0)>0)).sort(comparePlayers).map((p,i)=>({...p,rank:i+1}));}
 function currentRangeText(){
   if(state.period==='all')return state.periodAvailable?'Tüm zamanlar verisi gösteriliyor.':'Dönem verisi alınamadı. Genel sıralama kullanılabilir; tekrar denemek için sayfayı yenile.';
   const src=state.periods?.[state.period];
@@ -404,8 +407,8 @@ function renderHero(list){
 function renderSummary(list){
   const leader=list[0];
   const me=list.find(p=>p.username===state.viewer);
-  const totalMatches=list.reduce((s,p)=>s+(p.battle?.games||0)+(p.football?.games||0)+(p.lateAnswer?.games||0),0);
-  const totalWins=list.reduce((s,p)=>s+(state.game==='late_answer'?(p.lateAnswer?.wins||0):state.game==='battleship'?(p.battle?.wins||0):(p.battle?.wins||0)+(p.lateAnswer?.wins||0)),0);
+  const totalMatches=list.reduce((s,p)=>s+(p.battle?.games||0)+(p.football?.games||0)+(p.lateAnswer?.games||0)+(p.arena?.games||0),0);
+  const totalWins=list.reduce((s,p)=>s+(state.game==='late_answer'?(p.lateAnswer?.wins||0):state.game==='arena'?(p.arena?.wins||0):state.game==='battleship'?(p.battle?.wins||0):(p.battle?.wins||0)+(p.lateAnswer?.wins||0)),0);
   const cards=[
     {title:'Lider',value:leader?'@'+leader.username:'—',desc:leader?scoreFmt(playerValue(leader,state.metric,state.period))+' '+metricShort(state.metric)+' ile zirvede.':'Henüz lider yok.'},
     {title:'Toplam oyuncu',value:fmt(list.length),desc:'Seçili görünümde sıralamaya giren hesap sayısı.'},
@@ -429,7 +432,7 @@ function renderMe(list){
       <div class="me-avatar" data-kp-avatar="${escapeHtml(me.username)}" data-kp-avatar-mode="body"></div>
       <div class="me-text">
         <h3>@${escapeHtml(me.username)}</h3>
-        <p>${state.period==='all'?'Platform seviyesi <b>Lv. '+fmt(p.level)+'</b> · Toplam XP <b>'+fmt(p.xp)+'</b>':'Bu dönemde <b>'+fmt(playerXp(me,state.period))+' XP</b> topladın.'}<br>${fmt(me.battle?.wins||0)} galibiyet · ${fmt(me.football?.goals||0)} gol · ${fmt(me.football?.assists||0)} asist · ${fmt((me.battle?.games||0)+(me.football?.games||0)+(me.lateAnswer?.games||0))} toplam maç</p>
+        <p>${state.period==='all'?'Platform seviyesi <b>Lv. '+fmt(p.level)+'</b> · Toplam XP <b>'+fmt(p.xp)+'</b>':'Bu dönemde <b>'+fmt(playerXp(me,state.period))+' XP</b> topladın.'}<br>${fmt(me.battle?.wins||0)} galibiyet · ${fmt(me.football?.goals||0)} gol · ${fmt(me.football?.assists||0)} asist · ${fmt((me.battle?.games||0)+(me.football?.games||0)+(me.lateAnswer?.games||0)+(me.arena?.games||0))} toplam maç</p>
       </div>
       <div class="me-rank">
         <strong>#${fmt(me.rank)}</strong>
@@ -456,7 +459,7 @@ function podiumCard(player,rank){
           <div><b>${fmt(player.battle?.wins||0)}</b><span>Galibiyet</span></div>
           <div><b>${fmt(player.football?.goals||0)}</b><span>Gol</span></div>
           <div><b>${fmt(player.football?.assists||0)}</b><span>Asist</span></div>
-          <div><b>${fmt((player.battle?.games||0)+(player.football?.games||0)+(player.lateAnswer?.games||0))}</b><span>Toplam Maç</span></div>
+          <div><b>${fmt((player.battle?.games||0)+(player.football?.games||0)+(player.lateAnswer?.games||0)+(player.arena?.games||0))}</b><span>Toplam Maç</span></div>
         </div>
       </div>
     </article>`;
@@ -487,7 +490,7 @@ function rowCard(player){
       <div class="row-stat"><b>${fmt(player.battle?.wins||0)}</b><span>Galibiyet</span></div>
       <div class="row-stat"><b>${fmt(player.football?.goals||0)}</b><span>Gol</span></div>
       <div class="row-stat"><b>${fmt(player.football?.assists||0)}</b><span>Asist</span></div>
-      <div class="row-stat extra"><b>${fmt((player.battle?.games||0)+(player.football?.games||0)+(player.lateAnswer?.games||0))}</b><span>Toplam Maç</span></div>
+      <div class="row-stat extra"><b>${fmt((player.battle?.games||0)+(player.football?.games||0)+(player.lateAnswer?.games||0)+(player.arena?.games||0))}</b><span>Toplam Maç</span></div>
     </article>`;
 }
 

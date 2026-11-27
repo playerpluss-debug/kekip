@@ -184,21 +184,24 @@ function adminBattleSnapshot(){
 // Match the exact revoked session, not every device of the same account.
 const lateAnswer = require('./late-answer').attachLateAnswer(io, accounts,{isDraining:()=>draining});
 const football = require('./football-online');
+const arena = require('./arena').attachArena(io,accounts,{isDraining:()=>draining});
 const parties = require('./party').attachParty(app,accounts,{
  battleship:(_db,members)=>reserveBattleParty(members),
  late_answer:(_db,members)=>lateAnswer.reserveParty(members),
- football:football.createPartyRoom
+ football:football.createPartyRoom,
+ arena:(_db,members)=>arena.reserveParty(members)
 });
 function disconnectSession(token){
  if(!token)return;
  lateAnswer.disconnectSession(token);
  lobbyVoice.disconnectSession(token);
+ arena.disconnectSession(token);
  for(const sock of [...io.sockets.sockets.values()]){
   if(accounts.sessionToken({get:k=>sock.request.headers[k.toLowerCase()]})===token)sock.disconnect(true);
  }
 }
 require('./favorites').attachFavorites(app);
-accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,lateInviteOpen:lateAnswer.inviteOpen,disconnectAccount:(id)=>{parties.removeAccount(id);lateAnswer.disconnectAccount(id);lobbyVoice.disconnectAccount(id);for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&!r.party&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
+accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,lateInviteOpen:lateAnswer.inviteOpen,disconnectAccount:(id)=>{parties.removeAccount(id);lateAnswer.disconnectAccount(id);lobbyVoice.disconnectAccount(id);arena.disconnectAccount(id);for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&!r.party&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
 football.attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
@@ -212,6 +215,7 @@ const lobbyVoice = require('./lobby-voice').attachLobbyVoice(io,accounts,{
     return room&&room.phase==='waiting'&&room.players.some(p=>p.accountId===id&&connectedPlayer(p))?room.chatId:null;
   },
   football:football.voiceRoom,
+  arena:arena.voiceRoom,
   party:(_code,id)=>parties.voiceRoom(id)
 },()=>draining);
 require("./chat").attachChat(app,{lateRoom:lateAnswer.chatRoom,battleRoom:(code,id)=>{const r=rooms.get(code);return r?.players.some(p=>p.accountId===id&&connectedPlayer(p))?r.chatId:null;}});
@@ -412,11 +416,12 @@ io.on('connection', socket => {
       if(open.length<40)open.push({code:room.code,game:'battleship',host:host.name,players:room.players.length,capacity:2});
     }
     const quizRooms=lateAnswer.publicRooms(account.id);
+    const arenaRooms=arena.publicRooms(account.id);
     let footballRooms=[],partial=false;
     try{footballRooms=await football.publicRooms(account.id);}
     catch(error){partial=true;console.error('Public football rooms:',error.code||error.message);}
-    if(socket.connected)cb({ok:true,rooms:[...open,...quizRooms,...footballRooms],
-      total:total+quizRooms.length+footballRooms.length,partial});
+    if(socket.connected)cb({ok:true,rooms:[...open,...quizRooms,...footballRooms,...arenaRooms],
+      total:total+quizRooms.length+footballRooms.length+arenaRooms.length,partial});
   }));
   socket.on('createRoom', membershipHandler(async ({ name, visibility = 'private' }, cb, stillValid) => {
     if (!['public','private'].includes(visibility)) return cb({ok:false,error:'Geçersiz oda türü.'});

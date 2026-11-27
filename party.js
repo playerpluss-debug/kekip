@@ -4,7 +4,8 @@ const {randomUUID}=require('node:crypto');
 const games=Object.freeze({
   battleship:{min:2,max:2},
   football:{min:2,max:8},
-  late_answer:{min:3,max:8}
+  late_answer:{min:3,max:8},
+  arena:{min:2,max:8}
 });
 const usernamePattern=/^[a-z0-9_]{3,24}$/;
 const idPattern=/^[0-9a-f-]{36}$/;

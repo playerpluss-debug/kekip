@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="tr">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">
+ <title>KEKIP Arena | KEKIP Games</title>
+ <link rel="stylesheet" href="/kekip-navigation.css?v=05122">
+ <link rel="stylesheet" href="/game-lobbies.css?v=3">
+ <link rel="stylesheet" href="/arena.css?v=2">
+ <script src="/socket.io/socket.io.js" defer></script>
+ <script src="/late-answer-voice.js?v=lobbies" defer></script>
+ <script src="/lobby-voice-client.js?v=arena1" defer></script>
+ <script src="/arena-client.js?v=3" defer></script>
+ <script src="/match-cards.js?v=arena1" defer></script>
+ <link rel="stylesheet" href="/lobby-voice.css?v=1">
+</head>
+<body>
+<main id="arena">
+ <header class="kp-page-header">
+  <a class="kp-site-brand" href="/" aria-label="KEKIP Games ana sayfa"><span class="kp-site-mark" aria-hidden="true">K</span><span class="kp-site-word">KEKIP<em>.</em> GAMES</span></a>
+  <nav aria-label="Sayfa bağlantıları"><a href="/#kpOpenRooms" data-kp-header-link>Açık odalar</a> <a href="/party.html" data-kp-header-link>Parti</a></nav>
+ </header>
+ <section class="kp-lobby-hero arena-hero">
+  <div class="kp-lobby-copy"><p class="kp-lobby-meta">2–8 oyuncu · 6 tur · 12 mini oyun</p><h1>KEKIP Arena</h1><p>Kısa turlarda hafıza, refleks, mantık ve takım uyumunu sına.</p></div>
+  <span class="arena-mark" aria-hidden="true"></span>
+ </section>
+ <p id="arenaStatus" role="status">Oyun sunucusuna bağlanılıyor…</p>
+ <section id="arenaEntry" class="arena-entry" aria-label="Arena lobileri">
+  <form id="arenaCreate" class="arena-panel">
+   <h2>Lobi oluştur</h2>
+   <div class="arena-fields">
+    <label>Oda görünürlüğü<select name="visibility"><option value="private">Özel</option><option value="public">Herkese açık</option></select></label>
+    <label>Oyun listesi<select name="mode"><option value="mixed">Karma Arena</option><option value="custom">Özel Liste</option></select></label>
+   </div>
+   <fieldset id="arenaChoices" hidden><legend>Oynanacak mini oyunlar</legend></fieldset>
+   <button type="submit" class="arena-primary" disabled>Lobi oluştur</button>
+  </form>
+  <form id="arenaJoin" class="arena-panel">
+   <h2>Davetle katıl</h2>
+   <label>Oda kodu<input id="arenaCode" name="code" maxlength="5" autocapitalize="characters" autocomplete="off" required></label>
+   <button type="submit" disabled>Katıl</button>
+  </form>
+ </section>
+ <section id="arenaRoom" hidden aria-labelledby="arenaRoomTitle">
+  <div class="arena-panel">
+   <div class="arena-row"><h2 id="arenaRoomTitle" tabindex="-1">Arena lobisi</h2><button id="arenaLeave" type="button">Lobiden ayrıl</button></div>
+   <div class="arena-row"><p id="arenaRoomInfo"></p><button id="arenaInvite" type="button">Davet bağlantısını kopyala</button></div>
+   <ul id="arenaPlayers" class="arena-players" aria-label="Oyuncular ve puanlar"></ul>
+   <button id="arenaStart" type="button" class="arena-primary" hidden>Maçı başlat</button>
+  </div>
+  <section class="kp-lobby-voice" data-lobby-voice="arena" aria-label="Lobi ses bağlantısı" hidden>
+   <div class="kp-voice-copy"><strong>Lobi sesi</strong><span data-voice-status role="status">Dinlemek için bağlan.</span></div>
+   <div class="kp-voice-actions"><button type="button" data-voice-listen>Ses bağlantısını aç</button><button type="button" data-voice-mic aria-pressed="false">Mikrofonu aç</button></div>
+  </section>
+  <section id="arenaStage" class="arena-panel" aria-labelledby="arenaRoundTitle" hidden>
+   <div class="arena-row"><h2 id="arenaRoundTitle"></h2><span id="arenaClock" aria-hidden="true"></span></div>
+   <div id="arenaPrompt"></div>
+   <div id="arenaMoves"></div>
+  </section>
+ </section>
+</main>
+</body>
+</html>

@@ -5,7 +5,7 @@ const Pets = require('./pets');
 const Chest = require('./mystery-chest');
 const chestCollections = require('./chest-collections.json');
 
-const games = ['battleship', 'football', 'late_answer'];
+const games = ['battleship', 'football', 'late_answer', 'arena'];
 const characters = ['gece', 'golge'];
 const pageSize = 8;
 const sets = characters.flatMap(character =>
@@ -74,6 +74,7 @@ function summarize(row) {
   const entry = {game:row.game,playedAt:row.played_at};
   if (row.game==='battleship') return {...entry,outcome:result.win?'win':'loss',hits:number(result.hits),shots:number(result.shots)};
   if (row.game==='football') return {...entry,goals:number(result.goals),assists:number(result.assists)};
+  if (row.game==='arena') return {...entry,outcome:result.win?'win':'complete',score:number(result.score)};
   return {...entry,outcome:result.forfeited||result.complete===false?'incomplete':result.win?'win':'complete',correct:number(result.correct)};
 }
 

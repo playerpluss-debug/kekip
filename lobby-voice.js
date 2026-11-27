@@ -2,7 +2,7 @@
 
 const {signalPayload,voiceConfig}=require('./late-answer');
 const membershipPeriod=3500;
-const codes={battleship:/^[A-Z2-9]{5}$/,football:/^[A-F0-9]{10}$/,party:/^$/};
+const codes={battleship:/^[A-Z2-9]{5}$/,football:/^[A-F0-9]{10}$/,arena:/^[A-Z2-9]{5}$/,party:/^$/};
 
 function attachLobbyVoice(io,accounts,resolvers,isDraining=()=>false){
  const namespace=io.of('/lobby-voice'),groups=new Map();
