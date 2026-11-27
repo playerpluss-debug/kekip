@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "concept_approved_layer_production_pending",
+  "status": "pricing_approved_technical_qa_pending",
   "saleEnabled": false,
   "collectionName": "Neon Arcade",
   "theme": "Retro-fütüristik sokak modası",
@@ -37,9 +37,9 @@
         "hair-back",
         "hair-front"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 220,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "hair-back",
         "hair-front"
@@ -56,21 +56,22 @@
           "hd": "public/images/neon-arcade/gece/gece_retro_hair_ribbon_braid/hair-front-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/gece/gece_retro_hair_ribbon_braid/preview.webp"
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_hair_ribbon_braid/preview.webp",
+      "conceptApproved": true
     },
     {
       "id": "gece_retro_eye_pixel",
       "character": "gece",
       "slot": "av_eye",
-      "name": "Piksel Bakış",
+      "name": "Piksel Bakış V2",
       "rarity": "Epik",
-      "brief": "İris içinde küçük kare ve basamaklı yansıma; göz şekli ve göz koordinatları sabit.",
+      "brief": "Mor-turkuaz iris, pembe piksel kalp göz bebeği.",
       "layers": [
         "eyes"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 280,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "eyes"
       ],
@@ -81,7 +82,8 @@
           "hd": "public/images/neon-arcade/gece/gece_retro_eye_pixel/eyes-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/gece/gece_retro_eye_pixel/preview.webp"
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_eye_pixel/preview.webp",
+      "conceptApproved": true
     },
     {
       "id": "gece_retro_top_arcade",
@@ -93,9 +95,9 @@
       "layers": [
         "top"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 450,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "top-clothing"
       ],
@@ -106,7 +108,8 @@
           "hd": "public/images/neon-arcade/gece/gece_retro_top_arcade/top-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/gece/gece_retro_top_arcade/preview.webp"
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_top_arcade/preview.webp",
+      "conceptApproved": true
     },
     {
       "id": "gece_retro_bottom_wrap",
@@ -118,9 +121,9 @@
       "layers": [
         "bottom"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 280,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "bottom-clothing"
       ],
@@ -131,7 +134,8 @@
           "hd": "public/images/neon-arcade/gece/gece_retro_bottom_wrap/bottom-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/gece/gece_retro_bottom_wrap/preview.webp"
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_bottom_wrap/preview.webp",
+      "conceptApproved": true
     },
     {
       "id": "gece_retro_shoes_high",
@@ -143,9 +147,9 @@
       "layers": [
         "shoes"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 400,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "shoes"
       ],
@@ -156,7 +160,9 @@
           "hd": "public/images/neon-arcade/gece/gece_retro_shoes_high/shoes-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/gece/gece_retro_shoes_high/preview.webp"
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_shoes_high/preview.webp",
+      "conceptApproved": true,
+      "approvedRevision": "V5"
     },
     {
       "id": "gece_retro_ear_cassette",
@@ -168,9 +174,9 @@
       "layers": [
         "earring"
       ],
-      "price": null,
+      "price": 130,
       "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "access-ear"
       ],
@@ -181,7 +187,9 @@
           "hd": "public/images/neon-arcade/gece/gece_retro_ear_cassette/earring-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/gece/gece_retro_ear_cassette/preview.webp"
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_ear_cassette/preview.webp",
+      "conceptApproved": true,
+      "technicalNote": "Son onaylı kulak konumu gerçek katmana uygulanmalı."
     },
     {
       "id": "gece_retro_wrist_pixel",
@@ -193,9 +201,9 @@
       "layers": [
         "wrist"
       ],
-      "price": null,
+      "price": 150,
       "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "access-wrist"
       ],
@@ -206,22 +214,24 @@
           "hd": "public/images/neon-arcade/gece/gece_retro_wrist_pixel/wrist-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/gece/gece_retro_wrist_pixel/preview.webp"
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_wrist_pixel/preview.webp",
+      "conceptApproved": true,
+      "technicalNote": "Son onaylı bilek konumu gerçek katmana uygulanmalı."
     },
     {
       "id": "golge_retro_hair_curtain",
       "character": "golge",
       "slot": "av_hair",
-      "name": "Perde Kesim",
+      "name": "Neon Samurai",
       "rarity": "Nadir",
-      "brief": "Ortadan ayrılan hacimli iki ön tutam, kısa ense; mevcut yana taranmış ve arkaya taranmış modellerden ayrılır.",
+      "brief": "Asimetrik mor tutamlı, arkadan kısa bağlı Neon Samurai.",
       "layers": [
         "hair-back",
         "hair-front"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 220,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "kp-chest-hair-back",
         "hair"
@@ -238,21 +248,22 @@
           "hd": "public/images/neon-arcade/golge/golge_retro_hair_curtain/hair-front-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/golge/golge_retro_hair_curtain/preview.webp"
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_hair_curtain/preview.webp",
+      "conceptApproved": true
     },
     {
       "id": "golge_retro_eye_scan",
       "character": "golge",
       "slot": "av_eye",
-      "name": "Tarayıcı Bakış",
+      "name": "Altın Bakış",
       "rarity": "Epik",
-      "brief": "İriste ince yatay holografik yansıma ve çift kavisli ışık; göz çevresi değişmez.",
+      "brief": "Altın-kehribar iris ve keskin hafif kısık bakış; tarayıcı tasarımı iptal.",
       "layers": [
         "eyes"
       ],
-      "price": null,
+      "price": 280,
       "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "eyes"
       ],
@@ -263,7 +274,9 @@
           "hd": "public/images/neon-arcade/golge/golge_retro_eye_scan/eyes-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/golge/golge_retro_eye_scan/preview.webp"
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_eye_scan/preview.webp",
+      "conceptApproved": true,
+      "technicalNote": "Son teknik göz önizlemesi için görsel onay ayrı doğrulanmalı."
     },
     {
       "id": "golge_retro_top_track",
@@ -275,9 +288,9 @@
       "layers": [
         "top"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 450,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "top"
       ],
@@ -288,7 +301,9 @@
           "hd": "public/images/neon-arcade/golge/golge_retro_top_track/top-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/golge/golge_retro_top_track/preview.webp"
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_top_track/preview.webp",
+      "conceptApproved": true,
+      "approvedRevision": "V4"
     },
     {
       "id": "golge_retro_bottom_panel",
@@ -296,13 +311,13 @@
       "slot": "av_bottom",
       "name": "Frekans Pantolonu",
       "rarity": "Nadir",
-      "brief": "Düz kesim retro pist pantolonu, yana yerleştirilen kırık çizgili kumaş paneller; tokalı techwear değildir.",
+      "brief": "Mor geometrik çizgili, beyaz yarış panelli ve frekans desenli kargo jogger.",
       "layers": [
         "bottom"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 280,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "bottom"
       ],
@@ -313,7 +328,8 @@
           "hd": "public/images/neon-arcade/golge/golge_retro_bottom_panel/bottom-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/golge/golge_retro_bottom_panel/preview.webp"
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_bottom_panel/preview.webp",
+      "conceptApproved": true
     },
     {
       "id": "golge_retro_shoes_court",
@@ -325,9 +341,9 @@
       "layers": [
         "shoes"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 400,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "shoe"
       ],
@@ -338,7 +354,8 @@
           "hd": "public/images/neon-arcade/golge/golge_retro_shoes_court/shoes-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/golge/golge_retro_shoes_court/preview.webp"
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_shoes_court/preview.webp",
+      "conceptApproved": true
     },
     {
       "id": "golge_retro_neck_token",
@@ -350,9 +367,9 @@
       "layers": [
         "neck"
       ],
-      "price": null,
-      "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "price": 180,
+      "visualApprovalPending": false,
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "acc-neck"
       ],
@@ -363,7 +380,8 @@
           "hd": "public/images/neon-arcade/golge/golge_retro_neck_token/neck-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/golge/golge_retro_neck_token/preview.webp"
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_neck_token/preview.webp",
+      "conceptApproved": true
     },
     {
       "id": "golge_retro_wrist_watch",
@@ -371,13 +389,13 @@
       "slot": "av_wrist",
       "name": "Frekans Saati",
       "rarity": "Nadir",
-      "brief": "Asimetrik dikdörtgen dijital saat, sabit bilek açısında.",
+      "brief": "Yuvarlak metal kasa, mor kedi ve frekans ekranı; V2 bilek uyumu.",
       "layers": [
         "wrist"
       ],
-      "price": null,
+      "price": 150,
       "visualApprovalPending": true,
-      "assetStatus": "not_created",
+      "assetStatus": "local_candidate_not_uploaded",
       "targetRendererNodes": [
         "acc-wrist"
       ],
@@ -388,7 +406,10 @@
           "hd": "public/images/neon-arcade/golge/golge_retro_wrist_watch/wrist-hd.png"
         }
       ],
-      "thumbnail": "public/images/neon-arcade/golge/golge_retro_wrist_watch/preview.webp"
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_wrist_watch/preview.webp",
+      "conceptApproved": true,
+      "approvedConceptRevision": "V2",
+      "technicalNote": "Son teknik bilek önizlemesi için görsel onay ayrı doğrulanmalı."
     }
   ],
   "baseReference": {
@@ -402,5 +423,8 @@
       "note": "Renderer-defined eyeless base; verify active base variant before final art alignment.",
       "renderer": "public/golge-gardirop.html"
     }
-  }
+  },
+  "pricingApproved": true,
+  "pricingApprovalDate": "2026-11-27",
+  "integrationNote": "Fiyat onayı satış izni değildir. Main güncel sürümüyle uyum, katmanlar, portre renderer, satın alma ve gardırop testleri tamamlanana kadar satış kapalı."
 }
