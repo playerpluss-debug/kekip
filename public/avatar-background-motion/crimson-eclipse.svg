@@ -52,7 +52,7 @@
       <circle cx="366" cy="86" r="1.9" fill="#ffb9ad" opacity="0.48"/>
       <circle cx="439" cy="310" r="0.6" fill="#ffb9ad" opacity="0.3"/>
   </g>
-  <g transform="translate(106 -43)">
+  <g transform="translate(382 127) scale(.74) translate(-240 -194)">
     <circle class="corona" cx="240" cy="194" r="158" fill="url(#flare)"/>
     <g class="rays" fill="none" stroke-linecap="round">
       <circle cx="240" cy="194" r="101" stroke="#ff9562" stroke-width="2.5" stroke-dasharray="40 32 9 60 24 42"/>
