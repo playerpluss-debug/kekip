@@ -5,7 +5,7 @@ const choiceWindow=4000;
 const lengthPreview=2200;
 const cupsPreview=1250;
 const cupsCover=360;
-const timingWindow=9000;
+const timingWindow=10000;
 const gameOptions=Object.freeze([
  {id:'reflex',title:'Refleks Testi'},
  {id:'color',title:'Renk Farkı'},
@@ -70,7 +70,7 @@ function openRound(now,random,game='reflex'){
   const {swaps,position}=cupSwaps(round.ballSlot,random);
   round.swaps=swaps;
   round.odd=position;
- }else if(game==='timing')round.targetMs=2000+random(501)*10;
+ }else if(game==='timing')round.targetMs=3000+random(501)*10;
  else round.flashAt=startsAt+500+random(4401);
  return round;
 }

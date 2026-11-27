@@ -33,7 +33,7 @@
  const reflex=$('arenaReflex'),sound=$('arenaSound');
  const timing=$('arenaTiming'),timingStop=$('arenaTimingStop'),timingLabel=$('arenaTimingLabel'),timingTarget=$('arenaTimingTarget'),timingClock=$('arenaTimingClock');
  const timingClockVisibleMs=1500,timingClockFadeMs=450;
- const seconds=ms=>(ms/1000).toFixed(2).replace('.',',')+' sn';
+ const seconds=(ms,digits=2)=>(ms/1000).toFixed(digits).replace('.',',')+' sn';
  const picker=$('arenaGamePicker'),gameOptions=$('arenaGameOptions');
  let savingGames=false,catalogKey='';
  const colors=$('arenaColors'),colorButtons=[...colors.querySelectorAll('button')];
@@ -196,9 +196,9 @@
    }else if(game==='timing'){
     timing.hidden=false;timingClock.hidden=true;timingStop.disabled=true;timingStop.dataset.state='result';
     const own=current.players.find(player=>player.username===current.you)?.reaction;
-    update(timingTarget,seconds(current.timingTarget));
-    update(timingLabel,own?.kind==='hit'?own.ms+' ms':'Süre doldu');
-    update(prompt,own?.kind==='hit'?'Hedeften '+own.errorMs+' ms fark · '+own.points+' puan':'Cevap verilmedi · 0 puan');
+    update(timingTarget,seconds(current.timingTarget,3));
+    update(timingLabel,own?.kind==='hit'?seconds(own.ms,3):'Süre doldu');
+    update(prompt,own?.kind==='hit'?'Hedeften '+seconds(own.errorMs,3)+' fark · '+own.points+' puan':'Cevap verilmedi · 0 puan');
    }else update(prompt,'En hızlı geçerli tepki 100 puan alır.');
    return;
   }
@@ -238,8 +238,8 @@
    clock.textContent=preview?Math.max(0,Math.ceil((challenge.previewEndsAt-t)/1000))+' sn':'';
    timingStop.disabled=!lit||expired||Boolean(press)||sending||!socket.connected;
    timingStop.dataset.state=press?'result':lit&&!expired?'running':'waiting';
-   update(timingLabel,press?press.ms+' ms':expired?'Süre doldu':lit?'Durdur':'Hazırlan');
-   update(prompt,press?'Hedeften '+press.errorMs+' ms fark.':expired?'Sonraki turu bekle.':preview?'Hedef süreyi aklında tut.':lit?'Hedef süre geçtiğinde durdur.':'Tur başlıyor.');
+   update(timingLabel,press?seconds(press.ms,3):expired?'Süre doldu':lit?'Durdur':'Hazırlan');
+   update(prompt,press?'Hedeften '+seconds(press.errorMs,3)+' fark.':expired?'Sonraki turu bekle.':preview?'Hedef süreyi aklında tut.':lit?'Hedef süre geçtiğinde durdur.':'Tur başlıyor.');
    const key=current.code+':'+number;
    if(lit&&!expired&&!press&&cueKey!==key){cueKey=key;tone(700,.13);}
    return;
@@ -301,7 +301,7 @@
    parts.push(player.missed+' kaçan');
    const detail=node('small',parts.join(' · ')+
      (player.fastest===null?'':' · En hızlı '+player.fastest+' ms')+
-     (player.bestError===null?'':' · En az sapma '+player.bestError+' ms'));
+     (player.bestError===null?'':' · En az sapma '+seconds(player.bestError,3)));
    copy.append(name,detail);
    const score=node('strong',player.total+' puan');score.className='arena-result-score';
    row.append(rank,copy,score);return row;
@@ -388,7 +388,7 @@
     card.answered.hidden=!player.answered;
     card.name.textContent='@'+player.username+(player.online?'':' · Çevrimdışı');
     const last=player.reaction;
-    const reaction=last?.kind==='hit'?last.ms+' ms':last?.kind==='early'?'Erken tıklama':last?.kind==='wrong'?'Yanlış cevap':'Süre doldu';
+    const reaction=last?.kind==='hit'?(data.game==='timing'?seconds(last.ms,3):last.ms+' ms'):last?.kind==='early'?'Erken tıklama':last?.kind==='wrong'?'Yanlış cevap':'Süre doldu';
     card.score.textContent=(data.phase==='summary'&&last?reaction+' · +'+player.last+' · ':'')+player.total+' puan';
     if(list.children[index]!==card.item)list.insertBefore(card.item,list.children[index]||null);
    });
