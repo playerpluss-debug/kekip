@@ -138,13 +138,13 @@ function attachLateAnswer(io, accounts, {
   const timer=schedule(sweep,200);
   timer?.unref?.();
   nsp.use(async(socket,next)=>{
-    try{socket.data.account=await accounts.socketAccount(socket);next();}
+    try{socket.data.account=await accounts.socketAccount(socket);socket.data.session=accounts.sessionToken({get:k=>socket.request.headers[k.toLowerCase()]});next();}
     catch{next(new Error('Bu oyun için KEKIP hesabına giriş yap.'));}
   });
   nsp.on('connection',socket=>{
     const who=socket.data.account, rates=new Map();
     const makePlayer=()=>({id:who.id,username:who.username,socketId:socket.id,online:true,ready:false,
-      microphone:false,until:null,session:accounts.sessionToken({get:k=>socket.request.headers[k.toLowerCase()]})});
+      microphone:false,until:null,session:socket.data.session});
     function bind(event,keys,handler,{roomOnly=false,signal=false}={}){
       socket.on('late:'+event,(data,ack)=>{
         if(typeof ack!=='function')return;
@@ -278,20 +278,17 @@ function attachLateAnswer(io, accounts, {
     },
     disconnectAccount(id){
       const room=members.get(id);
-      if(!room)return;
-      const socket=nsp.sockets.get(find(room,id)?.socketId);
-      remove(room,id,now(),'Hesap erişimi kapatıldı.');
-      socket?.disconnect();
+      if(room)remove(room,id,now(),'Hesap erişimi kapatıldı.');
+      for(const socket of [...nsp.sockets.values()])if(socket.data.account?.id===id)socket.disconnect(true);
     },
     disconnectSession(token){
       if(!token)return;
       for(const [id,room] of [...members]){
         const p=find(room,id);
         if(p?.session!==token)continue;
-        const socket=nsp.sockets.get(p.socketId);
         remove(room,id,now(),'Oturum sona erdi.');
-        socket?.disconnect();
       }
+      for(const socket of [...nsp.sockets.values()])if(socket.data.session===token)socket.disconnect(true);
     },
     close(){cancel(timer);}
   };

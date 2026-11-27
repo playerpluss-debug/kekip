@@ -72,14 +72,14 @@ function harness(options={}){
     socketAccount:async socket=>socket.account,sessionToken:req=>req.get('cookie'),
     recordGameResults:async (...args)=>{records.push(args);if(options.failOnce&&records.length===1)throw Error('retry');}
   },{now:()=>t,schedule:fn=>{sweep=fn;return 1;},cancel(){},rng:max=>roll++%max,uuid:()=>('match-'+(++uuid)),env:{},logger:{error(){}}});
-  async function connect(i,suffix=''){
+  async function connect(i,suffix='',session='session'+i){
     const events=new Map(),sent=[];
-    const socket={id:'sock'+i+suffix,account:player(i),data:{},request:{headers:{cookie:'session'+i}},
+    const socket={id:'sock'+i+suffix,account:player(i),data:{},request:{headers:{cookie:session}},
       on:(e,fn)=>events.set(e,fn),emit:(e,d)=>sent.push([e,d]),
       state(){return sent.findLast(([e])=>e==='late:state')?.[1];},
       messages(e){return sent.filter(([name])=>name===e).map(([,d])=>d);},
       send(e,d={}){let result;events.get('late:'+e)(d,r=>{result=r});assert.ok(result);return result;},
-      disconnect(){nsp.sockets.delete(this.id);events.get('disconnect')?.();}
+      disconnect(){this.closed=true;nsp.sockets.delete(this.id);events.get('disconnect')?.();}
     };
     await new Promise((resolve,reject)=>nsp.auth(socket,e=>e?reject(e):resolve()));
     nsp.sockets.set(socket.id,socket);nsp.connect(socket);return socket;
@@ -275,5 +275,21 @@ test('party seats share one private lobby and can only be resumed by reserved ac
  assert.equal(h.backend.inviteOpen(code,'id0','id3'),false);
  for(const s of [host,first,second])assert.equal(s.send('ready',{ready:true}).ok,true);
  assert.equal(host.send('start').ok,true);
+ h.backend.close();
+});
+
+test('revocation closes authenticated lobby sockets without closing a different session',async()=>{
+ const h=harness();
+ const first=await h.connect(0,'idle','revoked');
+ const other=await h.connect(0,'other','active');
+ const unrelated=await h.connect(1);
+ h.backend.disconnectSession('revoked');
+ assert.equal(first.closed,true);
+ assert.equal(other.closed,undefined);
+ assert.equal(unrelated.closed,undefined);
+ assert.equal(other.send('create',settings).ok,true);
+ h.backend.disconnectAccount('id0');
+ assert.equal(other.closed,true);
+ assert.equal(unrelated.closed,undefined);
  h.backend.close();
 });
