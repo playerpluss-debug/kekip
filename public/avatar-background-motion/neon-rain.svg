@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 660">
+  <style>
+
+    .rain { animation: fall 2.8s linear infinite; }
+    .sign { animation: glow 7s ease-in-out infinite alternate; }
+    @keyframes fall { to { transform: translate(-84px, 128px); } }
+    @keyframes glow { from { opacity: .55; } to { opacity: .95; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#110c2a"/><stop offset=".7" stop-color="#34234e"/><stop offset="1" stop-color="#120d21"/></linearGradient>
+    <pattern id="windows" width="16" height="24" patternUnits="userSpaceOnUse"><path d="M4 6h5v3H4zm0 11h8v2H4z" fill="#9570c2" opacity=".32"/></pattern>
+    <pattern id="drops" width="84" height="128" patternUnits="userSpaceOnUse"><path d="M12 18l-8 18m57 26-9 22m27 19-5 12M28 89l-6 14" stroke="#a8d6f5" stroke-width="1.3" opacity=".48"/></pattern>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h480v660H0z"/>
+  <circle cx="245" cy="170" r="67" fill="#ca80d6" opacity=".2"/>
+  <defs><path id="skyline" d="M0 243h66v78h54v-49h47v170h152V288h47v42h48V220h66v365H0z"/></defs><use href="#skyline" fill="#191229"/>
+  <use href="#skyline" fill="url(#windows)"/>
+  <path fill="#151023" d="M0 493h480v167H0z"/>
+  <path fill="none" stroke="#b273de" opacity=".35" d="M0 493h480M0 534h480M0 584h480M239 493 93 660m146-167 151 167"/>
+  <path class="sign" fill="none" stroke="#e78cfa" stroke-width="3" d="M30 306v101h37V306zM420 283v118h32V283z"/>
+  <rect class="rain" x="-84" y="-128" width="648" height="920" fill="url(#drops)"/>
+</svg>

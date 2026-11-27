@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 660">
+  <style>
+
+    .curtain { animation: drift 14s ease-in-out infinite alternate; }
+    .echo { animation-delay: -7s; }
+    @keyframes drift { from { transform: translate(-20px, -9px); } to { transform: translate(24px, 20px); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#090f27"/><stop offset=".65" stop-color="#173551"/><stop offset="1" stop-color="#101626"/></linearGradient>
+    <linearGradient id="light" x2="0" y2="1"><stop stop-color="#74f7d5" stop-opacity="0"/><stop offset=".55" stop-color="#6ff4d9" stop-opacity=".55"/><stop offset="1" stop-color="#8b76ff" stop-opacity=".08"/></linearGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h480v660H0z"/>
+  <path fill="#b9f4fc" opacity=".72" d="M35 96h2v2h-2zM89 54h3v3h-3zM155 113h2v2h-2zM202 50h2v2h-2zM284 94h3v3h-3zM337 49h2v2h-2zM389 129h3v3h-3zM440 74h2v2h-2z"/>
+  <g class="curtain">
+    <path fill="url(#light)" d="M-70 98Q44 196 158 111T388 106T526 91L526 181Q443 257 351 176T142 203T-70 201Z"/>
+    <path fill="none" stroke="#9cf7e2" stroke-width="2" opacity=".4" d="M-70 156Q45 230 155 154T371 147T526 131"/>
+  </g>
+  <g class="curtain echo" opacity=".35"><path fill="url(#light)" d="M-90 187Q36 276 178 190T384 188T540 159V253Q460 314 370 247T150 280T-90 268Z"/></g>
+  <path fill="#21384e" d="M0 456l73-89 26 24 61-61 68 89 62-45 20 21 63-85 107 118v232H0Z"/>
+  <path fill="#111d30" d="M0 482l71-59 54 28 63 65 59-35 87 14 71-73 75 44v194H0Z"/>
+  <path fill="#0b1423" d="M0 574Q98 539 196 574T480 559v101H0Z"/>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 660">
+  <style>
+
+    .reflection { animation: shimmer 6s ease-in-out infinite alternate; }
+    .wave { animation: swell 9s ease-in-out infinite alternate; }
+    @keyframes shimmer { from { opacity: .45; transform: translateX(-10px); } to { opacity: .95; transform: translateX(9px); } }
+    @keyframes swell { from { transform: translate(-22px, 4px); } to { transform: translate(23px, -6px); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+  <defs>
+    <radialGradient id="sky" cx=".58" cy=".29" r=".77"><stop stop-color="#493f78"/><stop offset="1" stop-color="#101428"/></radialGradient>
+    <linearGradient id="water" x2="0" y2="1"><stop stop-color="#23385c"/><stop offset="1" stop-color="#0d172b"/></linearGradient>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h480v660H0z"/>
+  <circle cx="305" cy="151" r="61" fill="#b3a9ec" opacity=".12"/>
+  <circle cx="305" cy="151" r="47" fill="#d9d3f7"/>
+  <path fill="#b2a9db" opacity=".47" d="M275 145a21 16 0 0 1 33-12 24 17 0 0 0-10 23 21 12 0 0 1-23-11zm37 23q17-6 22 7-16 11-25 2z"/>
+  <path fill="#29294a" d="M0 367q60-42 108-17t88 13q44-15 89 5 60 14 108-24t87-15v133H0z"/>
+  <path fill="url(#water)" d="M0 397h480v263H0z"/>
+  <g class="reflection" stroke="#c0b4ff" stroke-linecap="round" fill="none">
+    <path opacity=".45" d="M261 412h86m-117 28h165m-135 30h111m-167 32h191m-129 33h88m-146 47h180"/>
+    <path opacity=".25" d="M28 451h108m-90 39h138m214 60h74M33 595h127"/>
+  </g>
+  <path class="wave" d="M-80 510q60-16 120 0t120 0 120 0 120 0 120 0 120 0M-80 564q60-16 120 0t120 0 120 0 120 0 120 0 120 0M-80 627q60-16 120 0t120 0 120 0 120 0 120 0 120 0" fill="none" stroke="#7ca6cf" stroke-width="2" opacity=".4"/>
+</svg>
