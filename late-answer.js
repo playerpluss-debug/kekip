@@ -78,9 +78,10 @@ function attachLateAnswer(io, accounts, {
   }
   function reconcilePause(room,t) {
     if(!['intro','answer'].includes(room.phase)){room.pausedRemaining=null;return;}
-    const player=find(room,room.order[room.turn]);
-    if(!player?.online&&room.deadline!==null){room.pausedRemaining=Math.max(1,room.deadline-t);room.deadline=null;}
-    if(player?.online&&room.pausedRemaining!=null){room.deadline=t+room.pausedRemaining;room.pausedRemaining=null;}
+    const player=find(room,room.order[room.turn]),reader=game.reader(room);
+    const ready=player?.online&&reader?.online;
+    if(!ready&&room.deadline!==null){room.pausedRemaining=Math.max(1,room.deadline-t);room.deadline=null;}
+    if(ready&&room.pausedRemaining!=null){room.deadline=t+room.pausedRemaining;room.pausedRemaining=null;}
   }
   function persist(room,t) {
     if(room.phase!=='final'||room.persisted||room.saving||room.retryAt>t)return;
@@ -206,20 +207,15 @@ function attachLateAnswer(io, accounts, {
     bind('start',[],(_,ack,room,t)=>{
       if(room.host!==who.id||!game.canStart(room))
         return fail(ack,'Başlamak için en az 3 oyuncu hazır olmalı.');
-      if(game.needsNewRoom(room)){
-        const next=code();
-        if(!next)return fail(ack,'Yeni soru havuzu için oda kodu oluşturulamadı.');
-        rooms.delete(room.code);room.code=next;room.chatId=uuid();room.usedQuestions.clear();rooms.set(next,room);
-      }
       game.start(room,t,uuid(),rng);
       ack({ok:true});broadcast(room,t);
     },{roomOnly:true});
     bind('turn-ready',['sequence'],(data,ack,room,t)=>{
       if(!game.readyTurn(room,who.id,data.sequence,t))return fail(ack,'Hazırım düğmesini yalnızca sıradaki yarışmacı kullanabilir.');
-      ack({ok:true});broadcast(room,t);
+      reconcilePause(room,t);ack({ok:true});broadcast(room,t);
     },{roomOnly:true});
     bind('vote',['correct','sequence'],(data,ack,room,t)=>{
-      if(!game.vote(room,who.id,data,t))return fail(ack,'Oy kaydedilemedi. Cevap süresi veya sıran değişmiş olabilir.');
+      if(!game.vote(room,who.id,data,t))return fail(ack,'Bu işlemi yalnızca soruyu okuyan oyuncu, süre dolmadan yapabilir.');
       reconcilePause(room,t);ack({ok:true});broadcast(room,t);
     },{roomOnly:true});
     bind('microphone',['enabled'],(data,ack,room,t)=>{
@@ -234,7 +230,7 @@ function attachLateAnswer(io, accounts, {
     bind('rematch',[],(_,ack,room,t)=>{
       if(room.host!==who.id||room.phase!=='final'||!room.persisted)return fail(ack,'Maç kaydı tamamlanınca yeniden oynayabilirsin.');
       const players=room.players.filter(p=>!p.left);
-      Object.assign(room,game.createRoom(room.code,players[0],room.settings),{players,host:who.id,usedQuestions:room.usedQuestions,
+      Object.assign(room,game.createRoom(room.code,players[0],room.settings),{players,host:who.id,
         finalRows:null,pausedRemaining:null,retryAt:0,savingError:false});
       for(const player of players)player.ready=false;
       ack({ok:true});broadcast(room,t);
@@ -265,8 +261,8 @@ function attachLateAnswer(io, accounts, {
     },
     checkpoint(){
       return [...rooms.values()].map(room=>{
-        const {rates,saving,kicked,votes,usedQuestions,turnStart,players,...state}=room;
-        return {...state,votes:[...votes],usedQuestions:[...usedQuestions],kicked:[...kicked],
+        const {rates,saving,kicked,turnStart,players,...state}=room;
+        return {...state,kicked:[...kicked],
           turnStart:turnStart?[...turnStart]:null,players:players.map(({session,socketId,online,microphone,...player})=>player)};
       });
     },
@@ -277,9 +273,10 @@ function attachLateAnswer(io, accounts, {
         if(!saved||!CODE.test(saved.code)||!Array.isArray(saved.players)||!saved.players.length||
            saved.players.length>game.MAX_PLAYERS||rooms.has(saved.code)||saved.players.some(p=>!p?.id||(!p.left&&members.has(p.id))))continue;
         const {votes,usedQuestions,kicked,turnStart,players,...state}=saved;
-        const room={...state,votes:new Map(votes||[]),usedQuestions:new Set(usedQuestions||[]),kicked:new Set(kicked||[]),
+        const room={...state,kicked:new Set(kicked||[]),
           turnStart:turnStart?new Map(turnStart):null,rates:new Map(),saving:false,retryAt:0,touched:t,
           players:players.map(p=>({...p,online:false,microphone:false,socketId:null,session:null,until:t+game.RESUME_MS}))};
+        game.migrateCheckpoint(room,rng);
         if(Number.isFinite(room.deadline))room.deadline=t+Math.max(1,room.deadline-capturedAt);
         reconcilePause(room,t);
         rooms.set(room.code,room);

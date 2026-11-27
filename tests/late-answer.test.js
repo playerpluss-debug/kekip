@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const game = require('../late-answer-game');
 const {attachLateAnswer,voiceConfig,signalPayload}=require('../late-answer');
 const bank=require('../late-answer-questions.json');
-const settings={questions:5,seconds:7,visibility:'public'};
+const settings={visibility:'public'};
 const player=i=>({id:'id'+i,username:'player'+i,online:true,ready:true});
 function room(size=3){
   const r=game.createRoom('ABCDE',player(0),settings);
@@ -18,51 +18,54 @@ test('120 editable unique questions, valid settings and bounded draw',()=>{
   assert.ok(bank.length>=120);
   assert.equal(new Set(bank.map(q=>q.question)).size,bank.length);
   for(const q of bank)assert.ok(q.category&&q.question.endsWith('?')&&q.answers.length>=2);
-  assert.equal(game.validateSettings({...settings,seconds:6}),null);
+  assert.equal(game.validateSettings({visibility:'other'}),null);
   assert.deepEqual(game.validateSettings(settings),settings);
   assert.throws(()=>game.drawQuestions(bank.length+1),RangeError);
 });
 
-test('first prompt, delayed answers, no answer leak, final answer and timeout',()=>{
+test('first contestant is ready, the next player reads, and one deadline governs every answer',()=>{
   const r=room();
-  assert.equal(r.phase,'intro');
-  assert.equal(game.snapshot(r,'id1',0).answers,null);
-  assert.equal(game.snapshot(r,'id0',0).question,bank[0].question);
-  assert.equal(game.advance(r,r.deadline-1),false);
-  game.advance(r,r.deadline);
-  assert.equal(game.snapshot(r,'id0',r.deadline).question,bank[1].question);
-  assert.equal(game.snapshot(r,'id0',r.deadline).answers,null);
-  assert.equal(game.snapshot(r,'outsider',r.deadline).answers,null);
-  assert.deepEqual(game.snapshot(r,'id1',r.deadline).answers,bank[0].answers);
-  assert.equal(choose(r,'id0',true),false);
+  assert.equal(r.phase,'turn_ready');
+  assert.equal(game.snapshot(r,'id0',0).question,null);
+  assert.equal(game.readyTurn(r,'id1',r.sequence,10),false);
+  assert.equal(game.readyTurn(r,'id0',r.sequence,10),true);
+  assert.equal(r.deadline,60010);
+  assert.equal(game.snapshot(r,'id0',10).question,bank[0].question);
+  assert.equal(game.snapshot(r,'id1',10).answers,null);
+  assert.equal(choose(r,'id1',false,20),false);
+  assert.equal(choose(r,'id2',true,20),false);
+  assert.equal(choose(r,'id1',true,20),true);
+  assert.equal(r.players[0].correct,0);
+  assert.equal(game.snapshot(r,'id0',20).question,bank[1].question);
+  assert.equal(game.snapshot(r,'id0',20).answers,null);
+  assert.equal(game.snapshot(r,'id2',20).answers,null);
+  assert.deepEqual(game.snapshot(r,'id1',20).answers,bank[0].answers);
+  assert.equal(game.vote(r,'id1',{sequence:r.sequence-1,correct:true},30),false);
+  assert.equal(choose(r,'id0',true,30),false);
+  assert.ok(choose(r,'id1',true,30));
+  assert.ok(choose(r,'id1',false,40));
+  for(let i=0;i<15;i++)assert.ok(choose(r,'id1',true,100+i));
+  assert.equal(r.players[0].correct,16);
+  assert.equal(r.deadline,60010);
   assert.equal(choose(r,'id1',true,r.deadline),false);
-  assert.equal(game.vote(r,'id1',{sequence:r.sequence-1,correct:true},r.deadline-1),false);
-  assert.equal(game.vote(r,'id1',{sequence:r.sequence,correct:'true'},r.deadline-1),false);
-  assert.ok(choose(r,'id1',true));
-  assert.equal(choose(r,'id1',false),false);
-  assert.ok(choose(r,'id2',false));
-  assert.equal(r.last.correct,true);
-  assert.deepEqual(r.players.map(p=>p.score),[2,1,0]);
-  while(r.step<5)game.advance(r,r.deadline);
-  assert.equal(game.snapshot(r,'id0',r.deadline).question,null);
-  assert.deepEqual(game.snapshot(r,'id1',r.deadline).answers,bank[4].answers);
-  game.advance(r,r.deadline);
+  assert.equal(game.advance(r,60009),false);
+  assert.equal(game.advance(r,60010),true);
   assert.equal(r.phase,'summary');
-  assert.equal(r.last.correct,false);
-  assert.equal(r.last.votes,0);
+  assert.equal(r.last.correct,16);
 });
 
-test('majority and cancelled turn restore only the unfinished round',()=>{
+test('cancelled turns restore only the unfinished round and tied scores share a rank',()=>{
   const r=room(4);
-  game.advance(r,r.deadline);
-  choose(r,'id1',true);choose(r,'id2',false);choose(r,'id3',false);
-  assert.deepEqual(r.players.map(p=>p.score),[0,0,1,1]);
-  choose(r,'id1',true);choose(r,'id2',true);
-  assert.equal(game.removePlayer(r,'id0',r.deadline-1),true);
-  assert.equal(r.phase,'summary');assert.equal(r.last.kind,'cancelled');
-  assert.deepEqual(r.players.map(p=>p.score),[0,0,0,0]);
-  assert.deepEqual(game.rows(r)[0].result,{complete:false,forfeited:true,win:false,scoreHalf:0,correct:0,juryAgreed:0});
+  game.readyTurn(r,'id0',r.sequence,0);
+  choose(r,'id1',true,100);choose(r,'id1',true,200);
+  assert.equal(game.removePlayer(r,'id0',1000),true);
+  assert.equal(r.last.kind,'cancelled');
+  assert.deepEqual(game.rows(r)[0].result,{complete:false,forfeited:true,win:false,rank:null,scoreHalf:0,correct:0,juryAgreed:0});
   assert.equal(r.host,'id1');
+  Object.assign(r.players[1],{correct:9,completed:true});
+  Object.assign(r.players[2],{correct:9,completed:true});
+  Object.assign(r.players[3],{correct:2,completed:true});
+  assert.deepEqual(game.rows(r).slice(1).map(row=>[row.result.rank,row.result.scoreHalf]),[[1,6],[1,6],[3,2]]);
 });
 
 function harness(options={}){
@@ -96,47 +99,47 @@ async function open(h,count,options=settings){
   return {sockets,code};
 }
 
+function ready(socket){
+  return socket.send('turn-ready',{sequence:socket.state().sequence});
+}
+function approve(socket){
+  return socket.send('vote',{correct:true,sequence:socket.state().sequence});
+}
 for(const count of [3,8])test('complete '+count+' player match on fake sockets',async()=>{
-  const h=harness(),opts={...settings,questions:count===8?10:5};const {sockets,code}=await open(h,count,opts);
-  const seen=new Set();
-  for(const contestant of sockets){
-    if(contestant.state().phase==='turn_ready')assert.equal(contestant.send('turn-ready',{sequence:contestant.state().sequence}).ok,true);
-    assert.equal(contestant.state().phase,'intro');
-    seen.add(contestant.state().question);
-    h.advance(3000);
-    for(let q=1;q<=opts.questions;q++){
-      const st=contestant.state();
-      assert.equal(st.phase,'answer');assert.equal(st.answers,null);
-      if(st.question)seen.add(st.question);
-      assert.equal(contestant.send('vote',{sequence:st.sequence,correct:true}).ok,false);
-      h.advance(100);
-      for(const judge of sockets.filter(s=>s!==contestant)){
-        assert.ok(judge.state().answers.length>=2);
-        assert.equal(judge.send('vote',{sequence:st.sequence,correct:true}).ok,true);
-      }
-    }
-    assert.equal(contestant.state().phase,'summary');
+  const h=harness(),{sockets,code}=await open(h,count);
+  for(let index=0;index<sockets.length;index++){
+    const contestant=sockets[index],reader=sockets[(index+1)%count],spectator=sockets[(index+2)%count];
+    assert.equal(contestant.state().phase,'turn_ready');
+    assert.equal(contestant.state().reader,reader.account.username);
+    assert.equal(ready(contestant).ok,true);
+    assert.equal(approve(reader).ok,true);
+    assert.equal(approve(spectator).ok,false);
+    for(let i=0;i<=index;i++)assert.equal(approve(reader).ok,true);
+    assert.equal(contestant.state().deadline-h.now(),60000);
+    h.advance(60000);
+    assert.equal(contestant.state().last.correct,index+1);
     h.advance(4000);
   }
-  assert.equal(seen.size,count*opts.questions);
   assert.equal(sockets[0].state().phase,'final');
   await new Promise(setImmediate);
-  assert.equal(h.records.length,1);
-  const [name,,result,tx,cardDrops]=h.records[0];
-  assert.equal(name,'late_answer');assert.equal(tx,null);assert.equal(cardDrops,true);
-  assert.ok(result.every(r=>r.result.complete&&r.result.correct===opts.questions&&r.result.win));
+  const [name,,result,tx,cards]=h.records[0];
+  assert.equal(name,'late_answer');assert.equal(tx,null);assert.equal(cards,true);
+  assert.deepEqual(result.map(r=>r.result.correct),sockets.map((_,i)=>i+1));
+  assert.equal(result.at(-1).result.rank,1);
+  assert.equal(result.at(-1).result.win,true);
+  assert.equal(result[0].result.scoreHalf,2);
   assert.ok(sockets.every(s=>s.messages('late:recorded').length===1));
-  assert.equal(h.backend.inviteOpen(code,'id0','unknown'),false);
   assert.equal(sockets[0].send('rematch').ok,true);
   for(const s of sockets)s.send('ready',{ready:true});
   assert.equal(sockets[0].send('start').ok,true);
-  if(count===8)assert.notEqual(sockets[0].state().code,code);
-  else assert.equal(seen.has(sockets[0].state().question),false);
+  assert.equal(sockets[0].state().code,code);
+  assert.equal(sockets[0].state().phase,'turn_ready');
 });
 
 test('disconnect reserves seat, pauses contestant timer and rejects duplicate accounts',async()=>{
   const h=harness();const {sockets,code}=await open(h,3);
-  h.advance(3000);
+  assert.equal(ready(sockets[0]).ok,true);
+  assert.equal(approve(sockets[1]).ok,true);
   const duplicate=await h.connect(0,'duplicate');
   assert.equal(duplicate.send('join',{code}).ok,false);
   assert.equal(duplicate.send('resume',{code}).ok,false);
@@ -147,7 +150,7 @@ test('disconnect reserves seat, pauses contestant timer and rejects duplicate ac
   assert.equal(sockets[1].send('vote',{sequence,correct:true}).ok,false);
   assert.equal(duplicate.send('resume',{code}).ok,true);
   assert.equal(duplicate.state().sequence,sequence);
-  assert.equal(duplicate.state().deadline-h.now(),7000);
+  assert.equal(duplicate.state().deadline-h.now(),60000);
   duplicate.disconnect();
   h.advance(60000);
   assert.equal(sockets[1].state().last.kind,'cancelled');
@@ -209,8 +212,7 @@ test('final recording retries and uses the same snapshot and match ID',async()=>
   const h=harness({failOnce:true});const {sockets}=await open(h,3);
   for(const contestant of sockets){
     if(contestant.state().phase==='turn_ready')assert.equal(contestant.send('turn-ready',{sequence:contestant.state().sequence}).ok,true);
-    h.advance(3000);
-    for(let i=0;i<settings.questions;i++)h.advance(7000);
+    h.advance(60000);
     assert.equal(contestant.state().phase,'summary');
     h.advance(4000);
   }
@@ -226,8 +228,8 @@ test('final recording retries and uses the same snapshot and match ID',async()=>
 
 test('only the next contestant can start the next round, and waiting does not reveal prompts',async()=>{
   const h=harness(),{sockets}=await open(h,3);
-  h.advance(3000);
-  for(let i=0;i<settings.questions;i++)h.advance(7000);
+  assert.equal(ready(sockets[0]).ok,true);
+  h.advance(60000);
   assert.equal(sockets[0].state().phase,'summary');
   h.advance(4000);
   const [first,next,other]=sockets;
@@ -243,13 +245,13 @@ test('only the next contestant can start the next round, and waiting does not re
   assert.equal(next.send('turn-ready',{sequence:state.sequence}).ok,true);
   assert.equal(next.send('turn-ready',{sequence:state.sequence}).ok,false);
   assert.equal(next.state().phase,'intro');
-  assert.equal(next.state().deadline-h.now(),3000);
+  assert.equal(next.state().deadline-h.now(),60000);
   assert.ok(next.state().question);
 });
 test('an expired next contestant is skipped while the room waits for the following one',async()=>{
   const h=harness(),{sockets}=await open(h,3);
-  h.advance(3000);
-  for(let i=0;i<settings.questions;i++)h.advance(7000);
+  assert.equal(ready(sockets[0]).ok,true);
+  h.advance(60000);
   h.advance(4000);
   sockets[1].disconnect();
   h.advance(60000);
@@ -297,7 +299,10 @@ test('revocation closes authenticated lobby sockets without closing a different 
 test('restores a paused round and reserves the same seats across process restart',async()=>{
  const before=harness();
  const {sockets,code}=await open(before,3);
- before.advance(3000);
+ assert.equal(ready(sockets[0]).ok,true);
+ assert.equal(approve(sockets[1]).ok,true);
+ sockets[1].disconnect();
+ assert.equal(sockets[0].state().pausedFor,'reader');
  const old=sockets[0].state();
  assert.equal(old.phase,'answer');
  const data=JSON.parse(JSON.stringify(before.backend.checkpoint()));

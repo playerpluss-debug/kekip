@@ -25,7 +25,7 @@
   );
   let state=null, config=null, offset=0, sequence=-1, announced=null, pending=false, microphonePending=false, microphoneEpoch=0, lastSettings='';
   const note=message=>text('notice',message);
-  const settings=form=>({questions:Number(form.elements.questions.value),seconds:Number(form.elements.seconds.value),visibility:form.elements.visibility.value});
+  const settings=form=>({visibility:form.elements.visibility.value});
   window.KEKIPLateAnswer={
     room(){return state&&socket.connected?{game:'late_answer',code:state.code}:null},
     lobby(){return state?.phase==='lobby'&&state.players.length<8?this.room():null}
@@ -48,7 +48,7 @@
     const result=await emit('list');
     $('publicRooms').replaceChildren(...result.rooms.map(r=>{
       const row=node('div');row.className='row';
-      row.append(node('span','@'+r.host+' · '+r.players+'/8 · '+r.settings.questions+' soru'));
+      row.append(node('span','@'+r.host+' · '+r.players+'/8 · 60 sn / oyuncu'));
       const button=node('button','Katıl');button.type='button';button.onclick=()=>run(()=>enter('join',{code:r.code}));row.append(button);
       return row;
     }));
@@ -101,7 +101,7 @@
     return card;
   }
   function paintPlayers(){
-    const sorted=state.phase==='final'?[...state.players].sort((a,b)=>Number(b.complete)-Number(a.complete)||b.score-a.score):state.players;
+    const sorted=state.phase==='final'?[...state.players].sort((a,b)=>Number(b.complete)-Number(a.complete)||(a.rank??Infinity)-(b.rank??Infinity)||b.correct-a.correct):state.players;
     for(const [name,card] of cards)if(!sorted.some(p=>p.username===name)){cards.delete(name);card.remove();}
     let i=0;
     for(const p of sorted){
@@ -110,14 +110,16 @@
       const onStage=['turn_ready','intro','answer'].includes(state.phase)&&!p.left;
       const contestant=onStage&&p.username===state.contestant;
       card.dataset.contestant=String(contestant);
-      card.dataset.jury=String(onStage&&!contestant);
+      const reading=onStage&&p.username===state.reader;
+      card.dataset.jury=String(reading);
       card.dataset.seat=String(i);
-      card.parts.role.hidden=!onStage;
-      const role=contestant?'Yarışmacı':'Jüri';
+      card.parts.role.hidden=!contestant&&!reading;
+      const role=contestant?'Yarışmacı':'Soru okuyan';
       if(card.parts.role.textContent!==role)card.parts.role.textContent=role;
       card.dataset.online=String(p.online);
       const status=p.left?'Ayrıldı':!p.online?'Bağlantı bekleniyor':p.win?'Kazanan':state.phase==='lobby'?(p.ready?'Hazır':'Hazırlanıyor'):(p.microphone?'Mikrofon açık':'Mikrofon kapalı');
-      const line=status+' · '+p.score.toLocaleString('tr-TR')+' puan'+(p.username===state.host?' · Oda sahibi':'');
+      const points=state.phase==='final'?' · '+(p.rank?p.rank+'. sıra · ':'')+p.score+' puan':'';
+      const line=status+(state.phase==='lobby'?'':' · '+p.correct+' doğru')+points+(p.username===state.host?' · Oda sahibi':'');
       if(card.parts.status.textContent!==line)card.parts.status.textContent=line;
       card.parts.controls.hidden=p.username===state.me||!p.online;
       card.parts.kick.hidden=state.host!==state.me||p.username===state.me||p.left||state.phase==='final';
@@ -126,26 +128,36 @@
     }
   }
   function paintQuestion(){
-    const isContestant=state.contestant===state.me, playing=['intro','answer'].includes(state.phase);
+    const isContestant=state.contestant===state.me,isReader=state.reader===state.me;
+    const playing=['intro','answer'].includes(state.phase),waiting=state.phase==='turn_ready';
     $('play').hidden=state.phase==='lobby';
-    const waiting=state.phase==='turn_ready';
-    const label=state.phase==='final'?'Maç sonucu':state.phase==='summary'?'Tur özeti':waiting?'Sıradaki tur':isContestant?'Yarışmacısın':'Jüri üyesisin';
-    text('role',label);
+    text('role',state.phase==='final'?'Maç sonucu':state.phase==='summary'?'Tur özeti':waiting?'Sıradaki tur':
+      isContestant?'Yarışmacısın':isReader?'Soruyu sen okuyorsun':'İzliyorsun');
     text('questionMeta',state.phase==='final'?'':state.turn+' / '+state.turns+' tur'+(state.category?' · '+state.category:''));
-    text('prompt',state.phase==='final'?'Final sıralaması':state.phase==='summary'?(state.last?.kind==='cancelled'?'Tur iptal edildi':'Tur tamamlandı'):waiting?'Sıra @'+state.contestant+' oyuncusunda':(state.question??'Son cevap'));
+    text('prompt',state.phase==='final'?'Final sıralaması':state.phase==='summary'?(state.last?.kind==='cancelled'?'Tur iptal edildi':'Tur tamamlandı'):
+      waiting?'Sıra @'+state.contestant+' oyuncusunda':(state.question??'Soru hazırlanıyor'));
     let instruction='';
-    if(waiting)instruction=isContestant?'Hazır olduğunda tahtadaki düğmeye bas.':'Sıradaki yarışmacının hazır olması bekleniyor.';
-    if(state.phase==='intro')instruction='Bu soruyu aklında tut. Şimdi cevap verme.';
-    if(state.phase==='answer')instruction=isContestant?'Bir önceki sorunun cevabını sesli söyle.':'Yarışmacının önceki soruya verdiği cevabı süre içinde değerlendir.';
-    if(playing&&!state.deadline)instruction='Yarışmacının yeniden bağlanması bekleniyor.';
-    if(state.phase==='final')instruction=state.persisted?'Sonuç kaydedildi.':state.savingError?'Sonuç kaydedilemedi. Sunucu tekrar deniyor.':'Sonuç kaydediliyor…';
+    if(waiting)instruction=isContestant?'Hazır olduğunda Hazırım düğmesine bas. 60 saniyen başlayacak.':
+       '@'+state.contestant+' hazır olduğunda tur başlayacak. Soruları @'+state.reader+' okuyacak.';
+    if(state.phase==='intro')instruction=isReader?'İlk soruyu sesli oku, ardından İlk soruyu okudum’a bas.':
+       'İlk soruyu aklında tut. Henüz cevap verme.';
+    if(state.phase==='answer')instruction=isContestant?'Bir önceki sorunun cevabını sesli söyle.':
+       isReader?'Tahtadaki yeni soruyu sesli oku. Önceki cevap doğruysa Doğru’ya bas.':
+       '@'+state.reader+' soruları okuyor ve cevapları değerlendiriyor.';
+    if(playing&&state.pausedFor)instruction=state.pausedFor==='reader'?'Soruyu okuyan oyuncunun bağlantısı bekleniyor.':'Yarışmacının bağlantısı bekleniyor.';
+    if(state.phase==='final')instruction=state.persisted?'Sıralama 60 saniyedeki doğru cevap sayısına göre hesaplandı.':
+       state.savingError?'Sonuç kaydedilemedi. Sunucu tekrar deniyor.':'Sonuç kaydediliyor…';
     text('instruction',instruction);
     $('answer').hidden=!state.answers?.length;
-    text('answer',state.answers?.length?'Kabul edilen cevaplar: '+state.answers.join(' / '):'');
-    $('votes').hidden=state.phase!=='answer'||isContestant;
-    const voteDisabled=state.voted||!state.deadline||Date.now()+offset>=state.deadline;
-    $('yes').disabled=voteDisabled;$('no').disabled=voteDisabled;
-    text('lastResult',state.phase==='final'||!state.last?'':state.last.kind==='cancelled'?'Bu turdaki puanlar geri alındı.':state.last.votes===0?'Önceki cevap için oy gelmedi.':state.last.correct?'Önceki cevap doğru.':'Önceki cevap yanlış.');
+    text('answer',state.answers?.length?'Önceki soru: '+state.expectedQuestion+' · Kabul edilen cevaplar: '+state.answers.join(' / '):'');
+    $('votes').hidden=!playing||!isReader;
+    $('no').hidden=state.phase==='intro';
+    text('yes',state.phase==='intro'?'İlk soruyu okudum':'Doğru');
+    const disabled=!state.deadline||Date.now()+offset>=state.deadline;
+    $('yes').disabled=disabled;$('no').disabled=disabled;
+    const last=state.last;
+    text('lastResult',state.phase==='final'||!last?'':last.kind==='cancelled'?'Bu turdaki doğru cevaplar geri alındı.':
+      last.kind==='turn'?last.correct+' doğru cevap':last.correct?'Önceki cevap doğru.':'Önceki cevap geçildi.');
     $('turnReady').hidden=!waiting||!isContestant;
     $('turnReady').disabled=!socket.connected;
     $('rematch').hidden=state.phase!=='final'||state.host!==state.me;
@@ -163,7 +175,7 @@
     $('players').dataset.count=String(next.players.length);
     $('lobbyActions').hidden=!lobby;$('settingsForm').hidden=!lobby||!host;$('inviteAnchor').hidden=!lobby;
     text('roomTitle','Oda '+next.code);
-    text('roomInfo',next.players.filter(p=>!p.left).length+'/8 oyuncu · '+next.settings.questions+' soru · '+next.settings.seconds+' sn · '+(next.settings.visibility==='public'?'Açık':'Özel'));
+    text('roomInfo',next.players.filter(p=>!p.left).length+'/8 oyuncu · 60 sn / oyuncu · '+(next.settings.visibility==='public'?'Açık':'Özel'));
     const key=JSON.stringify(next.settings);
     if(key!==lastSettings){lastSettings=key;for(const [name,value] of Object.entries(next.settings))$('settingsForm').elements[name].value=String(value);}
     text('ready',me?.ready?'Hazır değilim':'Hazırım');
@@ -185,7 +197,7 @@
     text('timer',remaining==null?'':remaining+' sn');
     const board=$('play');
     board.dataset.urgent=String(state.phase==='answer'&&remaining!==null&&remaining<=3);
-    if(remaining===0&&state.phase==='answer'){$('yes').disabled=true;$('no').disabled=true;}
+    if(remaining===0&&['intro','answer'].includes(state.phase)){$('yes').disabled=true;$('no').disabled=true;}
     if(remaining!==null&&remaining!==announced&&[10,5,3,0].includes(remaining)){
       announced=remaining;text('timerLive',remaining===0?'Süre doldu.':remaining+' saniye kaldı.');
     }

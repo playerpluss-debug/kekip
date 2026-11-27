@@ -8,7 +8,7 @@
 <script src="/experience-settings.js" defer></script>
 <script src="/avatar-portraits.js" defer></script>
 <script src="/late-answer-voice.js" defer></script>
-<script src="/late-answer-client.js?v=turn-status1" defer></script>
+<script src="/late-answer-client.js?v=timed60" defer></script>
 <script src="/social.js" defer></script>
 <script src="/chat-client.js" defer></script>
 <script src="/reward-effects.js" defer></script>
@@ -19,15 +19,13 @@
     <a class="brand kp-site-brand" href="/"><span class="kp-site-mark" aria-hidden="true">K</span><span class="kp-site-word">KEKIP<em>.</em> GAMES</span></a>
     <nav aria-label="Sayfa bağlantıları"><a href="/" data-kp-header-link>← Ana sayfa</a> <a href="/party.html" data-kp-header-link>Parti</a></nav>
   </header>
-  <div class="kp-lobby-hero kp-lobby-late"><div class="kp-lobby-copy"><p class="kp-lobby-meta">3–8 oyuncu · Sesli bilgi oyunu</p><h1>Gecikmeli Cevap</h1><p>Yeni soruyu aklında tut, bir önceki soruyu cevapla. Doğru cevaba jüri karar verir.</p></div></div>
+  <div class="kp-lobby-hero kp-lobby-late"><div class="kp-lobby-copy"><p class="kp-lobby-meta">3–8 oyuncu · Sesli bilgi oyunu</p><h1>Gecikmeli Cevap</h1><p>Bir önceki soruyu cevapla. Sıradaki oyuncu soruları okur, 60 saniyede en çok doğruyu yapan kazanır.</p></div></div>
   <p id="notice" role="status" aria-live="polite">Oyun sunucusuna bağlanılıyor…</p>
   <section id="entry" class="panel" aria-labelledby="entryHeading">
     <h2 id="entryHeading">Oda kur veya katıl</h2>
     <p>3–8 oyuncu. Lobiye girdikten sonra mikrofonunu açabilir veya dinleyici olarak kalabilirsin.</p>
     <div class="entry-grid kp-lobby-grid">
       <form id="createForm" class="kp-lobby-card"><h3>Yeni oda</h3>
-        <label>Soru sayısı<select name="questions"><option>5</option><option selected>7</option><option>10</option></select></label>
-        <label>Cevap süresi<select name="seconds"><option value="7">7 saniye</option><option value="10" selected>10 saniye</option><option value="15">15 saniye</option></select></label>
         <label>Oda türü<select name="visibility"><option value="private">Özel</option><option value="public">Açık</option></select></label>
         <button class="primary" type="submit" disabled>Oda oluştur</button>
       </form>
@@ -44,8 +42,6 @@
       <div class="row"><h2 tabindex="-1" id="roomTitle">Oda</h2><button id="leave" type="button">Odadan ayrıl</button></div>
       <div class="row"><p id="roomInfo"></p><div id="inviteAnchor"><button id="copyInvite" type="button">Davet bağlantısını kopyala</button></div></div>
       <form id="settingsForm" hidden>
-        <label>Soru sayısı<select name="questions"><option>5</option><option>7</option><option>10</option></select></label>
-        <label>Cevap süresi<select name="seconds"><option value="7">7 saniye</option><option value="10">10 saniye</option><option value="15">15 saniye</option></select></label>
         <label>Oda türü<select name="visibility"><option value="private">Özel</option><option value="public">Açık</option></select></label>
         <button type="submit">Ayarları kaydet</button>
       </form>
@@ -58,7 +54,7 @@
       <span id="timerLive" class="sr-only" aria-live="polite"></span>
       <div class="question" aria-live="polite" aria-atomic="true"><small id="questionMeta"></small><h2 id="prompt" tabindex="-1"></h2><p id="instruction"></p></div>
       <p id="answer" class="answer" hidden></p>
-      <div id="votes" class="actions" hidden><button id="yes" class="primary" type="button">Doğru</button><button id="no" type="button">Yanlış</button></div>
+      <div id="votes" class="actions" hidden><button id="yes" class="primary" type="button">Doğru</button><button id="no" type="button">Yanlış / geç</button></div>
       <p id="lastResult" role="status"></p>
       <button id="turnReady" class="primary" type="button" hidden>Hazırım</button>
       <button id="rematch" class="primary" type="button" hidden>Tekrar oyna</button>
