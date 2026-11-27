@@ -37,3 +37,10 @@ jobs:
       - run: npm install --no-save --no-audit --no-fund playwright
       - run: npx playwright install --with-deps chromium
       - run: node tests/mini-updates-qa.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neon-arcade-visual-review
+          path: qa-neon/
+          if-no-files-found: warn
+          retention-days: 14
