@@ -5,11 +5,13 @@ const choiceWindow=4000;
 const lengthPreview=2200;
 const cupsPreview=1250;
 const cupsCover=360;
+const timingWindow=9000;
 const gameOptions=Object.freeze([
  {id:'reflex',title:'Refleks Testi'},
  {id:'color',title:'Renk Farkı'},
  {id:'length',title:'Hedef Boyu'},
- {id:'cups',title:'Bardak Altında'}
+ {id:'cups',title:'Bardak Altında'},
+ {id:'timing',title:'Tam Zamanında'}
 ]);
 const gameModes=gameOptions.map(game=>game.id);
 function shuffle(values,random){
@@ -52,7 +54,7 @@ function cupSwaps(ballSlot,random){
 function openRound(now,random,game='reflex'){
  const startsAt=now+2000;
  const round={game,startsAt,flashAt:null,litAt:null,phase:'prepare',presses:new Map(),
-  responseWindow:game==='reflex'?responseWindow:choiceWindow};
+  responseWindow:game==='reflex'?responseWindow:game==='timing'?timingWindow:choiceWindow};
  if(game==='color'){
   const [h,s,l,dh,dl]=nearColors[random(nearColors.length)],direction=random(2)?1:-1;
   const base=hsl(h,s,l),odd=hsl(h+dh*direction,s,l+dl*direction);
@@ -68,12 +70,13 @@ function openRound(now,random,game='reflex'){
   const {swaps,position}=cupSwaps(round.ballSlot,random);
   round.swaps=swaps;
   round.odd=position;
- }else round.flashAt=startsAt+500+random(4401);
+ }else if(game==='timing')round.targetMs=1000+random(601)*10;
+ else round.flashAt=startsAt+500+random(4401);
  return round;
 }
 
 function advanceRound(round,now){
- if(round.phase==='prepare'&&now>=round.startsAt&&['length','cups'].includes(round.game)){
+ if(round.phase==='prepare'&&now>=round.startsAt&&['length','cups','timing'].includes(round.game)){
   round.phase='preview';round.previewEndsAt=now+(round.game==='cups'?cupsPreview:lengthPreview);
   return true;
  }
@@ -102,7 +105,8 @@ function advanceRound(round,now){
 
 function visiblePress(round,press){
  if(!press)return null;
- return round.game==='reflex'?press:{kind:'answer',choice:press.choice,
+ if(round.game==='reflex'||round.game==='timing')return press;
+ return {kind:'answer',choice:press.choice,
   ...(round.game==='length'&&press.kind==='wrong'?{wrong:true}:{})};
 }
 function visibleRound(round,player){
@@ -113,26 +117,29 @@ function visibleRound(round,player){
   ...(round.game==='length'&&round.phase==='preview'?{target:round.target,previewEndsAt:round.previewEndsAt}:{}),
   ...(round.game==='length'&&round.phase==='lit'?{lengths:round.lengths}:{}),
   ...(round.game==='cups'&&round.phase==='preview'?{ballSlot:round.ballSlot}:{}),
-  ...(round.game==='cups'&&round.phase==='mix'?{ballSlot:round.ballSlot,swaps:round.swaps,coverStartsAt:round.coverStartsAt,mixStartsAt:round.mixStartsAt}:{})};
+  ...(round.game==='cups'&&round.phase==='mix'?{ballSlot:round.ballSlot,swaps:round.swaps,coverStartsAt:round.coverStartsAt,mixStartsAt:round.mixStartsAt}:{}),
+  ...(round.game==='timing'&&['preview','lit'].includes(round.phase)?{targetMs:round.targetMs,previewEndsAt:round.previewEndsAt}:{})};
 }
 
 function registerPress(round,player,now,choice){
  if(round.presses.has(player)||(round.phase!=='lit'&&(round.game!=='reflex'||round.phase!=='waiting')))return null;
  if(round.litAt!==null&&now>=round.litAt+round.responseWindow)return null;
  const optionCount=round.game==='length'?round.lengths.length:round.game==='cups'?4:3;
- if(round.game!=='reflex'&&(!Number.isInteger(choice)||choice<0||choice>=optionCount))return null;
+ if(!['reflex','timing'].includes(round.game)&&(!Number.isInteger(choice)||choice<0||choice>=optionCount))return null;
  const ms=round.litAt===null?null:Math.max(0,now-round.litAt);
- const press=round.game!=='reflex'?{kind:choice===round.odd?'hit':'wrong',ms,choice}:
+ const press=round.game==='timing'?{kind:'hit',ms,errorMs:Math.abs(ms-round.targetMs)}:
+  round.game!=='reflex'?{kind:choice===round.odd?'hit':'wrong',ms,choice}:
   ms===null?{kind:'early'}:{kind:'hit',ms};
  round.presses.set(player,press);
  return visiblePress(round,press);
 }
 function settleRound(round,players){
- const ranked=players.map(id=>round.presses.get(id)).filter(press=>press?.kind==='hit').map(press=>press.ms).sort((a,b)=>a-b);
+ const metric=press=>round.game==='timing'?press.errorMs:press.ms;
+ const ranked=players.map(id=>round.presses.get(id)).filter(press=>press?.kind==='hit').map(metric).sort((a,b)=>a-b);
  return new Map(players.map(id=>{
   const press=round.presses.get(id);
   if(!press)return [id,{kind:'miss',points:0}];
-  return [id,{...press,points:press.kind==='hit'?100-12*ranked.indexOf(press.ms):0}];
+  return [id,{...press,points:press.kind==='hit'?100-12*ranked.indexOf(metric(press)):0}];
  }));
 }
 module.exports={gameOptions,gameModes,buildPlaylist,openRound,advanceRound,visibleRound,registerPress,settleRound,responseWindow};

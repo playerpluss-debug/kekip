@@ -1,6 +1,7 @@
 'use strict';
 
 const {randomInt,randomUUID}=require('node:crypto');
+const {performance}=require('node:perf_hooks');
 const {openRound,advanceRound,visibleRound,registerPress,settleRound,gameOptions,gameModes,buildPlaylist}=require('./arena-games');
 const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const codePattern=/^[A-Z2-9]{5}$/;
@@ -8,10 +9,10 @@ const roomLimit=150;
 const reconnectMs=90_000;
 const resultsMs=9000;
 
-function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=randomInt,schedule=setInterval}={}){
+function attachArena(io,accounts,{isDraining=()=>false,now=()=>Math.round(performance.timeOrigin+performance.now()),random=randomInt,schedule=setInterval}={}){
  const namespace=io.of('/arena'),rooms=new Map(),membership=new Map(),pending=new Map();
  const fail=(ack,error)=>ack({ok:false,error});
- const member=(account,socket)=>({id:account.id,username:account.username,socketId:socket?.id||null,until:socket?null:now()+reconnectMs,total:0,last:0,reaction:null,played:0,fastest:null,early:0,wrong:0,missed:0});
+ const member=(account,socket)=>({id:account.id,username:account.username,socketId:socket?.id||null,until:socket?null:now()+reconnectMs,total:0,last:0,reaction:null,played:0,fastest:null,bestError:null,early:0,wrong:0,missed:0});
  function makeRoom(players,settings,party=false){
   if(rooms.size>=roomLimit)throw Error('Şu anda yeni lobi açılamıyor.');
   let code;
@@ -33,7 +34,8 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
    players:room.players.map(p=>({username:p.username,online:!!p.socketId,total:p.total,last:p.last,reaction:p.reaction,answered:room.phase==='round'&&room.round.presses.has(p.id)})),
    challenge,colorAnswer:room.phase==='summary'&&room.round.game==='color'?{colors:room.round.colors,odd:room.round.odd}:null,
    lengthAnswer:room.phase==='summary'&&room.round.game==='length'?{lengths:room.round.lengths,odd:room.round.odd}:null,
-   cupsAnswer:room.phase==='summary'&&room.round.game==='cups'?room.round.odd:null
+   cupsAnswer:room.phase==='summary'&&room.round.game==='cups'?room.round.odd:null,
+   timingTarget:room.phase==='summary'&&room.round.game==='timing'?room.round.targetMs:null
   };
  }
  function publish(room,t=now()){
@@ -59,7 +61,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   const sorted=[...room.players].sort((a,b)=>b.total-a.total||a.username.localeCompare(b.username));
   const standings=sorted.map(player=>({
    username:player.username,rank:sorted.findIndex(other=>other.total===player.total)+1,total:player.total,
-   hits:player.played,fastest:player.fastest,early:player.early,wrong:player.wrong,missed:player.missed
+   hits:player.played,fastest:player.fastest,bestError:player.bestError,early:player.early,wrong:player.wrong,missed:player.missed
   }));
   const result={id:room.matchId,games:[...room.settings.games],standings,cards:new Set(),cancelled};
   room.lastResult=result;
@@ -75,7 +77,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
  }
  function returnToLobby(room,t){
   room.phase='lobby';room.deadline=0;room.number=0;room.round=null;room.playlist=[];room.matchId=null;
-  for(const player of room.players)Object.assign(player,{total:0,last:0,reaction:null,played:0,fastest:null,early:0,wrong:0,missed:0});
+  for(const player of room.players)Object.assign(player,{total:0,last:0,reaction:null,played:0,fastest:null,bestError:null,early:0,wrong:0,missed:0});
   publish(room,t);
  }
  function saveRewards(t){
@@ -114,7 +116,8 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
       player.total+=result.points;
       if(result.kind==='hit'){
        player.played++;
-       player.fastest=player.fastest===null?result.ms:Math.min(player.fastest,result.ms);
+       if(room.round.game==='timing')player.bestError=player.bestError===null?result.errorMs:Math.min(player.bestError,result.errorMs);
+       else player.fastest=player.fastest===null?result.ms:Math.min(player.fastest,result.ms);
       }else if(result.kind==='early')player.early++;
       else if(result.kind==='wrong')player.wrong++;
       else player.missed++;

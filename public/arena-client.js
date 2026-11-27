@@ -31,6 +31,8 @@
  join.onsubmit=event=>{event.preventDefault();run(()=>emit('join',{code:$('arenaCode').value.trim().toUpperCase()}));};
  const serverNow=()=>Date.now()+offset;
  const reflex=$('arenaReflex'),sound=$('arenaSound');
+ const timing=$('arenaTiming'),timingStop=$('arenaTimingStop'),timingLabel=$('arenaTimingLabel'),timingTarget=$('arenaTimingTarget');
+ const seconds=ms=>(ms/1000).toFixed(2).replace('.',',')+' sn';
  const picker=$('arenaGamePicker'),gameOptions=$('arenaGameOptions');
  let savingGames=false,catalogKey='';
  const colors=$('arenaColors'),colorButtons=[...colors.querySelectorAll('button')];
@@ -157,6 +159,7 @@
   if(game!=='color')colors.hidden=true;
   if(game!=='length')length.hidden=true;
   if(game!=='cups')cups.hidden=true;
+  if(game!=='timing')timing.hidden=true;
   if(!challenge){
    clock.textContent=current.deadline?Math.max(0,Math.ceil((current.deadline-t)/1000))+' sn':'';
    update(title,'Tur '+number+' sonuçları');
@@ -178,6 +181,12 @@
     paintCups(null,t,{disabled:true,choice:own?.choice,answer});
     const result=own?.kind==='hit'?'Doğru cevap · '+own.points+' puan':own?.kind==='wrong'?'Yanlış cevap · 0 puan':'Cevap verilmedi · 0 puan';
     update(prompt,result+(answer===null?'':' · Top '+(answer+1)+'. bardağın altındaydı.'));
+   }else if(game==='timing'){
+    timing.hidden=false;timingStop.disabled=true;timingStop.dataset.state='result';
+    const own=current.players.find(player=>player.username===current.you)?.reaction;
+    update(timingTarget,seconds(current.timingTarget));
+    update(timingLabel,own?.kind==='hit'?own.ms+' ms':'Süre doldu');
+    update(prompt,own?.kind==='hit'?'Hedeften '+own.errorMs+' ms fark · '+own.points+' puan':'Cevap verilmedi · 0 puan');
    }else update(prompt,'En hızlı geçerli tepki 100 puan alır.');
    return;
   }
@@ -207,6 +216,19 @@
    clock.textContent=lit?Math.max(0,Math.ceil((challenge.endsAt-t)/1000))+' sn':!ready?Math.max(0,Math.ceil((challenge.startsAt-t)/1000))+' sn':'';
    paintCups(challenge,t,{disabled:!lit||expired||Boolean(press)||sending||!socket.connected,choice:press?.choice});
    update(prompt,press?'Seçimin kaydedildi.':expired?'Süre doldu.':preview?'Topun yerini aklında tut.':mixing?'Topu kapatan bardağı takip et.':lit?'Top hangi bardağın altında?':'Tur başlıyor.');
+   return;
+  }
+  if(game==='timing'){
+   const preview=challenge.phase==='preview';
+   timing.hidden=!Number.isFinite(challenge.targetMs);
+   if(!timing.hidden)update(timingTarget,seconds(challenge.targetMs));
+   clock.textContent=preview?Math.max(0,Math.ceil((challenge.previewEndsAt-t)/1000))+' sn':'';
+   timingStop.disabled=!lit||expired||Boolean(press)||sending||!socket.connected;
+   timingStop.dataset.state=press?'result':lit&&!expired?'running':'waiting';
+   update(timingLabel,press?press.ms+' ms':expired?'Süre doldu':lit?'Durdur':'Hazırlan');
+   update(prompt,press?'Hedeften '+press.errorMs+' ms fark.':expired?'Sonraki turu bekle.':preview?'Hedef süreyi aklında tut.':lit?'Hedef süre geçtiğinde durdur.':'Tur başlıyor.');
+   const key=current.code+':'+number;
+   if(lit&&!expired&&!press&&cueKey!==key){cueKey=key;tone(700,.13);}
    return;
   }
   clock.textContent=!ready?Math.max(0,Math.ceil((challenge.startsAt-t)/1000))+' sn':'';
@@ -241,6 +263,8 @@
   finally{if(sameRound()){sending=false;renderStage(serverNow());}}
  }
  reflex.onclick=()=>{if(!reflex.disabled)submit();};
+ timingStop.onpointerdown=event=>{if(event.isPrimary&&event.button===0&&!timingStop.disabled)submit();};
+ timingStop.onclick=()=>{if(!timingStop.disabled)submit();};
  for(const buttons of [colorButtons,cupButtons])buttons.forEach((button,index)=>{button.onclick=()=>{if(!button.disabled)submit(index);};});
  function showResults(result){
   if(!result)return;
@@ -263,7 +287,8 @@
    if(hasReflex)parts.push(player.early+' erken');
    parts.push(player.missed+' kaçan');
    const detail=node('small',parts.join(' · ')+
-     (player.fastest===null?'':' · En iyi '+player.fastest+' ms'));
+     (player.fastest===null?'':' · En hızlı '+player.fastest+' ms')+
+     (player.bestError===null?'':' · En az sapma '+player.bestError+' ms'));
    copy.append(name,detail);
    const score=node('strong',player.total+' puan');score.className='arena-result-score';
    row.append(rank,copy,score);return row;

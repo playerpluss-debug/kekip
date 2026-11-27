@@ -100,3 +100,15 @@ body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 72% 2%,#382
 #arenaCups button.selected{outline:2px dashed #e6caff;outline-offset:3px}
 #arenaCups button.correct{outline:2px solid #92ffbe;outline-offset:3px}
 #arenaCupBall{position:absolute;z-index:1;bottom:23%;width:clamp(15px,4.8vw,26px);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle at 28% 22%,#fff4d5,#ffc76a 36%,#b86623 82%);box-shadow:0 3px 8px #160c22}
+
+#arenaTiming{display:grid;justify-items:center;gap:14px;padding:8px 0 16px}
+.arena-timing-target{color:#dec9f0;text-align:center}
+.arena-timing-target strong{display:block;margin-top:3px;color:#f6ebff;font-size:clamp(1.4rem,5vw,2.1rem);font-variant-numeric:tabular-nums}
+#arenaStage .arena-timing-stop{position:relative;isolation:isolate;display:grid;place-content:center;justify-items:center;gap:12px;width:min(72vw,252px);aspect-ratio:1;min-height:0;border:3px solid #ad88d8;border-radius:50%;color:#f5e8ff;background:radial-gradient(ellipse at 45% 20%,#674c86,#35234e 62%,#251735);box-shadow:inset 0 0 0 8px #261b37,0 8px 22px #0c081888;font-size:clamp(1.2rem,5vw,1.85rem);font-weight:850;font-variant-numeric:tabular-nums;touch-action:manipulation}
+#arenaStage .arena-timing-stop[data-state=running]{border-color:#edcbff;box-shadow:inset 0 0 0 8px #3c235d,0 0 28px #c38bff85;background:radial-gradient(ellipse at 45% 20%,#aa70e7,#663ba1 62%,#3f2262)}
+#arenaStage .arena-timing-stop[data-state=running]:not(:disabled):active{transform:scale(.97)}
+#arenaStage .arena-timing-stop:disabled{opacity:1}
+.arena-timing-icon{width:48px;height:48px;border:2px solid #ecd8ff;border-radius:50%;position:relative}
+.arena-timing-icon::before,.arena-timing-icon::after{position:absolute;content:"";background:#ecd8ff;border-radius:3px;left:50%}
+.arena-timing-icon::before{width:3px;height:15px;bottom:50%;translate:-50% 0}
+.arena-timing-icon::after{height:3px;width:10px;top:50%;translate:0 -50%;rotate:22deg;transform-origin:left}

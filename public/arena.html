@@ -6,12 +6,12 @@
  <title>KEKIP Arena | KEKIP Games</title>
  <link rel="stylesheet" href="/kekip-navigation.css?v=05122">
  <link rel="stylesheet" href="/game-lobbies.css?v=3">
- <link rel="stylesheet" href="/arena.css?v=cups1">
+ <link rel="stylesheet" href="/arena.css?v=timing1">
  <script src="/socket.io/socket.io.js" defer></script>
  <script src="/late-answer-voice.js?v=lobbies" defer></script>
  <script src="/lobby-voice-client.js?v=arena1" defer></script>
  <script src="/avatar-portraits.js?v=wings-natural2" defer></script>
- <script src="/arena-client.js?v=cups1" defer></script>
+ <script src="/arena-client.js?v=timing1" defer></script>
  <script src="/match-cards.js?v=arena2" defer></script>
  <link rel="stylesheet" href="/lobby-voice.css?v=1">
 </head>
@@ -22,7 +22,7 @@
   <nav aria-label="Sayfa bağlantıları"><a href="/#kpOpenRooms" data-kp-header-link>Açık odalar</a> <a href="/party.html" data-kp-header-link>Parti</a></nav>
  </header>
  <section class="kp-lobby-hero arena-hero">
-  <div class="kp-lobby-copy"><p class="kp-lobby-meta">2–8 oyuncu · 6 tur</p><h1>KEKIP Arena</h1><p>Refleks, dikkat ve hafıza oyunlarında en hızlı doğru tepkiyi ver.</p></div>
+  <div class="kp-lobby-copy"><p class="kp-lobby-meta">2–8 oyuncu · 6 tur</p><h1>KEKIP Arena</h1><p>Refleks, dikkat, hafıza ve zamanlama turlarında yarış.</p></div>
   
  </section>
  <p id="arenaStatus" role="status">Oyun sunucusuna bağlanılıyor…</p>
@@ -82,6 +82,13 @@
     <button type="button" aria-label="2. bardak" data-cup="1"><span aria-hidden="true">2</span></button>
     <button type="button" aria-label="3. bardak" data-cup="2"><span aria-hidden="true">3</span></button>
     <button type="button" aria-label="4. bardak" data-cup="3"><span aria-hidden="true">4</span></button>
+   </div>
+   <div id="arenaTiming" hidden>
+    <div class="arena-timing-target">Hedef süre <strong id="arenaTimingTarget"></strong></div>
+    <button id="arenaTimingStop" class="arena-timing-stop" type="button" disabled>
+     <span class="arena-timing-icon" aria-hidden="true"></span>
+     <span id="arenaTimingLabel">Hazırlan</span>
+    </button>
    </div>
    <button id="arenaReflex" class="arena-reflex" type="button" hidden>Bekle</button>
    <div id="arenaInGameRoster" class="arena-stage-roster"></div>
