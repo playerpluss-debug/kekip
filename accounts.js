@@ -602,7 +602,15 @@ const COSMETICS=Object.freeze([
  {id:'title_night',slot:'title',name:'Gece Oyuncusu',description:'Özel kozmetik oyuncu unvanı',price:100,rarity:'Nadir'},
  {id:'effect_glow',slot:'effect',name:'Yıldız Işığı',description:'Profil kartında yumuşak ışık efekti',price:140,rarity:'Epik'},
  {id:'chat_violet',slot:'chat',name:'Mor Mürekkep',description:'Mor sohbet balonu ve renkli kenar',price:90,rarity:'Standart'},
- {id:'chat_gold',slot:'chat',name:'Altın Sohbet',description:'Altın çizgili sohbet balonu',price:130,rarity:'Nadir'}
+ {id:'chat_gold',slot:'chat',name:'Altın Sohbet',description:'Altın çizgili sohbet balonu',price:130,rarity:'Nadir'},
+ {id:'frame_astral_crown',slot:'frame',name:'Astral Taç',description:'Dönen altın yörünge ve yıldız tacı.',price:450,rarity:'Efsanevi',premium:true},
+ {id:'frame_void_gate',slot:'frame',name:'Boşluk Kapısı',description:'Dönen keskin geometrili portal çerçevesi.',price:900,rarity:'Mitik',premium:true},
+ {id:'cover_eclipse',slot:'cover',name:'Tutulma',description:'Karanlık güneş ve hareketli korona.',price:500,rarity:'Efsanevi',premium:true},
+ {id:'cover_crystal_cavern',slot:'cover',name:'Kristal Mağarası',description:'Prizma yüzeyleri ve hareketli ışık yansıması.',price:1000,rarity:'Mitik',premium:true},
+ {id:'name_prismatic',slot:'name',name:'Prizma İmzası',description:'Değişen çift renkli ışık izi.',price:220,rarity:'Epik',premium:true},
+ {id:'effect_meteor',slot:'effect',name:'Meteor Yağmuru',description:'Profil boyunca ilerleyen meteor izleri.',price:850,rarity:'Mitik',premium:true},
+ {id:'title_starforged',slot:'title',name:'Yıldız Döven',description:'Yıldız işlemeli metalik unvan plakası.',price:350,rarity:'Efsanevi',premium:true},
+ {id:'chat_hologram',slot:'chat',name:'Hologram',description:'Turkuaz ışıklı holografik sohbet balonu.',price:200,rarity:'Epik',premium:true}
 ]);
 const COSMETIC_SLOTS=[...new Set(COSMETICS.filter(x=>x.slot!=='pet').map(x=>x.slot))];
 async function equippedCosmetics(db,id){const q=await db.query('SELECT slot,item_id FROM kekip_cosmetic_equipped WHERE account_id=$1',[id]);return Object.fromEntries(q.rows.filter(r=>COSMETICS.some(c=>c.id===r.item_id&&c.slot===r.slot)).map(r=>[r.slot,r.item_id]));}
