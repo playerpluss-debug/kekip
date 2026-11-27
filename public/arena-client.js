@@ -34,6 +34,8 @@
  const picker=$('arenaGamePicker'),gameOptions=$('arenaGameOptions');
  let savingGames=false,catalogKey='';
  const colors=$('arenaColors'),colorButtons=[...colors.querySelectorAll('button')];
+ const length=$('arenaLength'),sample=$('arenaLengthSample'),lengthChoices=$('arenaLengthChoices');
+ let lengthKey='';
  const gameNames=new Map();
  const gameTitle=id=>gameNames.get(id)||id;
  function unlockSound(){
@@ -68,6 +70,32 @@
    button.classList.toggle('correct',answer===index);
   });
  }
+ function bar(width){
+  const model=node('span','');model.className='arena-length-model';model.style.setProperty('--arena-bar-length',width+'%');model.setAttribute('aria-hidden','true');
+  for(const face of ['front','top','cap']){
+   const surface=node('i','');surface.className='arena-length-'+face;model.append(surface);
+  }
+  return model;
+ }
+ function paintLengths({target,lengths,disabled,choice,answer}){
+  length.hidden=!Number.isFinite(target)&&!lengths;
+  sample.hidden=!Number.isFinite(target);lengthChoices.hidden=!lengths;
+  const key=JSON.stringify([target,lengths]);
+  if(key!==lengthKey){
+   lengthKey=key;
+   sample.replaceChildren(...(Number.isFinite(target)?[bar(target)]:[]));
+   lengthChoices.replaceChildren(...(lengths||[]).map((width,index)=>{
+    const button=node('button','');button.type='button';button.className='arena-length-track';
+    button.setAttribute('aria-label',(index+1)+'. çubuk');button.append(bar(width));
+    button.onclick=()=>{if(!button.disabled)submit(index);};return button;
+   }));
+  }
+  [...lengthChoices.children].forEach((button,index)=>{
+   button.disabled=disabled;
+   button.classList.toggle('selected',choice===index);
+   button.classList.toggle('correct',answer===index);
+  });
+ }
  function renderStage(t){
   if(!current)return;
   if(current.phase==='final'){
@@ -77,8 +105,9 @@
   const {challenge,number,settings,game}=current;
   const title=$('arenaRoundTitle'),prompt=$('arenaPrompt'),clock=$('arenaClock');
   const update=(element,value)=>{if(element.textContent!==value)element.textContent=value;};
-  reflex.hidden=!challenge||game==='color';
+  reflex.hidden=!challenge||game!=='reflex';
   if(game!=='color')colors.hidden=true;
+  if(game!=='length')length.hidden=true;
   if(!challenge){
    clock.textContent=current.deadline?Math.max(0,Math.ceil((current.deadline-t)/1000))+' sn':'';
    update(title,'Tur '+number+' sonuçları');
@@ -88,6 +117,11 @@
     paintColors(answer?.colors,{disabled:true,choice:own?.choice,answer:answer?.odd});
     const result=own?.kind==='hit'?'Doğru cevap · '+own.points+' puan':own?.kind==='wrong'?'Yanlış cevap · 0 puan':'Cevap verilmedi · 0 puan';
     update(prompt,result+(answer?' · Farklı renk '+(answer.odd+1)+'. dairedeydi.':''));
+   }else if(game==='length'){
+    const own=current.players.find(player=>player.username===current.you)?.reaction,answer=current.lengthAnswer;
+    paintLengths({lengths:answer?.lengths,disabled:true,choice:own?.choice,answer:answer?.odd});
+    const result=own?.kind==='hit'?'Doğru cevap · '+own.points+' puan':own?.kind==='wrong'?'Yanlış cevap · 0 puan':'Cevap verilmedi · 0 puan';
+    update(prompt,result+(answer?' · Doğru çubuk '+(answer.odd+1)+'. sıradaydı.':''));
    }else update(prompt,'En hızlı geçerli tepki 100 puan alır.');
    return;
   }
@@ -100,6 +134,15 @@
    clock.textContent=(lit?Math.max(0,Math.ceil((challenge.endsAt-t)/1000)):Math.max(0,Math.ceil((challenge.startsAt-t)/1000)))+' sn';
    paintColors(palette,{disabled:!lit||expired||Boolean(press)||sending||!socket.connected,choice:press?.choice});
    update(prompt,press?'Seçimin kaydedildi.':expired?'Süre doldu.':ready?'Diğer ikisinden farklı olan daireyi seç.':'Tur başlıyor.');
+   return;
+  }
+  if(game==='length'){
+   const preview=challenge.phase==='preview';
+   const deadline=preview?challenge.previewEndsAt:lit?challenge.endsAt:challenge.startsAt;
+   clock.textContent=Math.max(0,Math.ceil((deadline-t)/1000))+' sn';
+   paintLengths({target:challenge.target,lengths:challenge.lengths,
+    disabled:!lit||expired||Boolean(press)||sending||!socket.connected,choice:press?.choice});
+   update(prompt,press?'Seçimin kaydedildi.':expired?'Süre doldu.':preview?'Örnek çubuğun boyunu aklında tut.':lit?'Örnekle aynı boydaki çubuğu seç.':'Tur başlıyor.');
    return;
   }
   clock.textContent=!ready?Math.max(0,Math.ceil((challenge.startsAt-t)/1000))+' sn':'';
@@ -150,7 +193,12 @@
    row.dataset.rank=String(player.rank);
    const rank=node('span',player.rank+'.');rank.className='arena-result-rank';
    const copy=node('div',''),name=node('strong','@'+player.username);
-   const detail=node('small',(result.games.includes('color')&&result.games.includes('reflex')?player.hits+' başarılı · '+player.wrong+' yanlış · '+player.early+' erken':result.games.includes('color')?player.hits+' doğru · '+player.wrong+' yanlış':player.hits+' tepki · '+player.early+' erken')+' · '+player.missed+' kaçan'+
+   const hasReflex=result.games.includes('reflex'),hasChoice=result.games.some(game=>game!=='reflex');
+   const parts=[player.hits+(hasReflex&&hasChoice?' başarılı':hasChoice?' doğru':' tepki')];
+   if(hasChoice)parts.push(player.wrong+' yanlış');
+   if(hasReflex)parts.push(player.early+' erken');
+   parts.push(player.missed+' kaçan');
+   const detail=node('small',parts.join(' · ')+
      (player.fastest===null?'':' · En iyi '+player.fastest+' ms'));
    copy.append(name,detail);
    const score=node('strong',player.total+' puan');score.className='arena-result-score';
@@ -211,6 +259,9 @@
   renderGamePicker(data);
   $('arenaRoomInfo').textContent=data.players.length+'/8 oyuncu · '+(data.game?gameTitle(data.game):data.settings.games.map(gameTitle).join(' · '));
   const players=[...data.players].sort((a,b)=>b.total-a.total||a.username.localeCompare(b.username));
+  const roster=$('arenaPlayers'),inGame=data.phase==='round'||data.phase==='summary';
+  const rosterTarget=$(inGame?'arenaInGameRoster':'arenaLobbyRoster');
+  if(roster.parentElement!==rosterTarget)rosterTarget.append(roster);
   const displayKey=JSON.stringify([data.phase==='summary',players]);
   if(displayKey!==rosterKey){
    const active=new Set(players.map(player=>player.username));
@@ -226,10 +277,13 @@
      portrait.setAttribute('aria-hidden','true');
      portrait.append(node('span',player.username.slice(0,2).toUpperCase()));
      info.className='arena-player-info';
-     const name=node('strong',''),score=node('span','');
-     info.append(name,score);item.append(portrait,info);
-     card={item,name,score};playerCards.set(player.username,card);
+     const name=node('strong',''),score=node('span',''),answered=node('span','');
+     answered.className='arena-answered';answered.hidden=true;
+     const icon=node('i','✓');icon.setAttribute('aria-hidden','true');answered.append(icon,document.createTextNode('Cevap verildi'));
+     info.append(name,score,answered);item.append(portrait,info);
+     card={item,name,score,answered};playerCards.set(player.username,card);
     }
+    card.answered.hidden=!player.answered;
     card.name.textContent='@'+player.username+(player.online?'':' · Çevrimdışı');
     const last=player.reaction;
     const reaction=last?.kind==='hit'?last.ms+' ms':last?.kind==='early'?'Erken tıklama':last?.kind==='wrong'?'Yanlış cevap':'Süre doldu';

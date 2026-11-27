@@ -1,10 +1,12 @@
 'use strict';
 
 const responseWindow=2000;
-const colorWindow=4000;
+const choiceWindow=4000;
+const lengthPreview=2200;
 const gameOptions=Object.freeze([
  {id:'reflex',title:'Refleks Testi'},
- {id:'color',title:'Renk Farkı'}
+ {id:'color',title:'Renk Farkı'},
+ {id:'length',title:'Hedef Boyu'}
 ]);
 const gameModes=gameOptions.map(game=>game.id);
 function shuffle(values,random){
@@ -28,17 +30,30 @@ const hsl=(h,s,l)=>'hsl('+h+' '+s+'% '+l+'%)';
 function openRound(now,random,game='reflex'){
  const startsAt=now+2000;
  const round={game,startsAt,flashAt:null,litAt:null,phase:'prepare',presses:new Map(),
-  responseWindow:game==='color'?colorWindow:responseWindow};
+  responseWindow:game==='reflex'?responseWindow:choiceWindow};
  if(game==='color'){
   const [h,s,l,dh,dl]=nearColors[random(nearColors.length)],direction=random(2)?1:-1;
   const base=hsl(h,s,l),odd=hsl(h+dh*direction,s,l+dl*direction);
   round.odd=random(3);
   round.colors=Array.from({length:3},(_,index)=>index===round.odd?odd:base);
+ }else if(game==='length'){
+  round.target=48+random(25);
+  const direction=random(2)?1:-1;
+  round.lengths=shuffle([round.target,round.target+direction*(4+random(2)),round.target-direction*(5+random(2))],random);
+  round.odd=round.lengths.indexOf(round.target);
  }else round.flashAt=startsAt+500+random(4401);
  return round;
 }
 
 function advanceRound(round,now){
+ if(round.phase==='prepare'&&now>=round.startsAt&&round.game==='length'){
+  round.phase='preview';round.previewEndsAt=now+lengthPreview;
+  return true;
+ }
+ if(round.phase==='preview'&&now>=round.previewEndsAt){
+  round.phase='lit';round.litAt=now;
+  return true;
+ }
  if(round.phase==='prepare'&&now>=round.startsAt){
   round.phase=round.game==='color'?'lit':'waiting';
   if(round.game==='color')round.litAt=now;
@@ -54,21 +69,23 @@ function advanceRound(round,now){
 
 function visiblePress(round,press){
  if(!press)return null;
- return round.game==='color'?{kind:'answer',choice:press.choice}:press;
+ return round.game==='reflex'?press:{kind:'answer',choice:press.choice};
 }
 function visibleRound(round,player){
  return {game:round.game,phase:round.phase,startsAt:round.startsAt,
   endsAt:round.litAt===null?null:round.litAt+round.responseWindow,
   press:visiblePress(round,round.presses.get(player)),
-  ...(round.game==='color'&&round.phase==='lit'?{colors:round.colors}:{})};
+  ...(round.game==='color'&&round.phase==='lit'?{colors:round.colors}:{}),
+  ...(round.game==='length'&&round.phase==='preview'?{target:round.target,previewEndsAt:round.previewEndsAt}:{}),
+  ...(round.game==='length'&&round.phase==='lit'?{lengths:round.lengths}:{})};
 }
 
 function registerPress(round,player,now,choice){
- if(round.phase==='prepare'||round.presses.has(player))return null;
+ if(round.phase==='prepare'||round.phase==='preview'||round.presses.has(player))return null;
  if(round.litAt!==null&&now>=round.litAt+round.responseWindow)return null;
- if(round.game==='color'&&(!Number.isInteger(choice)||choice<0||choice>2))return null;
+ if(round.game!=='reflex'&&(!Number.isInteger(choice)||choice<0||choice>2))return null;
  const ms=round.litAt===null?null:Math.max(0,now-round.litAt);
- const press=round.game==='color'?{kind:choice===round.odd?'hit':'wrong',ms,choice}:
+ const press=round.game!=='reflex'?{kind:choice===round.odd?'hit':'wrong',ms,choice}:
   ms===null?{kind:'early'}:{kind:'hit',ms};
  round.presses.set(player,press);
  return visiblePress(round,press);
