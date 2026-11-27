@@ -91,7 +91,14 @@
 }
 .kp-lobby-battle { --lobby-image: url('/images/amiral-batti.webp'); --lobby-accent: #a9a8ff; }
 .kp-lobby-football { --lobby-image: url('/images/futbol-kariyer.webp'); --lobby-accent: #c49cff; }
-.kp-lobby-late { --lobby-accent: #d7a2ff; }
+.kp-lobby-late { --lobby-image: url('/images/gecikmeli-cevap-lobi.webp'); --lobby-accent: #d7a2ff; }
+.home-games .late-answer-cover img { object-position: 75% center; }
+@media (max-width: 760px) {
+  .kp-lobby-hero.kp-lobby-late {
+    background-image: linear-gradient(0deg,#120e20f2 4%,#171025ba 43%,#17102514 100%), var(--lobby-image);
+    background-position: center, 74% center;
+  }
+}
 .kp-lobby-party { --lobby-accent: #a7a3ff; }
 .kp-lobby-copy { position: relative; z-index: 1; max-width: 58ch; }
 .kp-lobby-hero h1, .kp-lobby-hero h3 {
