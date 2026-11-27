@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "status": "design_only",
+  "saleEnabled": false,
+  "collectionName": "Neon Arcade",
+  "theme": "Retro-fütüristik sokak modası",
+  "canvas": {
+    "standard": [
+      480,
+      660
+    ],
+    "hd": [
+      960,
+      1320
+    ],
+    "transparent": true
+  },
+  "requirements": [
+    "Mevcut onaylı karakter temelini, pozunu, yüz geometrisini, perspektifi ve vücut oranlarını sabitle.",
+    "Önce karakter üzerindeki doğal tam görünümü onaylat; sonra aynı koordinatlı ayrı şeffaf katmanlar üret. Saç ön ve arka katmanları aynı şablondan çıkar; peruk gibi sonradan konumlandırma yapılmaz.",
+    "Katman adları üretim taslağıdır; her biri mevcut gardırop ve portre renderer'ındaki gerçek eşlemelerle doğrulanmadan katalog eklenmez.",
+    "Renk varyantları ayrı ücretli ürün olmaz.",
+    "Mevcut mağaza, sandık, envanter, fiyatlar ve Mitik setler değiştirilmez.",
+    "Her ürün eski kombinlerle test edilir. Fiyatlar ve satışa açma için yönetici onayı gerekir."
+  ],
+  "items": [
+    {
+      "id": "gece_retro_hair_ribbon_braid",
+      "character": "gece",
+      "slot": "av_hair",
+      "name": "Kurdeleli Taç Örgüsü",
+      "rarity": "Nadir",
+      "brief": "Başın çevresinde örülen asimetrik taç; enseye kısa örgü, kumaş kurdele. Mevcut çift topuz ve at kuyruğundan farklı.",
+      "layers": [
+        "hair-back",
+        "hair-front"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "gece_retro_eye_pixel",
+      "character": "gece",
+      "slot": "av_eye",
+      "name": "Piksel Bakış",
+      "rarity": "Epik",
+      "brief": "İris içinde küçük kare ve basamaklı yansıma; göz şekli ve göz koordinatları sabit.",
+      "layers": [
+        "eyes"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "gece_retro_top_arcade",
+      "character": "gece",
+      "slot": "av_top",
+      "name": "Arcade Kulübü",
+      "rarity": "Epik",
+      "brief": "Kısa, yüksek yakalı fermuarlı yarış ceketi, krem blok paneller ve mor geometrik nakış; mevcut bomber ve e-spor ceketinden farklı kesim.",
+      "layers": [
+        "top"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "gece_retro_bottom_wrap",
+      "character": "gece",
+      "slot": "av_bottom",
+      "name": "Ritim Eteği",
+      "rarity": "Nadir",
+      "brief": "Asimetrik sargı etek, üst üste binen iki opak kumaş panel ve küçük tokalı kemer.",
+      "layers": [
+        "bottom"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "gece_retro_shoes_high",
+      "character": "gece",
+      "slot": "av_shoes",
+      "name": "Disko Adımı",
+      "rarity": "Epik",
+      "brief": "Retro bilekli paten esintili spor bot; tekerleksiz, özgün parçalı taban.",
+      "layers": [
+        "shoes"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "gece_retro_ear_cassette",
+      "character": "gece",
+      "slot": "av_ear",
+      "name": "Mini Kaset",
+      "rarity": "Nadir",
+      "brief": "Küçük kaset biçimli sallantılı küpe, kulağın sabit bağlantı noktasında.",
+      "layers": [
+        "earring"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "gece_retro_wrist_pixel",
+      "character": "gece",
+      "slot": "av_wrist",
+      "name": "Piksel Bilekliği",
+      "rarity": "Nadir",
+      "brief": "Kare ekranlı retro dijital bileklik, sabit bilek açısına uygun.",
+      "layers": [
+        "wrist"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "golge_retro_hair_curtain",
+      "character": "golge",
+      "slot": "av_hair",
+      "name": "Perde Kesim",
+      "rarity": "Nadir",
+      "brief": "Ortadan ayrılan hacimli iki ön tutam, kısa ense; mevcut yana taranmış ve arkaya taranmış modellerden ayrılır.",
+      "layers": [
+        "hair-back",
+        "hair-front"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "golge_retro_eye_scan",
+      "character": "golge",
+      "slot": "av_eye",
+      "name": "Tarayıcı Bakış",
+      "rarity": "Epik",
+      "brief": "İriste ince yatay holografik yansıma ve çift kavisli ışık; göz çevresi değişmez.",
+      "layers": [
+        "eyes"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "golge_retro_top_track",
+      "character": "golge",
+      "slot": "av_top",
+      "name": "Analog Yarışçı",
+      "rarity": "Epik",
+      "brief": "Dik yakalı yarış montu, asimetrik fermuar, geniş geometrik göğüs panelleri; mevcut bomber ve e-spor ceketinden farklı.",
+      "layers": [
+        "top"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "golge_retro_bottom_panel",
+      "character": "golge",
+      "slot": "av_bottom",
+      "name": "Frekans Pantolonu",
+      "rarity": "Nadir",
+      "brief": "Düz kesim retro pist pantolonu, yana yerleştirilen kırık çizgili kumaş paneller; tokalı techwear değildir.",
+      "layers": [
+        "bottom"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "golge_retro_shoes_court",
+      "character": "golge",
+      "slot": "av_shoes",
+      "name": "Analog Court",
+      "rarity": "Epik",
+      "brief": "İki parçalı kayışlı, kare burunlu retro spor ayakkabı; mevcut sneaker silüetinden farklı.",
+      "layers": [
+        "shoes"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "golge_retro_neck_token",
+      "character": "golge",
+      "slot": "av_neck",
+      "name": "Jeton Kolye",
+      "rarity": "Nadir",
+      "brief": "Küçük yuvarlak arcade jetonu, ince boyun zinciri.",
+      "layers": [
+        "necklace"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    },
+    {
+      "id": "golge_retro_wrist_watch",
+      "character": "golge",
+      "slot": "av_wrist",
+      "name": "Frekans Saati",
+      "rarity": "Nadir",
+      "brief": "Asimetrik dikdörtgen dijital saat, sabit bilek açısında.",
+      "layers": [
+        "wrist"
+      ],
+      "price": null,
+      "visualApprovalPending": true,
+      "assetStatus": "not_created"
+    }
+  ]
+}
