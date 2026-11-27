@@ -110,5 +110,11 @@
  $('leave').onclick=()=>void act('leave');$('launch').onclick=()=>void act('launch',{game:$('game').value});$('game').onchange=renderGame;
  window.addEventListener('focus',poll);window.addEventListener('online',poll);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)void poll();});
- setInterval(poll,4000);void poll();
+ const partyPollInterval=4000,lobbyPollInterval=12000;
+ let lastPoll=0;
+ setInterval(()=>{
+  const interval=data?.party?partyPollInterval:lobbyPollInterval;
+  if(Date.now()-lastPoll>=interval){lastPoll=Date.now();void poll();}
+ },partyPollInterval);
+ lastPoll=Date.now();void poll();
 })();

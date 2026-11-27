@@ -62,6 +62,7 @@ function attach(host, id, background = '') {
     image.className='kp-wing-art';
     image.alt='';
     image.decoding='async';
+    if(host.classList.contains('kp-wing-product'))image.loading='lazy';
     image.draggable=false;
     image.src='/images/avatar-wings/'+id+'.webp';
     panel.append(image);
