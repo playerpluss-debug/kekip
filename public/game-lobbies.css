@@ -1,0 +1,69 @@
+/* Shared lobby surfaces use the existing KEKIP palette. */
+#onlinePanel[data-lobby="true"],
+#lateAnswer #entry,
+#lateAnswer .kp-late-room {
+  border: 1px solid #7157a1;
+  border-radius: 22px;
+  background: radial-gradient(ellipse at top right, #362354 0%, transparent 72%), #1c152c;
+  box-shadow: 0 18px 42px #0e091866;
+}
+#onlinePanel[data-lobby="true"] .kp-lobby-heading,
+#lateAnswer .kp-late-room > .row:first-child {
+  padding-bottom: 14px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #665084;
+}
+.kp-lobby-grid:not([hidden]) {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  align-items: stretch;
+  gap: 14px;
+}
+.kp-lobby-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #5d477b;
+  border-radius: 16px;
+  background: #171121;
+}
+.kp-lobby-card h3, .kp-lobby-card p { margin: 0; }
+#onlineSetup .online-fields { grid-template-columns: repeat(auto-fit,minmax(min(100%,115px),1fr)); }
+#onlinePanel[data-lobby="true"] .kp-foot-roster > .online-person {
+  border-color: #7960a3;
+  border-radius: 15px;
+  background: #271c3b;
+}
+#onlineStart, .kp-home-party {
+  color: #170d26;
+  background: linear-gradient(120deg,#e1ccff,#b289f3);
+  border: 1px solid #d7bbff;
+  font-weight: 800;
+}
+.kp-home-party {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+.kp-home-party:focus-visible, .kp-career-delete:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.kp-career-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.kp-career-delete.secondary { color: #ffd0dc; border-color: #ac647f; background: #4a263a; }
+.kp-career-dialog {
+  width: min(420px,calc(100% - 28px));
+  padding: 22px;
+  color: #f3eaff;
+  background: #241934;
+  border: 1px solid #a483cd;
+  border-radius: 18px;
+}
+.kp-career-dialog::backdrop { background: #0e0918b5; }
+.kp-career-dialog h2 { margin: 0; }
+@media (max-width: 680px) {
+  #onlineSetup.kp-lobby-grid, #lateAnswer .kp-lobby-grid { grid-template-columns: minmax(0,1fr); }
+}
