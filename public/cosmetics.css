@@ -1,9 +1,15 @@
-
-[data-kc-frame="frame_violet"]{outline:2px solid #b28aff;outline-offset:3px;box-shadow:0 0 13px #ad80ff70!important}
-[data-kc-frame="frame_gold"]{outline:3px double #f6d18a;outline-offset:3px;box-shadow:0 0 10px #e9b86a55!important}
-[data-kc-cover="cover_nebula"]{background:radial-gradient(ellipse at 15% 30%,#8050ab99,transparent 58%),linear-gradient(120deg,#261839,#6a3c8d,#1b173c,#482b68)!important;background-size:180% 180%!important;animation:kc-cover-flow 18s ease-in-out infinite alternate}
-[data-kc-cover="cover_tide"]{background:linear-gradient(120deg,#172b42,#245f6c,#473673,#193e56)!important;background-size:180% 180%!important;animation:kc-cover-flow 20s ease-in-out infinite alternate}
-@keyframes kc-cover-flow{from{background-position:0 40%}to{background-position:100% 60%}}
-[data-kc-name="name_lilac"]{color:#e0baff!important}[data-kc-name="name_gold"]{color:#ffe0a2!important}
-[data-kc-effect="effect_glow"]{box-shadow:0 0 24px #b58cff45,inset 0 0 25px #c8a5ff12!important}
-@media(prefers-reduced-motion:reduce){[data-kc-cover]{animation:none!important}}
+/* KEKIP Identity 2.0 — existing cosmetic IDs and ownership are unchanged. */
+[data-kc-frame="frame_violet"]{outline:2px solid #d9c4ff;outline-offset:3px;box-shadow:0 0 0 5px #6d3bc4,0 0 0 8px #b995ff,0 0 0 10px #311e58,0 0 22px 9px #9c53ff75!important}
+[data-kc-frame="frame_gold"]{outline:2px solid #fff0b4;outline-offset:3px;box-shadow:0 0 0 5px #936129,0 0 0 7px #eac576,0 0 0 10px #68421d,0 0 20px 9px #f9bc5466!important}
+[data-kc-cover="cover_nebula"]{background:radial-gradient(circle at 14% 27%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 77% 69%,#e8d4ff 0 1px,transparent 2px),radial-gradient(ellipse at 70% 25%,#ca9bfa90,transparent 39%),radial-gradient(ellipse at 22% 85%,#7a42d9,transparent 48%),linear-gradient(145deg,#090d24,#372154 58%,#10142c)!important;background-size:47px 51px,73px 79px,180% 160%,160% 180%,100% 100%!important;animation:kc-nebula 16s ease-in-out infinite alternate}
+[data-kc-cover="cover_tide"]{background:radial-gradient(ellipse at 15% 10%,#b3ffdbba,transparent 24%),repeating-linear-gradient(125deg,transparent 0 18%,#77f5d72a 22%,#6deaff88 25%,transparent 32%),radial-gradient(ellipse at 78% 14%,#8668ed,transparent 47%),linear-gradient(155deg,#071f31,#134550 58%,#1a173f)!important;background-size:180% 180%,180% 170%,160% 180%,100% 100%!important;animation:kc-nebula 14s ease-in-out infinite alternate}
+@keyframes kc-nebula{from{background-position:0 0,100% 0,0 40%,100% 50%,0 0}to{background-position:12px 9px,82% 20%,100% 60%,10% 40%,0 0}}
+[data-kc-name="name_lilac"]{color:#ead7ff!important;text-shadow:0 0 5px #a46aff,0 0 15px #9f50ff80}
+[data-kc-name="name_gold"]{color:#ffe7ad!important;text-shadow:0 0 5px #c78a33,0 0 15px #f5c26370}
+[data-kc-effect="effect_glow"]{box-shadow:0 0 0 1px #ba9bfa,0 0 24px #9766f16b,inset 0 0 34px #a976f22e!important;animation:kc-starlight 4s ease-in-out infinite alternate}
+@keyframes kc-starlight{to{box-shadow:0 0 0 1px #e4cfff,0 0 35px #b38aff85,inset 0 0 42px #ad72ff4a}}
+[data-kc-title="title_pioneer"]{background:linear-gradient(115deg,#392a18,#8d6731,#392a18)!important;color:#fff1b9!important;border:1px solid #d8b56b!important;text-shadow:0 1px 2px #190e03}
+[data-kc-title="title_night"]{background:linear-gradient(115deg,#151c3b,#48316f,#151c3b)!important;color:#e8d4ff!important;border:1px solid #ae92ee!important;text-shadow:0 0 7px #8f76dd}
+[data-kc-chat="chat_violet"]{border-color:#aa83ed!important}
+[data-kc-chat="chat_gold"]{border-color:#dbb46b!important}
+@media(prefers-reduced-motion:reduce){[data-kc-cover],[data-kc-effect]{animation:none!important}}

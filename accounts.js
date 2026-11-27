@@ -421,7 +421,7 @@ async function visitPlayerProfile(db,viewer,username){
  const stats=await profileStats(db,{id:row.id});
  const earned=stats.achievements.filter(x=>x.unlocked),badge=x=>({id:x.id,name:x.name,icon:x.icon,rarity:x.rarity});
  const title=accountTitles(stats.achievements).find(x=>x.unlocked&&x.id===d.title),featured=Array.isArray(d.featured)?d.featured.slice(0,3).map(id=>earned.find(x=>x.id===id)).filter(Boolean).map(badge):[];
- return {...base,showcase,bio:typeof d.bio==='string'?d.bio.slice(0,160):'',cover:PROFILE_COVERS.includes(d.cover)?d.cover:'violet',title:title?title.name:'KEKIP Oyuncusu',titleRarity:title?title.rarity:null,featured,...(statsVisible?{achievementCount:earned.length,achievementTotal:stats.achievements.length,progress:{xp:stats.progress.xp,level:stats.progress.level,percent:stats.progress.percent},battle:{games:stats.battle.games,wins:stats.battle.wins,hits:stats.battle.hits,shots:stats.battle.shots},football:{games:stats.football.games,goals:stats.football.goals,assists:stats.football.assists},lateAnswer:stats.lateAnswer}:{})};
+ return {...base,showcase,cosmetics:await equippedCosmetics(db,row.id),bio:typeof d.bio==='string'?d.bio.slice(0,160):'',cover:PROFILE_COVERS.includes(d.cover)?d.cover:'violet',title:title?title.name:'KEKIP Oyuncusu',titleRarity:title?title.rarity:null,featured,...(statsVisible?{achievementCount:earned.length,achievementTotal:stats.achievements.length,progress:{xp:stats.progress.xp,level:stats.progress.level,percent:stats.progress.percent},battle:{games:stats.battle.games,wins:stats.battle.wins,hits:stats.battle.hits,shots:stats.battle.shots},football:{games:stats.football.games,goals:stats.football.goals,assists:stats.football.assists},lateAnswer:stats.lateAnswer}:{})};
 }
 async function savePlayerProfile(db,a,b){const data=cleanProfile(b,await profileStats(db,a));await db.query(`INSERT INTO kekip_player_profiles(account_id,data) VALUES($1,$2::jsonb) ON CONFLICT(account_id) DO UPDATE SET data=COALESCE(kekip_player_profiles.data,'{}'::jsonb)||EXCLUDED.data`,[a.id,JSON.stringify(data)]);return {username:a.username,profile:{...data,modularAvatar:await Wardrobe.readSaved(db,a.id),cosmetics:await equippedCosmetics(db,a.id)}};}
 
@@ -592,17 +592,17 @@ const COSMETICS=Object.freeze([
  ...BACKGROUNDS.filter(i=>i.price>0),
  ...Pets.PETS,
  ...Wings,
- {id:'frame_violet',slot:'frame',name:'Neon Çember',description:'Mor ışıklı profil çerçevesi',price:80},
- {id:'frame_gold',slot:'frame',name:'Altın Seri',description:'Altın renkli profil çerçevesi',price:180},
- {id:'cover_nebula',slot:'cover',name:'Nebula',description:'Yavaş hareketli mor galaksi kapağı',price:150},
- {id:'cover_tide',slot:'cover',name:'Aurora Akışı',description:'Mavi ve turkuaz ışıklı hareketli kapak',price:160},
- {id:'name_lilac',slot:'name',name:'Ametist',description:'Lila kullanıcı adı',price:65},
- {id:'name_gold',slot:'name',name:'Altın İmza',description:'Altın renkli kullanıcı adı',price:120},
- {id:'title_pioneer',slot:'title',name:'Öncü',description:'Özel kozmetik oyuncu unvanı',price:100},
- {id:'title_night',slot:'title',name:'Gece Oyuncusu',description:'Özel kozmetik oyuncu unvanı',price:100},
- {id:'effect_glow',slot:'effect',name:'Yıldız Işığı',description:'Profil kartında yumuşak ışık efekti',price:140},
- {id:'chat_violet',slot:'chat',name:'Mor Mürekkep',description:'Mor sohbet balonu ve renkli kenar',price:90},
- {id:'chat_gold',slot:'chat',name:'Altın Sohbet',description:'Altın çizgili sohbet balonu',price:130}
+ {id:'frame_violet',slot:'frame',name:'Neon Çember',description:'Mor ışıklı profil çerçevesi',price:80,rarity:'Nadir'},
+ {id:'frame_gold',slot:'frame',name:'Altın Seri',description:'Altın renkli profil çerçevesi',price:180,rarity:'Efsanevi'},
+ {id:'cover_nebula',slot:'cover',name:'Nebula',description:'Yavaş hareketli mor galaksi kapağı',price:150,rarity:'Epik'},
+ {id:'cover_tide',slot:'cover',name:'Aurora Akışı',description:'Mavi ve turkuaz ışıklı hareketli kapak',price:160,rarity:'Epik'},
+ {id:'name_lilac',slot:'name',name:'Ametist',description:'Lila kullanıcı adı',price:65,rarity:'Standart'},
+ {id:'name_gold',slot:'name',name:'Altın İmza',description:'Altın renkli kullanıcı adı',price:120,rarity:'Nadir'},
+ {id:'title_pioneer',slot:'title',name:'Öncü',description:'Özel kozmetik oyuncu unvanı',price:100,rarity:'Nadir'},
+ {id:'title_night',slot:'title',name:'Gece Oyuncusu',description:'Özel kozmetik oyuncu unvanı',price:100,rarity:'Nadir'},
+ {id:'effect_glow',slot:'effect',name:'Yıldız Işığı',description:'Profil kartında yumuşak ışık efekti',price:140,rarity:'Epik'},
+ {id:'chat_violet',slot:'chat',name:'Mor Mürekkep',description:'Mor sohbet balonu ve renkli kenar',price:90,rarity:'Standart'},
+ {id:'chat_gold',slot:'chat',name:'Altın Sohbet',description:'Altın çizgili sohbet balonu',price:130,rarity:'Nadir'}
 ]);
 const COSMETIC_SLOTS=[...new Set(COSMETICS.filter(x=>x.slot!=='pet').map(x=>x.slot))];
 async function equippedCosmetics(db,id){const q=await db.query('SELECT slot,item_id FROM kekip_cosmetic_equipped WHERE account_id=$1',[id]);return Object.fromEntries(q.rows.filter(r=>COSMETICS.some(c=>c.id===r.item_id&&c.slot===r.slot)).map(r=>[r.slot,r.item_id]));}
