@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <title>Rün Baykuşu</title>
+  <style>
+    .shadow{transform-origin:100px 172px;animation:shadow 3.8s ease-in-out infinite}
+    .spark{transform-box:fill-box;transform-origin:center;animation:twinkle 2.7s ease-in-out infinite alternate}
+    .spark:nth-of-type(2n){animation-delay:-1.3s}
+    @keyframes shadow{50%{transform:scaleX(.83);opacity:.42}}
+    @keyframes twinkle{0%{opacity:.25;transform:scale(.65)}100%{opacity:.95;transform:scale(1.15)}}
+    .bird{animation:hover 3.5s ease-in-out infinite}
+    .wing-l{transform-origin:77px 105px;animation:left 1.8s ease-in-out infinite}
+    .wing-r{transform-origin:123px 105px;animation:right 1.8s ease-in-out infinite}
+    .glyph{animation:twinkle 3s ease-in-out infinite alternate;transform-origin:100px 136px}
+    @keyframes hover{50%{transform:translateY(-11px)}}
+    @keyframes left{50%{transform:rotate(20deg)}}
+    @keyframes right{50%{transform:rotate(-20deg)}}
+    @media (prefers-reduced-motion:reduce){ *{animation:none!important} }
+  </style>
+  <defs>
+    <linearGradient id="fur" x2="1" y2="1"><stop stop-color="#9c83ed"/><stop offset="1" stop-color="#55449b"/></linearGradient>
+    <linearGradient id="shade" x2="0" y2="1"><stop stop-color="#55449b"/><stop offset="1" stop-color="#30234e"/></linearGradient>
+    <linearGradient id="light" x2="1" y2="1"><stop stop-color="#fff0c3"/><stop offset="1" stop-color="#a4e5e1"/></linearGradient>
+    <radialGradient id="aura"><stop stop-color="#a4e5e1" stop-opacity=".35"/><stop offset="1" stop-color="#a4e5e1" stop-opacity="0"/></radialGradient>
+    <path id="star" d="M0-7 2-2 7 0 2 2 0 7-2 2-7 0-2-2Z"/>
+
+  </defs>
+  <ellipse cx="100" cy="116" rx="89" ry="72" fill="url(#aura)"/>
+  <ellipse class="shadow" cx="100" cy="172" rx="53" ry="9" fill="#110e27" opacity=".68"/>
+  <g fill="#a9f3ed"><g class="spark"><use href="#star" x="41" y="104"/></g><g class="spark"><use href="#star" x="160" y="63"/></g></g>
+  <g class="bird" stroke="#2d224b" stroke-width="3" stroke-linejoin="round">
+    <path class="wing-l" d="M82 101Q49 90 24 107q9 19 24 22l-4 8q24 14 43-12Z" fill="url(#shade)"/>
+    <path class="wing-r" d="M118 101q33-11 58 6-9 19-24 22l4 8q-24 14-43-12Z" fill="url(#shade)"/>
+    <path d="M68 106q32-24 64 0 21 48-16 54-18 7-39-2-35-15-9-52Z" fill="url(#fur)"/>
+    <path d="M81 123q19-8 38 0l-4 22q-15 11-30 0Z" fill="url(#light)" stroke="none" opacity=".73"/>
+    <path d="M84 157l-6 7m16-4-3 7m15-7 3 7m7-10 6 7" stroke="#e9b873" stroke-width="4" stroke-linecap="round"/>
+    <path d="M61 95q-8-12-5-42l24 17q19-6 40 0l24-17q3 30-5 42-1 24-39 31-38-7-39-31Z" fill="url(#fur)"/>
+    <path d="M65 86q17-15 35 4 18-19 35-4 8 16-4 27-15 12-31-1-16 13-31 1-12-11-4-27Z" fill="#d0bcf5" stroke="none"/>
+    <g fill="#f9d98b"><circle cx="81" cy="96" r="11"/><circle cx="119" cy="96" r="11"/></g><g fill="#352647" stroke="none"><ellipse cx="83" cy="96" rx="3.5" ry="5.5"/><ellipse cx="117" cy="96" rx="3.5" ry="5.5"/></g>
+    <path d="M93 106q7-5 14 0l-7 10Z" fill="#edab62"/>
+    <path class="glyph" d="M100 127l7 8-7 8-7-8Zm-10 8h-5m25 0h5" fill="none" stroke="#77f1df" stroke-width="2"/>
+  </g>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <title>Ay Kedisi</title>
+  <style>
+    .shadow{transform-origin:100px 172px;animation:shadow 3.8s ease-in-out infinite}
+    .spark{transform-box:fill-box;transform-origin:center;animation:twinkle 2.7s ease-in-out infinite alternate}
+    .spark:nth-of-type(2n){animation-delay:-1.3s}
+    @keyframes shadow{50%{transform:scaleX(.83);opacity:.42}}
+    @keyframes twinkle{0%{opacity:.25;transform:scale(.65)}100%{opacity:.95;transform:scale(1.15)}}
+    .tail{transform-origin:128px 147px;animation:sway 3.2s ease-in-out infinite}
+    .cat{transform-origin:100px 160px;animation:breathe 3.8s ease-in-out infinite}
+    .eyes{transform-box:fill-box;transform-origin:center;animation:blink 5.7s infinite}
+    @keyframes sway{50%{transform:rotate(18deg)}}
+    @keyframes breathe{50%{transform:translateY(-3px) scaleY(1.025)}}
+    @keyframes blink{0%,41%,47%,100%{transform:scaleY(1)}44%{transform:scaleY(.12)}}
+    @media (prefers-reduced-motion:reduce){ *{animation:none!important} }
+  </style>
+  <defs>
+    <linearGradient id="fur" x2="1" y2="1"><stop stop-color="#cbb9ff"/><stop offset="1" stop-color="#6e579e"/></linearGradient>
+    <linearGradient id="shade" x2="0" y2="1"><stop stop-color="#6e579e"/><stop offset="1" stop-color="#392957"/></linearGradient>
+    <linearGradient id="light" x2="1" y2="1"><stop stop-color="#eff7ff"/><stop offset="1" stop-color="#96b9f4"/></linearGradient>
+    <radialGradient id="aura"><stop stop-color="#96b9f4" stop-opacity=".35"/><stop offset="1" stop-color="#96b9f4" stop-opacity="0"/></radialGradient>
+    <path id="star" d="M0-7 2-2 7 0 2 2 0 7-2 2-7 0-2-2Z"/>
+
+  </defs>
+  <ellipse cx="100" cy="116" rx="89" ry="72" fill="url(#aura)"/>
+  <ellipse class="shadow" cx="100" cy="172" rx="53" ry="9" fill="#110e27" opacity=".68"/>
+  <g fill="#d9ecff"><g class="spark"><use href="#star" x="42" y="78"/></g><g class="spark"><use href="#star" x="157" y="55" transform="rotate(12 157 55)"/></g></g>
+  <g class="tail">
+    <path d="M124 148q40 11 43-21 1-18-15-26" fill="none" stroke="#302247" stroke-width="21" stroke-linecap="round"/>
+    <path d="M124 148q40 11 43-21 1-18-15-26" fill="none" stroke="url(#fur)" stroke-width="14" stroke-linecap="round"/>
+    <path d="M165 112q-4-7-13-11" fill="none" stroke="#d2c4fb" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <g class="cat" stroke="#38274f" stroke-width="3" stroke-linejoin="round">
+    <path d="M69 131q4-28 29-26 28 0 37 34 5 23-14 25H76q-14-3-7-33Z" fill="url(#shade)"/>
+    <path d="M83 120q16-14 32 0l4 31q-16 9-40 1Z" fill="url(#light)" opacity=".82" stroke="none"/>
+    <path d="M64 157q3-13 15-13t15 12q0 9-15 9t-15-8Zm38 0q3-13 15-13t15 12q0 9-15 9t-15-8Z" fill="url(#fur)"/>
+    <path d="M58 89q-11-12-7-47 19 2 38 20 12-3 24 1 16-18 34-19 8 35-6 48 4 21-13 34-28 18-55 0-17-11-15-37Z" fill="url(#fur)"/>
+    <path d="M57 52q7 1 22 15L61 76q-5-10-4-24Zm84 2q-11 3-22 15l17 8q6-9 5-23Z" fill="#e09ecf" stroke="none"/>
+    <path d="M70 111q12 15 28 6 17 10 33-4-7 19-31 20-23-1-30-22Z" fill="#e9dbff" stroke="none"/>
+    <path d="M104 70a11 11 0 1 0 9 13 9 9 0 0 1-9-13Z" fill="#edf4ff" stroke="none"/>
+    <g class="eyes" stroke="#282035"><ellipse cx="79" cy="98" rx="7" ry="9" fill="#aef5ff"/><ellipse cx="121" cy="98" rx="7" ry="9" fill="#aef5ff"/><path d="M80 94v8m40-8v8" stroke-width="2.5"/></g>
+    <path d="M95 109q5-3 10 0l-5 5Z" fill="#4a3158" stroke="none"/><path d="M94 119q5 0 6-5 1 5 7 5" fill="none" stroke-width="1.8"/>
+    <path d="M60 108l-13-3m13 9-12 2m93-8 13-4m-13 10 12 2" fill="none" stroke="#ceb6ec" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <title>Yıldız Ejderi</title>
+  <style>
+    .shadow{transform-origin:100px 172px;animation:shadow 3.8s ease-in-out infinite}
+    .spark{transform-box:fill-box;transform-origin:center;animation:twinkle 2.7s ease-in-out infinite alternate}
+    .spark:nth-of-type(2n){animation-delay:-1.3s}
+    @keyframes shadow{50%{transform:scaleX(.83);opacity:.42}}
+    @keyframes twinkle{0%{opacity:.25;transform:scale(.65)}100%{opacity:.95;transform:scale(1.15)}}
+    .dragon{animation:float 3.8s ease-in-out infinite}
+    .wing-l{transform-origin:76px 111px;animation:flap-l 1.65s ease-in-out infinite}
+    .wing-r{transform-origin:126px 110px;animation:flap-r 1.65s ease-in-out infinite}
+    .orbit{transform-origin:100px 96px;animation:orbit 12s linear infinite}
+    @keyframes float{50%{transform:translateY(-11px)}}
+    @keyframes flap-l{50%{transform:rotate(17deg) scaleX(.9)}}
+    @keyframes flap-r{50%{transform:rotate(-17deg) scaleX(.9)}}
+    @keyframes orbit{to{transform:rotate(360deg)}}
+    @media (prefers-reduced-motion:reduce){ *{animation:none!important} }
+  </style>
+  <defs>
+    <linearGradient id="fur" x2="1" y2="1"><stop stop-color="#9595ff"/><stop offset="1" stop-color="#5943a8"/></linearGradient>
+    <linearGradient id="shade" x2="0" y2="1"><stop stop-color="#5943a8"/><stop offset="1" stop-color="#2e255a"/></linearGradient>
+    <linearGradient id="light" x2="1" y2="1"><stop stop-color="#e0efff"/><stop offset="1" stop-color="#a16bf7"/></linearGradient>
+    <radialGradient id="aura"><stop stop-color="#a16bf7" stop-opacity=".35"/><stop offset="1" stop-color="#a16bf7" stop-opacity="0"/></radialGradient>
+    <path id="star" d="M0-7 2-2 7 0 2 2 0 7-2 2-7 0-2-2Z"/>
+
+  </defs>
+  <ellipse cx="100" cy="116" rx="89" ry="72" fill="url(#aura)"/>
+  <ellipse class="shadow" cx="100" cy="172" rx="53" ry="9" fill="#110e27" opacity=".68"/>
+  <circle cx="100" cy="96" r="76" fill="none" stroke="#b5a2fc" opacity=".47" stroke-dasharray="3 8 28 12"/>
+  <g class="orbit" fill="#e2c9ff"><use href="#star" x="100" y="21"/><use href="#star" x="161" y="141" opacity=".78"/><circle cx="31" cy="109" r="2.5"/></g>
+  <g class="dragon" stroke="#30224e" stroke-width="3" stroke-linejoin="round">
+    <g class="wing-l"><path d="M83 115Q55 103 21 74q-5 24 15 57 9-12 22 4 5-13 25-9Z" fill="url(#shade)"/><path d="M24 78q22 32 46 42l-14 11q-9-13-21-5-9-23-11-48Z" fill="#8d6ce0" stroke="none"/><path d="M26 81l30 47" stroke="#b89ef5" stroke-width="1.4" fill="none"/></g>
+    <g class="wing-r"><path d="M117 113q29-9 62-42 6 25-14 59-10-12-23 3-4-13-25-8Z" fill="url(#shade)"/><path d="M176 76q-22 32-46 42l14 11q10-13 21-5 10-23 11-48Z" fill="#8d6ce0" stroke="none"/><path d="M174 79l-30 47" stroke="#b89ef5" stroke-width="1.4" fill="none"/></g>
+    <path d="M114 145q42 16 53-11l10 4q-5 39-59 24Z" fill="url(#fur)"/><path d="M165 135l12-15 10 16-10 9Z" fill="url(#light)"/>
+    <path d="M74 114q27-19 54 2 20 33 3 44-12 11-33 7-26 3-37-13-5-18 13-40Z" fill="url(#shade)"/>
+    <path d="M83 124q15-8 30 0l6 27q-20 15-40 0Z" fill="url(#light)" stroke="none"/>
+    <path d="M71 151q12-8 18 2 6 11-8 12-17 2-10-14Zm39 1q11-10 20-1 8 13-7 14-15 1-13-13Z" fill="url(#fur)"/>
+    <path d="M65 78q-12-18-5-41 13 1 24 26m50 15q12-18 5-41-13 1-24 26" fill="url(#light)"/>
+    <path d="M59 96q-4-23 17-34 25-14 52 1 20 13 16 34-5 26-43 30-37-4-42-31Z" fill="url(#fur)"/>
+    <path d="M98 59l8 13-6 13-8-13Z" fill="#bef0ff" stroke="#6d54a9" stroke-width="1.5"/>
+    <g fill="#aef8ff"><ellipse cx="79" cy="93" rx="8" ry="10"/><ellipse cx="121" cy="93" rx="8" ry="10"/></g>
+    <path d="M79 88v9m42-9v9" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M80 110q20-12 40 0-2 13-20 14-18-1-20-14Z" fill="#cbb8f4" stroke="none"/><path d="M95 113q5 6 11 0" fill="none" stroke-width="2"/>
+  </g>
+</svg>

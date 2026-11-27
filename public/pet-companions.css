@@ -1,0 +1,12 @@
+/* Animated companions remain separate from the avatar layers and screenshots. */
+[data-kp-pet="pet_moon_cat"]{--kp-pet-art:url("/images/pets/moon-cat.svg")}
+[data-kp-pet="pet_rune_owl"]{--kp-pet-art:url("/images/pets/rune-owl.svg")}
+[data-kp-pet="pet_ember_fox"]{--kp-pet-art:url("/images/pets/ember-fox.svg")}
+[data-kp-pet="pet_astral_dragon"]{--kp-pet-art:url("/images/pets/astral-dragon.svg")}
+.stage[data-kp-pet]::after,.photo[data-kp-pet]::after,.kp-portrait-host[data-kp-pet]::after{
+  content:"";position:absolute;z-index:90;pointer-events:none;
+  right:3%;bottom:4%;width:31%;max-width:156px;aspect-ratio:1;
+  background:var(--kp-pet-art) center/contain no-repeat;
+}
+.photo[data-kp-pet]::after{bottom:5%;right:4%}
+.kp-portrait-host[data-kp-pet]::after{width:30%}
