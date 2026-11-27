@@ -1,4 +1,4 @@
-/* 0.51.18.5.1 — read-only Mythic set section. No ownership or outfit writes. */
+/* 0.51.18.5.2 — read-only chest inventory and Mythic set section. No outfit writes. */
 (()=>{
  'use strict';
  const character=document.currentScript?.dataset.character;
@@ -26,9 +26,15 @@
  const link=make('a','Gizemli Sandık');link.href='/mystery-chest.html';
  const names={gece:['Ay Tutulması Seti','ay-tutulmasi-set'],golge:['Karanlık Hükümdar Seti','karanlik-hukumdar-set']};
  name.textContent=names[character][0];image.alt=name.textContent+' önizlemesi';image.src='/images/chest-collections/'+character+'/'+names[character][1]+'/preview.webp';
- text.append(name,tag,state,note);card.append(image,text);section.append(title,desc,card,link);main.append(section);
+ text.append(name,tag,state,note);card.append(image,text);const inventoryTitle=make('h2','Sandıktan kazanılan kozmetikler');
+ const inventoryState=make('p','Envanter kontrol ediliyor…');inventoryState.setAttribute('role','status');
+ const inventoryList=make('div');inventoryList.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:10px;margin:12px 0';
+ section.append(title,desc,card,link,inventoryTitle,inventoryState,inventoryList);main.append(section);
+ function showInventory(items){inventoryList.replaceChildren();const owned=items.filter(i=>i.character===character&&!i.completeSet);inventoryState.textContent=owned.length?owned.length+' / 9 kozmetik kazanıldı · Giyme sonraki sürümde açılacak.':'Henüz kazanılmış tekil sandık kozmetiği yok.';for(const item of owned){const tile=make('div');tile.style.cssText='border:1px solid #59416e;border-radius:10px;padding:8px;background:#291a34;min-width:0';const img=make('img');img.alt=item.name;img.loading='lazy';img.src=item.thumbnail;const label=make('strong',item.name);label.style.fontSize='13px';const rarity=make('small',item.rarityLabel);tile.append(img,label,rarity);inventoryList.append(tile);}}
+ function clearInventory(message){inventoryList.replaceChildren();inventoryState.textContent=message;}
+
  async function api(action,body={}){const r=await fetch('/api/account/'+action,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(!r.ok)throw Error('Hesap bilgisi alınamadı.');return r.json();}
  let epoch=0;
- async function refresh(){const stamp=++epoch;state.textContent='Durum kontrol ediliyor…';try{const me=await api('me');if(stamp!==epoch)return;const username=me.user?.username;if(!username){state.textContent='Giriş yap · Önizleme';return;}const info=await api('chest-status',{username});if(stamp!==epoch)return;const c=info.chests?.find(x=>x.character===character);const set=c?.items?.find(x=>x.rarity==='mythic'&&x.completeSet===true);if(info.username!==username||!set)throw Error('Set verisi doğrulanamadı.');state.textContent=set.owned?'Kazanıldı · Giyme henüz kapalı':set.visualApprovalPending?'Önizleme · Görsel onayı bekleniyor':'Kilitli · Sandık henüz kapalı';}catch{if(stamp===epoch)state.textContent='Durum alınamadı · Önizleme';}}
- window.addEventListener('pageshow',e=>{if(e.persisted)refresh();});window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',()=>{if(document.hidden){++epoch;state.textContent='Önizleme';}else refresh();});refresh();
+ async function refresh(){const stamp=++epoch;state.textContent='Durum kontrol ediliyor…';clearInventory('Envanter kontrol ediliyor…');try{const me=await api('me');if(stamp!==epoch)return;const username=me.user?.username;if(!username){state.textContent='Giriş yap · Önizleme';clearInventory('Envanter için giriş yap.');return;}const [info,inv]=await Promise.all([api('chest-status',{username}),api('chest-inventory',{username,character})]);if(stamp!==epoch)return;const c=info.chests?.find(x=>x.character===character);const set=c?.items?.find(x=>x.rarity==='mythic'&&x.completeSet===true);if(info.username!==username||inv.username!==username||!Array.isArray(inv.items)||!set)throw Error('Set verisi doğrulanamadı.');state.textContent=set.owned?'Kazanıldı · Giyme henüz kapalı':set.visualApprovalPending?'Önizleme · Görsel onayı bekleniyor':'Kilitli · Sandık henüz kapalı';showInventory(inv.items);}catch{if(stamp===epoch){state.textContent='Durum alınamadı · Önizleme';clearInventory('Envanter alınamadı.');}}}
+ window.addEventListener('pageshow',e=>{if(e.persisted)refresh();});window.addEventListener('focus',refresh);document.addEventListener('visibilitychange',()=>{if(document.hidden){++epoch;state.textContent='Önizleme';clearInventory('Envanter kontrol edilecek.');}else refresh();});refresh();
 })();
