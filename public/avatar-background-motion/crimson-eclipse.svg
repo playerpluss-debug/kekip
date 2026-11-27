@@ -52,15 +52,17 @@
       <circle cx="366" cy="86" r="1.9" fill="#ffb9ad" opacity="0.48"/>
       <circle cx="439" cy="310" r="0.6" fill="#ffb9ad" opacity="0.3"/>
   </g>
-  <circle class="corona" cx="240" cy="194" r="158" fill="url(#flare)"/>
-  <g class="rays" fill="none" stroke-linecap="round">
-    <circle cx="240" cy="194" r="101" stroke="#ff9562" stroke-width="2.5" stroke-dasharray="40 32 9 60 24 42"/>
-    <circle cx="240" cy="194" r="114" stroke="#f34e6a" opacity=".62" stroke-width="2" stroke-dasharray="22 68 9 46"/>
-    <circle cx="240" cy="194" r="125" stroke="#ffd3a2" opacity=".38" stroke-dasharray="4 33 35 57"/>
-    <path d="M240 74q-28-33 8-53m105 173q43-12 55 6M240 302q30 23 2 62M133 194q-38 17-57-9" stroke="#eb6b74" opacity=".64" stroke-width="2"/>
+  <g transform="translate(106 -43)">
+    <circle class="corona" cx="240" cy="194" r="158" fill="url(#flare)"/>
+    <g class="rays" fill="none" stroke-linecap="round">
+      <circle cx="240" cy="194" r="101" stroke="#ff9562" stroke-width="2.5" stroke-dasharray="40 32 9 60 24 42"/>
+      <circle cx="240" cy="194" r="114" stroke="#f34e6a" opacity=".62" stroke-width="2" stroke-dasharray="22 68 9 46"/>
+      <circle cx="240" cy="194" r="125" stroke="#ffd3a2" opacity=".38" stroke-dasharray="4 33 35 57"/>
+      <path d="M240 74q-28-33 8-53m105 173q43-12 55 6M240 302q30 23 2 62M133 194q-38 17-57-9" stroke="#eb6b74" opacity=".64" stroke-width="2"/>
+    </g>
+    <circle cx="240" cy="194" r="83" fill="url(#moon)" stroke="#ffc48f" stroke-width="2"/>
+    <path d="M171 220q23 31 67 33m37-133q31 19 43 46" fill="none" stroke="#ffab80" opacity=".62"/>
   </g>
-  <circle cx="240" cy="194" r="83" fill="url(#moon)" stroke="#ffc48f" stroke-width="2"/>
-  <path d="M171 220q23 31 67 33m37-133q31 19 43 46" fill="none" stroke="#ffab80" opacity=".62"/>
   <path d="M0 450l40-56 74-48 38 18 41 82 37 15 47-39 42-69 53-45 43 27 65 91v235H0z" fill="#3d2335"/>
   <path d="M0 471l41-33 52-21 52 19 39 55 63 14 54-36 86-61 48 16 45 58v178H0z" fill="#23192b"/>
   <path d="M0 513l92-20 49 20 40 49 67 4 40-18 39-49 72-33 81 55v139H0z" fill="#121121"/>
