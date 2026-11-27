@@ -85,7 +85,7 @@ function renderActions(d){const area=$('profileActions'),note=$('profileActionNo
 async function refreshPresence(d){const seq=++presenceEpoch;if(d.relationship!=='friend'){presence=null;return}try{const p=await api('social-pulse',{activity:'home'});if(seq!==presenceEpoch||current!==d)return;presence=p.friends.find(f=>f.username===d.username)?.activity||'offline'}catch{if(seq!==presenceEpoch||current!==d)return;presence=null}if(!acting)renderActions(d)}
 async function change(kind){if(acting||refreshing||!current||!allowed.test(current.username))return;const d=current;const permitted={none:['request'],incoming:['accept','reject'],outgoing:['cancel'],friend:['remove']};if(!permitted[d.relationship]?.includes(kind))return;if(kind==='remove'&&!confirm('@'+d.username+' arkadaş listesinden çıkarılsın mı?'))return;acting=true;status('İşlem yapılıyor…');renderActions(d);try{await api('friends-'+kind,{username:d.username});status(({request:'Arkadaşlık isteği gönderildi.',accept:'Arkadaşlık isteği kabul edildi.',reject:'İstek reddedildi.',cancel:'İstek iptal edildi.',remove:'Oyuncu arkadaş listesinden çıkarıldı.'})[kind]);await load()}catch(e){status(e.message,true);if(e.status===409)await load()}finally{acting=false;if(current)renderActions(current)}}
 
-const gameNames={battleship:'Amiral Battı',football:'Futbol Kariyer',late_answer:'Gecikmeli Cevap'};
+const gameNames={battleship:'Amiral Battı',football:'Futbol Kariyer',late_answer:'Gecikmeli Cevap',arena:'KEKIP Arena'};
 const characterNames={gece:'Gece',golge:'Gölge'};
 const historyDate=new Intl.DateTimeFormat('tr-TR',{dateStyle:'medium',timeStyle:'short',timeZone:'Europe/Istanbul'});
 let historyCursor,historyBusy=false,historyEpoch=0,showcaseBusy=false;
@@ -140,6 +140,7 @@ function matchRow(m){
  time.dateTime=m.playedAt;
  const result=m.game==='football'?m.goals+' gol · '+m.assists+' asist':
   m.game==='battleship'?(m.outcome==='win'?'Galibiyet':'Mağlubiyet')+' · '+m.hits+'/'+m.shots+' isabet':
+  m.game==='arena'?(m.outcome==='win'?'Galibiyet':'Tamamlandı')+' · '+m.score+' puan':
   ({win:'Galibiyet',complete:'Tamamlandı',incomplete:'Yarım kaldı'})[m.outcome]+' · '+m.correct+' doğru';
  row.append(el('strong',gameNames[m.game]),el('span',result),time);return row;
 }

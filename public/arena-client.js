@@ -15,6 +15,7 @@
  const socket=io('/arena');
  let current=null,offset=0,viewKey='',submitted=new Set(),inputRound=0;
  let useInvite=Boolean(invite);
+ const notified=new Set();
  const status=message=>{$('arenaStatus').textContent=message;};
  const node=(tag,text)=>{const element=document.createElement(tag);element.textContent=text;return element;};
  const emit=(event,data={})=>new Promise((resolve,reject)=>{
@@ -230,6 +231,16 @@
   start.disabled=data.players.length<2||players.some(player=>!player.online);
   $('arenaInvite').hidden=data.party||data.phase!=='lobby';
   if(entering){status('');$('arenaRoomTitle').focus();}
+  if(data.phase==='final'&&!data.cancelled){
+   if(data.rewards==='pending')status('Maç ödülleri kaydediliyor…');
+   else if(data.rewards==='failed')status('Maç ödülleri şu anda kaydedilemedi.');
+   else if(!data.rewards)status('Ödül için en az iki oyuncunun dörder tur oynaması gerekir.');
+  }
+  if(data.rewardMatchId&&!notified.has(data.rewardMatchId)){
+   notified.add(data.rewardMatchId);
+   status('Maç ödülleri kaydedildi.');
+   window.dispatchEvent(new CustomEvent('kekip:match-cards-ready',{detail:{game:'arena',matchId:data.rewardMatchId}}));
+  }
   renderStage(serverNow());
  });
  socket.on('connect',async()=>{

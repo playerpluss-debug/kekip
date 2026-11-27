@@ -1,6 +1,6 @@
 'use strict';
 
-const {randomInt}=require('node:crypto');
+const {randomInt,randomUUID}=require('node:crypto');
 const {catalog,games,playlist,openRound,visibleRound,scoreAction,settleRound}=require('./arena-games');
 const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const codePattern=/^[A-Z2-9]{5}$/;
@@ -8,9 +8,9 @@ const roomLimit=150;
 const reconnectMs=90_000;
 
 function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=randomInt,schedule=setInterval}={}){
- const namespace=io.of('/arena'),rooms=new Map(),membership=new Map();
+ const namespace=io.of('/arena'),rooms=new Map(),membership=new Map(),pending=new Map();
  const fail=(ack,error)=>ack({ok:false,error});
- const member=(account,socket)=>({id:account.id,username:account.username,socketId:socket?.id||null,until:socket?null:now()+reconnectMs,total:0,last:0});
+ const member=(account,socket)=>({id:account.id,username:account.username,socketId:socket?.id||null,until:socket?null:now()+reconnectMs,total:0,last:0,played:0});
  function makeRoom(players,settings,party=false){
   if(rooms.size>=roomLimit)throw Error('Şu anda yeni lobi açılamıyor.');
   let code;
@@ -24,7 +24,9 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   const challenge=room.phase==='round'?visibleRound(room.round,t,player.id):null;
   return {
    code:room.code,phase:room.phase,settings:room.settings,party:room.party,number:room.number,deadline:room.deadline,
-   serverTime:t,cancelled:!!room.cancelled,host:room.players.find(p=>p.id===room.host)?.username,you:player.username,
+   serverTime:t,cancelled:!!room.cancelled,rewards:room.rewardPlayers?.has(player.id)?room.rewardState:null,
+   rewardMatchId:room.rewardState==='recorded'&&room.rewardPlayers.has(player.id)?room.matchId:null,
+   host:room.players.find(p=>p.id===room.host)?.username,you:player.username,
    players:room.players.map(p=>({username:p.username,online:!!p.socketId,total:p.total,last:p.last})),
    challenge,actions:room.round?.actions.get(player.id)?[...room.round.actions.get(player.id)]:[]
   };
@@ -53,6 +55,36 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   room.viewKey='';
   publish(room,t);
  }
+ function finish(room,t){
+  room.phase='final';room.deadline=0;
+  const eligible=room.players.filter(player=>player.played>=4);
+  if(eligible.length>=2){
+   const best=Math.max(...room.players.map(player=>player.total));
+   const winner=room.players.filter(player=>player.total===best);
+   const rows=eligible.map(player=>({accountId:player.id,result:{
+    complete:true,win:winner.length===1&&winner[0]===player,score:player.total,rounds:player.played
+   }}));
+   room.rewardPlayers=new Set(eligible.map(player=>player.id));
+   room.rewardState='pending';
+   pending.set(room.matchId,{room,rows,nextAttempt:t,expires:t+300_000,busy:false});
+  }
+  publish(room,t);
+ }
+ function saveRewards(t){
+  for(const [matchId,record] of pending){
+   if(record.busy||record.nextAttempt>t)continue;
+   if(t>=record.expires){
+    record.room.rewardState='failed';pending.delete(matchId);publish(record.room,t);continue;
+   }
+   record.busy=true;
+   Promise.resolve().then(()=>accounts.recordGameResults('arena',matchId,record.rows,null,true)).then(()=>{
+    record.room.rewardState='recorded';pending.delete(matchId);publish(record.room);
+   }).catch(error=>{
+    record.busy=false;record.nextAttempt=now()+5000;
+    console.error('Arena match rewards:',error.code||error.message);
+   });
+  }
+ }
  function update(){
   const t=now();
   for(const room of rooms.values()){
@@ -64,6 +96,8 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
      for(const player of room.players){
       player.last=Math.max(0,room.round.scores.get(player.id)||0);
       player.total+=player.last;
+      const actions=room.round.actions.get(player.id);
+      if(actions?.size&&!(actions.size===1&&(actions.has('hint')||actions.has('risk'))))player.played++;
      }
      room.phase='summary';room.deadline=t+3500;publish(room,t);
     }else{
@@ -73,9 +107,10 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
     }
    }else if(room.phase==='summary'&&t>=room.deadline){
     if(room.number<room.queue.length)nextRound(room,t);
-    else{room.phase='final';room.deadline=0;publish(room,t);}
+    else finish(room,t);
    }
   }
+  saveRewards(t);
  }
  const timer=schedule(update,120);
  timer?.unref?.();
@@ -129,6 +164,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
    if(!player||player.socketId!==socket.id||room.host!==player.id||room.phase!=='lobby')return fail(ack,'Maçı oda sahibi başlatabilir.');
    if(room.players.length<2||room.players.some(p=>!p.socketId))return fail(ack,'En az iki oyuncu çevrimiçi olmalı.');
    room.queue=playlist(room.settings.selected,room.settings.rounds,random,room.players.length);
+   room.matchId=randomUUID();
    ack({ok:true});nextRound(room,t);
   });
   bind('action',(data,ack,room,player,t)=>{
