@@ -13,25 +13,25 @@
 <script src="/chat-client.js" defer></script>
 <script src="/reward-effects.js" defer></script>
 <script src="/match-cards.js" defer></script>
-<link rel="stylesheet" href="/kekip-navigation.css?v=05122"></head><body>
-<main id="lateAnswer">
+<link rel="stylesheet" href="/kekip-navigation.css?v=05122"><link rel="stylesheet" href="/game-lobbies.css?v=2"></head><body>
+<main id="lateAnswer" class="kp-lobby-shell">
   <header class="top kp-page-header">
     <a class="brand kp-site-brand" href="/"><span class="kp-site-mark" aria-hidden="true">K</span><span class="kp-site-word">KEKIP<em>.</em> GAMES</span></a>
     <nav aria-label="Sayfa bağlantıları"><a href="/" data-kp-header-link>← Ana sayfa</a> <a href="/party.html" data-kp-header-link>Parti</a></nav>
   </header>
-  <div class="intro"><h1>Gecikmeli Cevap</h1><p>Yeni soruyu hatırla, önceki soruyu sesli cevapla. Diğer oyuncular cevabını değerlendirir.</p></div>
+  <div class="kp-lobby-hero kp-lobby-late"><div class="kp-lobby-copy"><p class="kp-lobby-meta">3–8 oyuncu · Sesli bilgi oyunu</p><h1>Gecikmeli Cevap</h1><p>Yeni soruyu aklında tut, bir önceki soruyu cevapla. Doğru cevaba jüri karar verir.</p></div><span class="kp-lobby-emblem" aria-hidden="true">?</span></div>
   <p id="notice" role="status" aria-live="polite">Oyun sunucusuna bağlanılıyor…</p>
   <section id="entry" class="panel" aria-labelledby="entryHeading">
     <h2 id="entryHeading">Oda kur veya katıl</h2>
     <p>3–8 oyuncu. Lobiye girdikten sonra mikrofonunu açabilir veya dinleyici olarak kalabilirsin.</p>
-    <div class="entry-grid">
-      <form id="createForm">
+    <div class="entry-grid kp-lobby-grid">
+      <form id="createForm" class="kp-lobby-card"><h3>Yeni oda</h3>
         <label>Soru sayısı<select name="questions"><option>5</option><option selected>7</option><option>10</option></select></label>
         <label>Cevap süresi<select name="seconds"><option value="7">7 saniye</option><option value="10" selected>10 saniye</option><option value="15">15 saniye</option></select></label>
         <label>Oda türü<select name="visibility"><option value="private">Özel</option><option value="public">Açık</option></select></label>
         <button class="primary" type="submit" disabled>Oda oluştur</button>
       </form>
-      <form id="joinForm">
+      <form id="joinForm" class="kp-lobby-card"><h3>Davetle katıl</h3>
         <label for="roomCode">Oda kodu</label><input id="roomCode" name="code" maxlength="5" autocomplete="off" autocapitalize="characters" required>
         <button type="submit" disabled>Odaya katıl</button>
       </form>
@@ -40,7 +40,7 @@
     <div id="publicRooms" aria-live="polite"></div>
   </section>
   <section id="room" hidden aria-labelledby="roomTitle">
-    <div class="panel room-header">
+    <div class="panel room-header kp-late-room">
       <div class="row"><h2 tabindex="-1" id="roomTitle">Oda</h2><button id="leave" type="button">Odadan ayrıl</button></div>
       <div class="row"><p id="roomInfo"></p><div id="inviteAnchor"><button id="copyInvite" type="button">Davet bağlantısını kopyala</button></div></div>
       <form id="settingsForm" hidden>
