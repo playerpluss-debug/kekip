@@ -1,0 +1,12 @@
+BEGIN;
+SELECT pg_advisory_xact_lock(91342, 1);
+UPDATE kekip_presence SET activity='home' WHERE activity='late_answer';
+DELETE FROM kekip_social_invites WHERE game='late_answer';
+ALTER TABLE kekip_presence DROP CONSTRAINT IF EXISTS kekip_presence_activity_check;
+ALTER TABLE kekip_presence ADD CONSTRAINT kekip_presence_activity_check CHECK (activity IN ('home','battleship','football'));
+ALTER TABLE kekip_presence DROP CONSTRAINT IF EXISTS kekip_presence_activity_late_answer_check;
+ALTER TABLE kekip_social_invites DROP CONSTRAINT IF EXISTS kekip_social_invites_game_check;
+ALTER TABLE kekip_social_invites ADD CONSTRAINT kekip_social_invites_game_check CHECK (game IN ('battleship','football'));
+ALTER TABLE kekip_social_invites DROP CONSTRAINT IF EXISTS kekip_social_invites_game_late_answer_check;
+DROP INDEX IF EXISTS kekip_late_answer_account_date;
+COMMIT;
