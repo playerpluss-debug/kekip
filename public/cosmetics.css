@@ -1,9 +1,37 @@
+/* KEKIP Identity 2.0 — existing cosmetic IDs and ownership are unchanged. */
+[data-kc-frame="frame_violet"]{outline:2px solid #d9c4ff;outline-offset:3px;box-shadow:0 0 0 5px #6d3bc4,0 0 0 8px #b995ff,0 0 0 10px #311e58,0 0 22px 9px #9c53ff75!important}
+[data-kc-frame="frame_gold"]{outline:2px solid #fff0b4;outline-offset:3px;box-shadow:0 0 0 5px #936129,0 0 0 7px #eac576,0 0 0 10px #68421d,0 0 20px 9px #f9bc5466!important}
+[data-kc-cover="cover_nebula"]{background:radial-gradient(circle at 14% 27%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 77% 69%,#e8d4ff 0 1px,transparent 2px),radial-gradient(ellipse at 70% 25%,#ca9bfa90,transparent 39%),radial-gradient(ellipse at 22% 85%,#7a42d9,transparent 48%),linear-gradient(145deg,#090d24,#372154 58%,#10142c)!important;background-size:47px 51px,73px 79px,180% 160%,160% 180%,100% 100%!important;animation:kc-nebula 16s ease-in-out infinite alternate}
+[data-kc-cover="cover_tide"]{background:radial-gradient(ellipse at 15% 10%,#b3ffdbba,transparent 24%),repeating-linear-gradient(125deg,transparent 0 18%,#77f5d72a 22%,#6deaff88 25%,transparent 32%),radial-gradient(ellipse at 78% 14%,#8668ed,transparent 47%),linear-gradient(155deg,#071f31,#134550 58%,#1a173f)!important;background-size:180% 180%,180% 170%,160% 180%,100% 100%!important;animation:kc-nebula 14s ease-in-out infinite alternate}
+@keyframes kc-nebula{from{background-position:0 0,100% 0,0 40%,100% 50%,0 0}to{background-position:12px 9px,82% 20%,100% 60%,10% 40%,0 0}}
+[data-kc-name="name_lilac"]{color:#ead7ff!important;text-shadow:0 0 5px #a46aff,0 0 15px #9f50ff80}
+[data-kc-name="name_gold"]{color:#ffe7ad!important;text-shadow:0 0 5px #c78a33,0 0 15px #f5c26370}
+[data-kc-effect="effect_glow"]{box-shadow:0 0 0 1px #ba9bfa,0 0 24px #9766f16b,inset 0 0 34px #a976f22e!important;animation:kc-starlight 4s ease-in-out infinite alternate}
+@keyframes kc-starlight{to{box-shadow:0 0 0 1px #e4cfff,0 0 35px #b38aff85,inset 0 0 42px #ad72ff4a}}
+[data-kc-title="title_pioneer"]{background:linear-gradient(115deg,#392a18,#8d6731,#392a18)!important;color:#fff1b9!important;border:1px solid #d8b56b!important;text-shadow:0 1px 2px #190e03}
+[data-kc-title="title_night"]{background:linear-gradient(115deg,#151c3b,#48316f,#151c3b)!important;color:#e8d4ff!important;border:1px solid #ae92ee!important;text-shadow:0 0 7px #8f76dd}
+[data-kc-chat="chat_violet"]{border-color:#aa83ed!important}
+[data-kc-chat="chat_gold"]{border-color:#dbb46b!important}
+@media(prefers-reduced-motion:reduce){[data-kc-cover],[data-kc-effect]{animation:none!important}}
 
-[data-kc-frame="frame_violet"]{outline:2px solid #b28aff;outline-offset:3px;box-shadow:0 0 13px #ad80ff70!important}
-[data-kc-frame="frame_gold"]{outline:3px double #f6d18a;outline-offset:3px;box-shadow:0 0 10px #e9b86a55!important}
-[data-kc-cover="cover_nebula"]{background:radial-gradient(ellipse at 15% 30%,#8050ab99,transparent 58%),linear-gradient(120deg,#261839,#6a3c8d,#1b173c,#482b68)!important;background-size:180% 180%!important;animation:kc-cover-flow 18s ease-in-out infinite alternate}
-[data-kc-cover="cover_tide"]{background:linear-gradient(120deg,#172b42,#245f6c,#473673,#193e56)!important;background-size:180% 180%!important;animation:kc-cover-flow 20s ease-in-out infinite alternate}
-@keyframes kc-cover-flow{from{background-position:0 40%}to{background-position:100% 60%}}
-[data-kc-name="name_lilac"]{color:#e0baff!important}[data-kc-name="name_gold"]{color:#ffe0a2!important}
-[data-kc-effect="effect_glow"]{box-shadow:0 0 24px #b58cff45,inset 0 0 25px #c8a5ff12!important}
-@media(prefers-reduced-motion:reduce){[data-kc-cover]{animation:none!important}}
+/* Premium identity collection. Effects are attached to the existing equipped slots. */
+[data-kc-frame="frame_astral_crown"]{outline:3px solid #ffe6a2;outline-offset:2px;box-shadow:0 0 0 6px #825626,0 0 0 8px #f9d88b,0 0 20px 7px #eeb95180!important;position:relative;isolation:isolate}
+[data-kc-frame="frame_astral_crown"]::after{content:"✦";position:absolute;top:0;left:50%;transform:translateX(-50%);color:#ffeac0;text-shadow:0 0 6px #e8a039,0 0 12px #fff3af;font-size:clamp(12px,2vw,19px);line-height:1;z-index:3;pointer-events:none;animation:kc-crown 4s ease-in-out infinite alternate}
+@keyframes kc-crown{to{opacity:.6;text-shadow:0 0 12px #ffe3a2,0 0 20px #ef9e3d}}
+[data-kc-frame="frame_void_gate"]{outline:3px double #d4a0ff;outline-offset:3px;box-shadow:0 0 0 7px #42216f,0 0 0 10px #a85ef8,0 0 23px 8px #8a3cff80!important;position:relative;isolation:isolate}
+[data-kc-frame="frame_void_gate"]::after{content:"";position:absolute;inset:0;border:3px solid transparent;border-top-color:#f4a3f7;border-bottom-color:#9c7dff;border-radius:inherit;pointer-events:none;z-index:3;animation:kc-void-orbit 8s linear infinite}
+@keyframes kc-void-orbit{to{transform:rotate(360deg)}}
+[data-kc-cover="cover_eclipse"]{background:radial-gradient(circle at 75% 36%,#100d20 0 15%,#ffe4a8 16%,#ed995e88 19%,transparent 34%),radial-gradient(ellipse at 70% 40%,#ab714d88,transparent 60%),radial-gradient(circle at 15% 25%,#fff 0 1px,transparent 2px),linear-gradient(130deg,#100c20,#39213c,#141327)!important;background-size:120% 120%,100% 100%,53px 61px,100% 100%!important;animation:kc-premium-sky 18s ease-in-out infinite alternate}
+[data-kc-cover="cover_crystal_cavern"]{background:linear-gradient(165deg,transparent 48%,#b6fff355 49% 50%,transparent 51%),repeating-conic-gradient(from 28deg at 18% 95%,#123247 0 11deg,#397e8b 12deg 16deg,#a9f7edaa 17deg 18deg,#192d50 19deg 29deg),radial-gradient(ellipse at 70% 0,#b9c3ff,#183e52 75%)!important;background-size:180% 180%,100% 100%,100% 100%!important;animation:kc-premium-sky 20s ease-in-out infinite alternate}
+@keyframes kc-premium-sky{from{background-position:0 0,0 0,0 0,0 0}to{background-position:100% 60%,0 0,15px 12px,0 0}}
+[data-kc-name="name_prismatic"]{color:#f2e6ff!important;text-shadow:1px 1px #67f2ef,-1px -1px #ef80e8,0 0 11px #aa82fa;animation:kc-prism 5s ease-in-out infinite alternate}
+@keyframes kc-prism{to{text-shadow:-2px 1px #67f2ef,2px -1px #ef80e8,0 0 18px #dd8dff}}
+[data-kc-effect="effect_meteor"]{position:relative;isolation:isolate;overflow:hidden;box-shadow:inset 0 0 34px #9a66df77,0 0 17px #9c65ed55!important}
+[data-kc-effect="effect_meteor"]::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(130deg,transparent 0 100px,#e0ceff00 101px,#e0ceff55 104px,transparent 108px 230px);background-size:170% 170%;animation:kc-meteor 7s linear infinite}
+@keyframes kc-meteor{from{background-position:0 0}to{background-position:100% 100%}}
+[data-kc-title="title_starforged"]{background:linear-gradient(110deg,#37241b,#825d36,#322039)!important;color:#ffefc2!important;border:1px solid #e5c477!important;padding-inline:14px;text-shadow:0 1px 3px #1e1320}
+[data-kc-title="title_starforged"]::before{content:"✦  "}[data-kc-title="title_starforged"]::after{content:"  ✦"}
+[data-kc-chat="chat_hologram"]{background:linear-gradient(100deg,#143a48,#2b194b)!important;border:1px solid #85f4df!important;border-left:4px solid #b0fff1!important;box-shadow:0 0 14px #56d5da44}
+[data-kc-chat="chat_hologram"] small{color:#a2f4e4!important}
+@media(prefers-reduced-motion:reduce){[data-kc-frame]::after,[data-kc-cover],[data-kc-name],[data-kc-effect],[data-kc-effect]::after{animation:none!important}}
+html[data-kp-effects="off"] :is([data-kc-cover],[data-kc-name],[data-kc-effect]),html[data-kp-effects="off"] :is([data-kc-frame],[data-kc-effect])::after{animation:none!important}
