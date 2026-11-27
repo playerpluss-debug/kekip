@@ -33,12 +33,16 @@ const hsl=(h,s,l)=>'hsl('+h+' '+s+'% '+l+'%)';
 function cupSwaps(ballSlot,random){
  const pairs=[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]];
  const trackedMoves=new Set(shuffle([0,1,2,3,4,5],random).slice(0,3));
+ const durations=shuffle([416,417,417].flatMap(base=>{
+  const variation=random(31);
+  return [base-variation,base+variation];
+ }),random);
  const swaps=[];
  let position=ballSlot,previous=null;
  for(let i=0;i<6;i++){
   const options=pairs.filter(pair=>pair!==previous&&(!trackedMoves.has(i)||pair.includes(position)));
   const pair=options[random(options.length)],direction=random(2)?1:-1;
-  swaps.push({from:pair[0],to:pair[1],duration:450+random(111),direction});
+  swaps.push({from:pair[0],to:pair[1],duration:durations[i],direction});
   if(pair[0]===position)position=pair[1];
   else if(pair[1]===position)position=pair[0];
   previous=pair;
