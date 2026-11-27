@@ -103,7 +103,10 @@ async function recordGameResults(game,matchId,rows,transaction=null,allowCards=f
  INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount)
  SELECT account_id,'match',jsonb_build_array(game,match_id)::text, CASE WHEN game='battleship' AND result->'win'='true'::jsonb THEN 'Amiral Battı · Galibiyet' WHEN game='battleship' THEN 'Amiral Battı · Maç' WHEN game='football' THEN 'Futbol Kariyer · Maç' WHEN game='late_answer' THEN 'Gecikmeli Cevap · Maç' WHEN game='arena' THEN 'KEKIP Arena · Maç' ELSE 'Oyun · Maç' END,reward FROM awards WHERE reward>0 ON CONFLICT(account_id,source_kind,source_id) DO NOTHING RETURNING id) SELECT account_id,result FROM fresh`,params);
  if(allowCards&&['battleship','football','late_answer','arena'].includes(game))for(const row of recorded.rows){if(!['late_answer','arena'].includes(game)||row.result.complete===true)await createMatchCard(db,row.account_id,game,matchId);}
+ const cards=game==='arena'&&allowCards?(await db.query(`SELECT account_id FROM kekip_match_cards
+  WHERE game=$1 AND match_id=$2 AND chosen IS NULL AND account_id=ANY($3::text[])`,[game,matchId,unique.map(row=>row.accountId)])).rows.map(row=>row.account_id):[];
  if(!transaction)await db.query('COMMIT');
+ return {cards};
  }catch(e){if(!transaction)await db.query('ROLLBACK').catch(()=>{});throw e;}finally{if(!transaction)db.release();}
 }
 async function recordBattle(matchId,players,winner){return recordGameResults('battleship',matchId,players.filter(p=>p.accountId).map(p=>({accountId:p.accountId,result:{win:p.id===winner,shots:p.shots.length,hits:p.shots.filter(s=>s.hit).length,shipsSunk:players.find(q=>q.id!==p.id)?.sunk.length||0}})),null,players.length===2&&players.every(p=>p.accountId)&&players[0].accountId!==players[1].accountId)}

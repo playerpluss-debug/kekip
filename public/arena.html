@@ -6,13 +6,13 @@
  <title>KEKIP Arena | KEKIP Games</title>
  <link rel="stylesheet" href="/kekip-navigation.css?v=05122">
  <link rel="stylesheet" href="/game-lobbies.css?v=3">
- <link rel="stylesheet" href="/arena.css?v=reflex1">
+ <link rel="stylesheet" href="/arena.css?v=results1">
  <script src="/socket.io/socket.io.js" defer></script>
  <script src="/late-answer-voice.js?v=lobbies" defer></script>
  <script src="/lobby-voice-client.js?v=arena1" defer></script>
  <script src="/avatar-portraits.js?v=wings-natural2" defer></script>
- <script src="/arena-client.js?v=reflex1" defer></script>
- <script src="/match-cards.js?v=arena1" defer></script>
+ <script src="/arena-client.js?v=results1" defer></script>
+ <script src="/match-cards.js?v=arena2" defer></script>
  <link rel="stylesheet" href="/lobby-voice.css?v=1">
 </head>
 <body>
@@ -44,11 +44,20 @@
    <div class="arena-row"><p id="arenaRoomInfo"></p><button id="arenaInvite" type="button">Davet bağlantısını kopyala</button></div>
    <ul id="arenaPlayers" class="arena-players" aria-label="Oyuncular ve puanlar"></ul>
    <button id="arenaStart" type="button" class="arena-primary" hidden>Maçı başlat</button>
+   <button id="arenaLastResults" type="button" aria-expanded="false" aria-controls="arenaResults" hidden>Son maç sonuçları</button>
    <button id="arenaSound" class="arena-sound" type="button" aria-pressed="true">Ses efekti açık</button>
   </div>
   <section class="kp-lobby-voice" data-lobby-voice="arena" aria-label="Lobi ses bağlantısı" hidden>
    <div class="kp-voice-copy"><strong>Lobi sesi</strong><span data-voice-status role="status">Dinlemek için bağlan.</span></div>
    <div class="kp-voice-actions"><button type="button" data-voice-listen>Ses bağlantısını aç</button><button type="button" data-voice-mic aria-pressed="false">Mikrofonu aç</button></div>
+  </section>
+  <section id="arenaResults" class="arena-panel arena-results" aria-labelledby="arenaResultsTitle" hidden>
+   <div class="arena-row">
+    <h2 id="arenaResultsTitle" tabindex="-1">Maç sıralaması</h2>
+    <span id="arenaReturnClock" aria-hidden="true"></span>
+   </div>
+   <p id="arenaResultsSummary"></p>
+   <ol id="arenaStandings" aria-label="Maç sıralaması"></ol>
   </section>
   <section id="arenaStage" class="arena-panel" aria-labelledby="arenaRoundTitle" hidden>
    <div class="arena-row"><h2 id="arenaRoundTitle"></h2><span id="arenaClock" aria-hidden="true"></span></div>

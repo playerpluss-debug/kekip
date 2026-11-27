@@ -8,7 +8,9 @@
  const socket=io('/arena',{autoConnect:false,forceNew:true});
  let current=null,offset=0,press=null,sending=false,cueKey='',soundOn=true,audio=null;
  let useInvite=Boolean(invite);
- const notified=new Set(),playerCards=new Map();
+ const notified=new Set(),cardQueue=new Set(),playerCards=new Map();
+ const results=$('arenaResults'),resultsTitle=$('arenaResultsTitle'),lastResults=$('arenaLastResults');
+ let renderedResult=null;
  let rosterKey='';
  const status=message=>{$('arenaStatus').textContent=message;};
  const node=(tag,text)=>{const element=document.createElement(tag);element.textContent=text;return element;};
@@ -52,20 +54,19 @@
   osc.start(start);osc.stop(start+length);
  }
  function renderStage(t){
-  if(!current||current.phase==='lobby')return;
+  if(!current)return;
+  if(current.phase==='final'){
+   $('arenaReturnClock').textContent='Lobiye dönüş '+Math.max(0,Math.ceil((current.deadline-t)/1000))+' sn';return;
+  }
+  if(current.phase==='lobby')return;
   const {challenge,phase,number,settings}=current;
   const title=$('arenaRoundTitle'),prompt=$('arenaPrompt'),clock=$('arenaClock');
   const update=(element,value)=>{if(element.textContent!==value)element.textContent=value;};
   reflex.hidden=!challenge;
   if(!challenge){
    clock.textContent=current.deadline?Math.max(0,Math.ceil((current.deadline-t)/1000))+' sn':'';
-   update(title,phase==='final'?'Maç tamamlandı':'Tur '+number+' sonuçları');
-   if(current.cancelled){update(prompt,'Maç, yeterli oyuncu kalmadığı için sona erdi.');return;}
-   if(phase==='final'){
-    const top=Math.max(...current.players.map(player=>player.total));
-    const names=current.players.filter(player=>player.total===top).map(player=>'@'+player.username);
-    update(prompt,(names.length>1?'Berabere · ':'Kazanan · ')+names.join(', '));
-   }else update(prompt,'En hızlı geçerli tepki 100 puan alır.');
+   update(title,'Tur '+number+' sonuçları');
+   update(prompt,'En hızlı geçerli tepki 100 puan alır.');
    return;
   }
   const lit=challenge.phase==='lit';
@@ -103,14 +104,59 @@
   }catch(error){if(sameRound())status(error.message);}
   finally{if(sameRound()){sending=false;renderStage(serverNow());}}
  };
+ function showResults(result){
+  if(!result)return;
+  results.hidden=false;
+  lastResults.setAttribute('aria-expanded','true');
+  if(renderedResult===result.id)return;
+  renderedResult=result.id;
+  const leaders=result.standings.filter(player=>player.rank===1);
+  $('arenaResultsSummary').textContent=result.cancelled?'Maç, yeterli oyuncu kalmadığı için sona erdi.':
+   (leaders.length>1?'Birinciliği paylaşanlar · ':'Kazanan · ')+leaders.map(player=>'@'+player.username).join(', ');
+  $('arenaStandings').replaceChildren(...result.standings.map((player,index)=>{
+   const row=node('li','');
+   row.style.setProperty('--arena-reveal-delay',index*85+'ms');
+   row.dataset.rank=String(player.rank);
+   const rank=node('span',player.rank+'.');rank.className='arena-result-rank';
+   const copy=node('div',''),name=node('strong','@'+player.username);
+   const detail=node('small',player.hits+' tepki · '+player.early+' erken · '+player.missed+' kaçan'+
+     (player.fastest===null?'':' · En iyi '+player.fastest+' ms'));
+   copy.append(name,detail);
+   const score=node('strong',player.total+' puan');score.className='arena-result-score';
+   row.append(rank,copy,score);return row;
+  }));
+ }
+ function hideResults(){
+  results.hidden=true;lastResults.setAttribute('aria-expanded','false');
+  $('arenaReturnClock').textContent='';
+ }
+ lastResults.onclick=()=>{
+  if(!results.hidden){hideResults();return;}
+  showResults(current?.results);
+  if(!results.hidden){results.scrollIntoView({block:'start'});resultsTitle.focus({preventScroll:true});}
+ };
+ function showCards(){
+  if(!current||!['lobby','final'].includes(current.phase))return;
+  for(const matchId of cardQueue){
+   cardQueue.delete(matchId);
+   if(notified.has(matchId))continue;
+   notified.add(matchId);
+   if(notified.size>100)notified.delete(notified.values().next().value);
+   window.dispatchEvent(new CustomEvent('kekip:match-cards-ready',{detail:{game:'arena',matchId}}));
+  }
+ }
+ socket.on('arena:card',({matchId})=>{
+  if(typeof matchId==='string'){cardQueue.add(matchId);showCards();}
+ });
  socket.on('arena:state',data=>{
   const entering=!current;
+  const previousPhase=current?.phase;
   const newRound=data.phase==='round'&&(current?.phase!=='round'||current.number!==data.number);
   if(entering||current.number!==data.number||current.code!==data.code){press=null;sending=false;}
   if(data.challenge?.press)press=data.challenge.press;
   offset=data.serverTime-Date.now();
   current=data;room.dataset.code=data.code;room.dataset.phase=data.phase;room.hidden=false;$('arenaEntry').hidden=true;
-  stage.hidden=data.phase==='lobby';$('arenaRoomTitle').textContent='Arena lobisi · '+data.code;
+  stage.hidden=data.phase==='lobby'||data.phase==='final';$('arenaRoomTitle').textContent='Arena lobisi · '+data.code;
   $('arenaRoomInfo').textContent=data.players.length+'/8 oyuncu · Refleks Testi';
   const players=[...data.players].sort((a,b)=>b.total-a.total||a.username.localeCompare(b.username));
   const displayKey=JSON.stringify([data.phase==='summary',players]);
@@ -147,16 +193,22 @@
   start.disabled=data.players.length<2||players.some(player=>!player.online);
   $('arenaInvite').hidden=data.party||data.phase!=='lobby';
   if(entering){status('');$('arenaRoomTitle').focus();}
-  if(data.phase==='final'&&!data.cancelled){
-   if(data.rewards==='pending')status('Maç ödülleri kaydediliyor…');
-   else if(data.rewards==='failed')status('Maç ödülleri şu anda kaydedilemedi.');
-   else if(!data.rewards)status('Ödül için en az iki oyuncunun dörder tur oynaması gerekir.');
+  lastResults.hidden=data.phase!=='lobby'||!data.results;
+  if(data.phase==='final'){
+   showResults(data.results);
+   if(previousPhase!=='final'){
+    results.scrollIntoView({block:'start'});
+    resultsTitle.focus({preventScroll:true});
+   }
+  }else if(previousPhase==='final'||data.phase!=='lobby'){
+   hideResults();
+   if(previousPhase==='final'&&!document.querySelector('dialog[open]')){
+    $('arenaRoomTitle').scrollIntoView({block:'start'});
+    $('arenaRoomTitle').focus({preventScroll:true});
+   }
   }
-  if(data.rewardMatchId&&!notified.has(data.rewardMatchId)){
-   notified.add(data.rewardMatchId);
-   status('Maç ödülleri kaydedildi.');
-   window.dispatchEvent(new CustomEvent('kekip:match-cards-ready',{detail:{game:'arena',matchId:data.rewardMatchId}}));
-  }
+  if(data.cardMatchId)cardQueue.add(data.cardMatchId);
+  showCards();
   renderStage(serverNow());
   if(newRound)stage.scrollIntoView({block:'start'});
  });
@@ -173,7 +225,7 @@
  socket.on('disconnect',()=>{entry(false);status('Bağlantı kesildi. Yeniden bağlanılıyor…');});
  $('arenaStart').onclick=()=>run(()=>emit('start'));
  $('arenaLeave').onclick=()=>run(async()=>{
-  await emit('leave');current=null;press=null;sending=false;cueKey='';room.hidden=true;room.dataset.code='';$('arenaEntry').hidden=false;create.querySelector('button').focus();
+  await emit('leave');hideResults();renderedResult=null;cardQueue.clear();current=null;press=null;sending=false;cueKey='';room.hidden=true;room.dataset.code='';$('arenaEntry').hidden=false;create.querySelector('button').focus();
  });
  $('arenaInvite').onclick=()=>run(async()=>{
   const link=new URL('/arena.html',location.origin);link.searchParams.set('room',current.code);

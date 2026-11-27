@@ -6,11 +6,12 @@ const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const codePattern=/^[A-Z2-9]{5}$/;
 const roomLimit=150;
 const reconnectMs=90_000;
+const resultsMs=9000;
 
 function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=randomInt,schedule=setInterval}={}){
  const namespace=io.of('/arena'),rooms=new Map(),membership=new Map(),pending=new Map();
  const fail=(ack,error)=>ack({ok:false,error});
- const member=(account,socket)=>({id:account.id,username:account.username,socketId:socket?.id||null,until:socket?null:now()+reconnectMs,total:0,last:0,reaction:null,played:0});
+ const member=(account,socket)=>({id:account.id,username:account.username,socketId:socket?.id||null,until:socket?null:now()+reconnectMs,total:0,last:0,reaction:null,played:0,fastest:null,early:0,missed:0});
  function makeRoom(players,settings,party=false){
   if(rooms.size>=roomLimit)throw Error('Şu anda yeni lobi açılamıyor.');
   let code;
@@ -21,11 +22,13 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   return room;
  }
  function state(room,player,t){
+  const result=room.lastResult;
   const challenge=room.phase==='round'?visibleRound(room.round,player.id):null;
   return {
    code:room.code,phase:room.phase,settings:room.settings,party:room.party,number:room.number,deadline:room.deadline,
-   serverTime:t,cancelled:!!room.cancelled,rewards:room.rewardPlayers?.has(player.id)?room.rewardState:null,
-   rewardMatchId:room.rewardState==='recorded'&&room.rewardPlayers.has(player.id)?room.matchId:null,
+   serverTime:t,
+   results:result?{id:result.id,standings:result.standings,cancelled:result.cancelled}:null,
+   cardMatchId:result?.cards.has(player.id)?result.id:null,
    host:room.players.find(p=>p.id===room.host)?.username,you:player.username,
    players:room.players.map(p=>({username:p.username,online:!!p.socketId,total:p.total,last:p.last,reaction:p.reaction})),
    challenge
@@ -39,7 +42,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   membership.delete(player.id);
   if(!room.players.length){rooms.delete(room.code);return;}
   if(room.host===player.id)room.host=room.players.find(p=>p.socketId)?.id||room.players[0].id;
-  if(room.phase!=='lobby'&&room.phase!=='final'&&room.players.length<2){room.phase='final';room.deadline=0;room.cancelled=true;}
+  if(room.phase!=='lobby'&&room.phase!=='final'&&room.players.length<2){finish(room,now(),true);return;}
   publish(room);
  }
  function nextRound(room,t){
@@ -49,30 +52,42 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   room.deadline=0;
   publish(room,t);
  }
- function finish(room,t){
-  room.phase='final';room.deadline=0;
+ function finish(room,t,cancelled=false){
+  room.phase='final';room.deadline=t+resultsMs;
+  const sorted=[...room.players].sort((a,b)=>b.total-a.total||a.username.localeCompare(b.username));
+  const standings=sorted.map(player=>({
+   username:player.username,rank:sorted.findIndex(other=>other.total===player.total)+1,total:player.total,
+   hits:player.played,fastest:player.fastest,early:player.early,missed:player.missed
+  }));
+  const result={id:room.matchId,standings,cards:new Set(),cancelled};
+  room.lastResult=result;
   const eligible=room.players.filter(player=>player.played>=4);
-  if(eligible.length>=2){
-   const best=Math.max(...room.players.map(player=>player.total));
-   const winner=room.players.filter(player=>player.total===best);
+  if(!cancelled&&eligible.length>=2){
+   const uniqueWinner=standings.filter(player=>player.rank===1).length===1?sorted[0]:null;
    const rows=eligible.map(player=>({accountId:player.id,result:{
-    complete:true,win:winner.length===1&&winner[0]===player,score:player.total,rounds:player.played
+    complete:true,win:uniqueWinner===player,score:player.total,rounds:player.played
    }}));
-   room.rewardPlayers=new Set(eligible.map(player=>player.id));
-   room.rewardState='pending';
-   pending.set(room.matchId,{room,rows,nextAttempt:t,expires:t+300_000,busy:false});
+   pending.set(result.id,{room,result,rows,nextAttempt:t,expires:t+300_000,busy:false});
   }
+  publish(room,t);
+ }
+ function returnToLobby(room,t){
+  room.phase='lobby';room.deadline=0;room.number=0;room.round=null;room.matchId=null;
+  for(const player of room.players)Object.assign(player,{total:0,last:0,reaction:null,played:0,fastest:null,early:0,missed:0});
   publish(room,t);
  }
  function saveRewards(t){
   for(const [matchId,record] of pending){
    if(record.busy||record.nextAttempt>t)continue;
-   if(t>=record.expires){
-    record.room.rewardState='failed';pending.delete(matchId);publish(record.room,t);continue;
-   }
+   if(t>=record.expires){pending.delete(matchId);continue;}
    record.busy=true;
-   Promise.resolve().then(()=>accounts.recordGameResults('arena',matchId,record.rows,null,true)).then(()=>{
-    record.room.rewardState='recorded';pending.delete(matchId);publish(record.room);
+   Promise.resolve().then(()=>accounts.recordGameResults('arena',matchId,record.rows,null,true)).then(result=>{
+    pending.delete(matchId);
+    for(const id of result?.cards||[]){
+     record.result.cards.add(id);
+     const player=record.room.players.find(member=>member.id===id);
+     namespace.sockets.get(player?.socketId)?.emit('arena:card',{matchId});
+    }
    }).catch(error=>{
     record.busy=false;record.nextAttempt=now()+5000;
     console.error('Arena match rewards:',error.code||error.message);
@@ -95,13 +110,19 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
       player.last=result.points;
       player.reaction=result;
       player.total+=result.points;
-      if(result.kind==='hit')player.played++;
+      if(result.kind==='hit'){
+       player.played++;
+       player.fastest=player.fastest===null?result.ms:Math.min(player.fastest,result.ms);
+      }else if(result.kind==='early')player.early++;
+      else player.missed++;
      }
      room.phase='summary';room.deadline=t+3500;publish(room,t);
     }
    }else if(room.phase==='summary'&&t>=room.deadline){
     if(room.number<room.settings.rounds)nextRound(room,t);
     else finish(room,t);
+   }else if(room.phase==='final'&&t>=room.deadline){
+    returnToLobby(room,t);
    }
   }
   saveRewards(t);
