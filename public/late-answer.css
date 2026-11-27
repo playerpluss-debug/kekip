@@ -1,0 +1,47 @@
+:root{color-scheme:dark;--text:#f7efff;--muted:#d1bfdf;--panel:#21172f;--line:#684c89;--accent:#dcbcff}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 68% 0,#432966,transparent 52%),#130e20;color:var(--text);font:16px/1.45 system-ui,sans-serif}
+main{width:min(100%,1100px);margin:auto;padding:clamp(14px,4vw,32px)}
+[hidden]{display:none!important}
+.top,.row,.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.top,.row{justify-content:space-between}
+.top a{color:var(--accent)}
+.brand{font-weight:950;text-decoration:none;letter-spacing:.07em}.brand span{color:#af7ee6}
+h1,h2,h3,p{margin:0}h1{font-size:clamp(31px,6vw,49px);line-height:1.06}
+p{color:var(--muted)}
+.intro{margin:28px 0 12px}.intro p,.panel p{margin:7px 0}
+#notice{min-height:24px;margin-bottom:10px}
+.panel{padding:clamp(13px,3vw,22px);margin-bottom:12px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#302044,var(--panel))}
+.entry-grid{display:grid;gap:16px;margin:18px 0}
+.entry-grid form,#settingsForm{display:flex;align-items:end;gap:9px;flex-wrap:wrap}
+form label{display:grid;gap:4px;color:#e5d3fa;font-size:14px}
+button,input,select{min-height:44px;border:1px solid #8f6cb6;border-radius:10px;background:#392650;color:var(--text);font:inherit;padding:7px 11px;max-width:100%}
+button{font-weight:700;cursor:pointer}button:disabled{opacity:.6;cursor:default}
+button:not(:disabled):hover{background:#573a77}.primary{background:#9363d9;color:#100a1b;border-color:#dabaff}.primary:not(:disabled):hover{background:#bd93f2}
+:focus-visible{outline:2px solid #e3c7ff;outline-offset:3px}
+#roomCode{width:8ch;text-transform:uppercase}
+.room-list-head{margin-bottom:8px}#publicRooms{display:grid;gap:5px}
+#publicRooms .row{padding:5px 9px;border-radius:10px;background:#1e152d}
+.question-panel{border-color:#ac83db}.question{margin:13px 0}.question small{color:var(--accent)}
+#prompt{font-size:clamp(23px,4vw,38px);line-height:1.16}
+#timer{font-variant-numeric:tabular-nums;color:#ebd7ff;font-weight:900}.answer{padding:8px 10px;background:#140d21;border-radius:9px}
+.room-header form{margin:12px 0}.voice-panel p{font-size:14px}#voiceStatus:empty{display:none}
+.stage{list-style:none;padding:0;margin:0;display:grid;gap:9px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.player{min-width:0;padding:9px;border:1px solid #5d4380;border-radius:15px;background:#1b1429;display:grid;gap:5px}
+.player[data-contestant=true]{border-color:#d5adff;background:#302043}
+.actor{height:clamp(102px,20vw,170px);display:grid;place-items:center;position:relative;isolation:isolate;overflow:hidden;border-radius:11px;background:#1e152e}
+.actor::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 43%,#ba78eb80,transparent 66%);opacity:.1;transition:opacity .16s;pointer-events:none}
+.player[data-contestant=true] .actor::before{opacity:.72}.player[data-speaking=true] .actor::before{opacity:1}
+.late-portrait{position:relative;display:grid;place-items:center;height:100%;width:auto;max-width:100%;aspect-ratio:8/11;transform-origin:50% 91%;animation:idle 5.5s ease-in-out infinite}
+.player:nth-child(even) .late-portrait{animation-delay:-2.3s}
+.player[data-speaking=true] .late-portrait{animation:speaking .65s ease-in-out infinite alternate}
+.player[data-online=false] .late-portrait{animation-play-state:paused;opacity:.48}
+@keyframes idle{50%{transform:translateY(-2px) rotate(1.5deg) scale(1.01)}}
+@keyframes speaking{to{transform:translateY(-5px) rotate(-1deg)}}
+[data-page-hidden=true] .late-portrait{animation-play-state:paused}
+.player strong{overflow-wrap:anywhere}.voice-controls{display:flex;flex-wrap:wrap;gap:5px}
+.voice-controls label{display:flex;align-items:center;min-height:44px}.voice-controls input{width:min(100%,72px);padding:0;accent-color:#c19aee}
+.voice-controls button{padding:5px 8px;font-size:13px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(min-width:720px){.entry-grid{grid-template-columns:1.4fr 1fr}.stage{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.late-portrait{animation:none!important}.actor::before{transition:none}}
