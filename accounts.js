@@ -291,6 +291,12 @@ async function adminAction(db,req,action,b,options){
   const q=await db.query('SELECT id,username,blocked_at FROM kekip_football_accounts WHERE username=$1',[b.username]);const a=q.rows[0];if(!a)fail('Üye bulunamadı.',404);
   return {username:a.username,blocked:Boolean(a.blocked_at),balance:await coinBalance(db,a)};
  }
+ if(action==='admin-cosmetic-lookup'){
+  if(typeof b.username!=='string'||!/^[a-z0-9_]{3,24}$/.test(b.username))fail('Kullanıcı adı geçersiz.');
+  const q=await db.query('SELECT id,username,blocked_at FROM kekip_football_accounts WHERE username=$1',[b.username]);const a=q.rows[0];if(!a)fail('Üye bulunamadı.',404);
+  const inv=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);const owned=new Set(inv.rows.map(r=>r.item_id));
+  return {username:a.username,blocked:Boolean(a.blocked_at),items:adminChestGiftCatalog().map(i=>({...i,owned:owned.has(i.id)}))};
+ }
  if(action==='admin-grant')return adminGrant(db,b,actor);
  if(action==='admin-members'){
   const search=typeof b.search==='string'?b.search.trim().toLowerCase():'';
@@ -591,10 +597,14 @@ async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!=
  await c.query('COMMIT');}catch(e){await c.query('ROLLBACK').catch(()=>{});throw e}finally{c.release()}return {ok:true};}
 
 // Administration gifts: same per-account lock as shop/wardrobe, transactional audit and idempotency.
+function adminChestGiftCatalog(){
+ const labels={rare:'Nadir',epic:'Epik',legendary:'Efsanevi',mythic:'Mitik'};
+ return ['gece','golge'].flatMap(character=>(ChestCollections[character]?.items||[]).filter(i=>i.character===character&&i.chestOnly===true&&i.status==='available'&&i.visualApprovalPending!==true&&i.price===0&&i.id.startsWith(character+'_chest_')&&Object.hasOwn(labels,i.chestRarity)&&(i.chestRarity==='mythic'?i.completeSet===true&&i.slot==='av_set':i.completeSet!==true&&i.slot!=='av_set')).map(i=>({id:i.id,name:i.name,character,group:(character==='gece'?'Gece':'Gölge')+' · Sandık · '+labels[i.chestRarity],rarity:i.chestRarity,rarityLabel:labels[i.chestRarity],completeSet:i.completeSet===true,thumbnail:i.thumbnail})));
+}
 function adminGiftCatalog(){
  const valid=i=>typeof i.id==='string'&&Number.isSafeInteger(i.price)&&i.price>0;
  const items=[...COSMETICS.filter(i=>valid(i)&&!i.legacy&&!i.slot.startsWith('av_')).map(i=>({...i,group:'Profil'})),...Object.entries(Wardrobe.collections).flatMap(([key,c])=>c.saleEnabled?c.items.filter(i=>valid(i)&&i.chestOnly!==true&&!i.starter&&i.status==='available').map(i=>({...i,group:key==='gece'?'Gece':'Gölge'})):[])];
- return [...new Map(items.map(i=>[i.id,{id:i.id,name:i.name||i.id,group:i.group}])).values()];
+ return [...new Map([...items,...adminChestGiftCatalog()].map(i=>[i.id,{id:i.id,name:i.name||i.id,group:i.group}])).values()];
 }
 async function adminGrant(db,b,actor){
  const {username,kind,requestId}=b;const reason=typeof b.reason==='string'?b.reason.trim():'';
