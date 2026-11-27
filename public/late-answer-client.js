@@ -62,7 +62,7 @@
   }
   function clearRoom(){
     remember(null);state=null;config=null;sequence=-1;lastSettings='';microphoneEpoch++;
-    voice.stop();voice.onMicrophone?.(false);for(const card of cards.values())card.parts.disposePose();cards.clear();$('players').replaceChildren();
+    voice.stop();voice.onMicrophone?.(false);cards.clear();$('players').replaceChildren();
     $('room').hidden=true;$('entry').hidden=false;
     $('roomCode').focus();
     if(socket.connected)publicRooms().catch(()=>{});
@@ -72,10 +72,10 @@
     const actor=node('div');actor.className='actor';
     const portrait=node('div',p.username.slice(0,2).toUpperCase());portrait.className='late-portrait';
     portrait.dataset.kpAvatar=p.username;portrait.dataset.kpAvatarMode='body';portrait.setAttribute('aria-hidden','true');
-    const chair=node('span');chair.className='studio-chair';chair.setAttribute('aria-hidden','true');
-    const seated=node('canvas');seated.className='studio-seated';seated.hidden=true;seated.setAttribute('aria-hidden','true');
-    actor.append(chair,portrait,seated);
-    const disposePose=window.KEKIPSeatedAvatar.mount(portrait,seated);
+    const podium=node('span');
+    podium.className='studio-podium';
+    podium.setAttribute('aria-hidden','true');
+    actor.append(podium,portrait);
     const role=node('span');role.className='seat-role';role.hidden=true;
     const name=node('strong','@'+p.username), status=node('small');
     status.className='player-status';
@@ -93,12 +93,12 @@
     kick.onclick=()=>{if(confirm('@'+p.username+' odadan çıkarılsın mı?'))run(()=>emit('kick',{username:p.username}));};
     const identity=node('div');identity.className='seat-identity';identity.append(name,role);
     card.append(actor,identity,status,controls,kick);
-    card.parts={status,controls,kick,role,disposePose};
+    card.parts={status,controls,kick,role};
     return card;
   }
   function paintPlayers(){
     const sorted=state.phase==='final'?[...state.players].sort((a,b)=>Number(b.complete)-Number(a.complete)||b.score-a.score):state.players;
-    for(const [name,card] of cards)if(!sorted.some(p=>p.username===name)){card.parts.disposePose();cards.delete(name);card.remove();}
+    for(const [name,card] of cards)if(!sorted.some(p=>p.username===name)){cards.delete(name);card.remove();}
     let i=0;
     for(const p of sorted){
       let card=cards.get(p.username);

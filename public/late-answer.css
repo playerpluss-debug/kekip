@@ -47,7 +47,7 @@ button:not(:disabled):hover{background:#573a77}.primary{background:#9363d9;color
 @media(prefers-reduced-motion:reduce){.late-portrait{animation:none!important}.actor::before{transition:none}}
 
 /* The set is projected in CSS 3D. The board and seats remain accessible DOM. */
-.studio-set,.studio-chair,.seat-role{display:none}
+.studio-set,.studio-podium,.seat-role{display:none}
 .seat-identity{display:flex;align-items:center;justify-content:space-between;gap:5px;min-width:0}
 .game-studio[data-active=true]{
   --wall:#241840;--floor:#342759;--line-light:#ac78f1;--spot:#ffd48b;
@@ -98,40 +98,48 @@ button:not(:disabled):hover{background:#573a77}.primary{background:#9363d9;color
   position:relative;border:1px solid #6b53a477;background:linear-gradient(180deg,#261d42e6,#1d1730);
   border-radius:14px;padding:7px;box-shadow:0 5px 0 #110e22,0 9px 20px #100c2869;
 }
-.studio-seated{display:none}
 .game-studio[data-active=true] .actor{
-  height:auto;aspect-ratio:1.38;min-height:0;display:block;position:relative;isolation:isolate;overflow:hidden;
-  background:radial-gradient(ellipse at 50% 41%,#554380 5%,#211a39 73%);
+  height:auto;aspect-ratio:1.17;min-height:0;display:block;position:relative;isolation:isolate;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 49%,#564080 3%,#211631 75%);
 }
-.game-studio[data-active=true] .actor::before{background:conic-gradient(from 148deg at 50% -12%,#ffe6b26e 0 64deg,transparent 65deg);opacity:0;z-index:1}
-.game-studio[data-active=true] .studio-chair{
-  display:block;position:absolute;left:23%;right:23%;top:26%;bottom:33%;border-radius:23% 23% 13% 13%;z-index:2;
-  border:1px solid #a17ad0;background:repeating-linear-gradient(90deg,#604688 0 12px,#543e79 12px 14px);
-  box-shadow:inset 0 2px 7px #c29beb75,0 8px 0 #211531,0 14px 18px #110c23ba;
+.game-studio[data-active=true] .actor::before{
+  background:conic-gradient(from 151deg at 50% -13%,#ffdc9666 0 58deg,transparent 59deg);
+  opacity:0;z-index:1;
 }
-.game-studio[data-active=true] .studio-chair::before{
-  content:"";position:absolute;left:-7%;right:-7%;bottom:-20%;height:36%;transform:skewX(-6deg);
-  border:1px solid #a281c7;border-radius:22%;background:linear-gradient(#8767af,#46345f);
-  box-shadow:0 5px 0 #36274b;
+.game-studio[data-active=true] .studio-podium{
+  --plinth-top:#8567c6;--plinth-edge:#be9aff;--plinth-face:#42296b;--plinth-glow:#ab73ea88;
+  display:block;position:absolute;z-index:2;bottom:6%;left:19%;right:19%;height:13%;
+  border-radius:50% / 47%;border:1px solid var(--plinth-edge);
+  background:linear-gradient(90deg,#19122855,transparent 37% 64%,#19122855),var(--plinth-face);
+  box-shadow:0 4px 0 #1a112e,0 7px 11px #150d26a6,0 0 19px var(--plinth-glow);
 }
-.game-studio[data-active=true] .studio-chair::after{
-  content:"";position:absolute;top:114%;left:2%;right:2%;height:46%;z-index:-1;
-  background:linear-gradient(90deg,#735a90 0 6%,transparent 6% 94%,#735a90 94%);
+.game-studio[data-active=true] .studio-podium::before{
+  content:"";position:absolute;inset:-1px -1px auto;height:62%;border-radius:50%;
+  border:1px solid var(--plinth-edge);background:radial-gradient(ellipse at 48% 0,var(--plinth-edge),var(--plinth-top) 76%);
 }
-.game-studio[data-active=true] .actor::after{
-  content:"";position:absolute;left:19%;right:19%;top:57%;height:12%;z-index:4;pointer-events:none;border-radius:17%;
-  background:linear-gradient(90deg,#9b7ac1 0 12%,transparent 12% 88%,#9b7ac1 88%);
-  filter:drop-shadow(0 3px 0 #4b386b);
+.game-studio[data-active=true] .studio-podium::after{
+  content:"";position:absolute;inset:auto 12% 14%;height:2px;border-radius:50%;
+  background:var(--plinth-edge);box-shadow:0 0 8px var(--plinth-glow);
 }
-.game-studio[data-active=true] .late-portrait,.game-studio[data-active=true] .studio-seated{
-  position:absolute;z-index:3;bottom:6%;left:50%;height:90%;width:auto;max-width:75%;
-  object-fit:contain;transform:translateX(-50%);
+.game-studio[data-active=true] .player[data-contestant=true] .studio-podium{
+  --plinth-top:#aa7130;--plinth-edge:#ffe0a1;--plinth-face:#744717;--plinth-glow:#ffd089b0;
 }
-.game-studio[data-active=true] .late-portrait{aspect-ratio:8/11;animation:none;overflow:hidden}
-.game-studio[data-active=true] .late-portrait>.kp-portrait-image{object-fit:contain!important;background:transparent!important}
+.game-studio[data-active=true] .late-portrait{
+  position:absolute;z-index:3;bottom:12%;left:50%;height:86%;width:auto;max-width:79%;
+  aspect-ratio:8/11;overflow:visible;transform:translateX(-50%);animation:podium-idle 5.5s ease-in-out infinite;
+}
+.game-studio[data-active=true] .player[data-speaking=true] .late-portrait{animation:podium-talk .62s ease-in-out infinite alternate}
+@keyframes podium-idle{50%{transform:translateX(-50%) scale(1.018)}}
+@keyframes podium-talk{to{transform:translate(-50%,-3px) scale(1.018)}}
+.game-studio[data-active=true] .late-portrait>.kp-portrait-image{
+  object-fit:contain!important;object-position:center bottom!important;background:transparent!important;
+}
 .game-studio[data-active=true] .late-portrait[data-kp-pet]::after{display:none}
-.game-studio[data-active=true] .studio-seated:not([hidden]){display:block}
-.game-studio[data-active=true] .actor:has(>.studio-seated:not([hidden])) .late-portrait{visibility:hidden}
+[data-page-hidden=true] .game-studio[data-active=true] .player .late-portrait,
+.game-studio[data-active=true] .player[data-online=false] .late-portrait{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){
+  .game-studio[data-active=true] .player .late-portrait{animation:none!important}
+}
 .game-studio[data-active=true] .player[data-jury=true]{border-color:#7e74bb}
 .game-studio[data-active=true] .player[data-contestant=true]{border-color:#ffd69a;box-shadow:0 0 18px #e7a65065,0 5px 0 #714321}
 .game-studio[data-active=true] .player[data-contestant=true] .actor::before{opacity:.78}
