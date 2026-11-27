@@ -31,6 +31,7 @@
  join.onsubmit=event=>{event.preventDefault();run(()=>emit('join',{code:$('arenaCode').value.trim().toUpperCase()}));};
  const serverNow=()=>Date.now()+offset;
  const reflex=$('arenaReflex'),sound=$('arenaSound');
+ let reflexLitAt=null;
  const timing=$('arenaTiming'),timingStop=$('arenaTimingStop'),timingLabel=$('arenaTimingLabel'),timingTarget=$('arenaTimingTarget'),timingClock=$('arenaTimingClock');
  const timingClockVisibleMs=1500,timingClockFadeMs=450;
  const seconds=(ms,digits=2)=>(ms/1000).toFixed(digits).replace('.',',')+' sn';
@@ -245,7 +246,9 @@
    return;
   }
   clock.textContent=!ready?Math.max(0,Math.ceil((challenge.startsAt-t)/1000))+' sn':'';
-  reflex.dataset.state=press?(press.kind==='hit'?'hit':'early'):lit&&!expired?'lit':'waiting';
+  const reflexState=press?(press.kind==='hit'?'hit':'early'):lit&&!expired?'lit':'waiting';
+  if(reflexState==='lit'&&reflexLitAt===null)reflexLitAt=performance.now();
+  reflex.dataset.state=reflexState;
   reflex.disabled=!ready||Boolean(press)||sending||expired||!socket.connected;
   if(press){
    update(reflex,press.kind==='hit'?press.ms+' ms':'Erken tıklama');
@@ -261,13 +264,13 @@
    cueKey=key;tone(660,.15);tone(880,.20,.075);
   }
  }
- async function submit(choice){
+ async function submit(choice,reactionMs){
   if(sending||press||!current?.challenge)return;
   const {code,number}=current;
   const sameRound=()=>current?.code===code&&current.number===number;
   sending=true;renderStage(serverNow());
   try{
-   const result=await emit('action',{round:number,choice});
+   const result=await emit('action',{round:number,choice,reactionMs});
    if(sameRound()){
     press=result.press;
     tone(press.kind==='early'?170:520,.15);
@@ -275,7 +278,13 @@
   }catch(error){if(sameRound())status(error.message);}
   finally{if(sameRound()){sending=false;renderStage(serverNow());}}
  }
- reflex.onclick=()=>{if(!reflex.disabled)submit();};
+ reflex.onclick=event=>{
+  if(reflex.disabled)return;
+  const now=performance.now();
+  const clickedAt=event.timeStamp>0&&event.timeStamp<=now?event.timeStamp:now;
+  const reactionMs=reflexLitAt===null||clickedAt<reflexLitAt?null:Math.round(clickedAt-reflexLitAt);
+  submit(undefined,reactionMs);
+ };
  timingStop.onpointerdown=event=>{if(event.isPrimary&&event.button===0&&!timingStop.disabled)submit();};
  timingStop.onclick=()=>{if(!timingStop.disabled)submit();};
  for(const buttons of [colorButtons,cupButtons])buttons.forEach((button,index)=>{button.onclick=()=>{if(!button.disabled)submit(index);};});
@@ -354,6 +363,7 @@
   const previousPhase=current?.phase;
   const newRound=data.phase==='round'&&(current?.phase!=='round'||current.number!==data.number);
   if(entering||current.number!==data.number||current.code!==data.code){press=null;sending=false;}
+  if(newRound||current?.code!==data.code)reflexLitAt=null;
   if(data.challenge?.press)press=data.challenge.press;
   offset=data.serverTime-Date.now();
   current=data;room.dataset.code=data.code;room.dataset.phase=data.phase;room.hidden=false;$('arenaEntry').hidden=true;

@@ -121,15 +121,21 @@ function visibleRound(round,player){
   ...(round.game==='timing'&&['preview','lit'].includes(round.phase)?{targetMs:round.targetMs,previewEndsAt:round.previewEndsAt,startedAt:round.litAt}:{})};
 }
 
-function registerPress(round,player,now,choice){
+function registerPress(round,player,now,choice,reactionMs){
  if(round.presses.has(player)||(round.phase!=='lit'&&(round.game!=='reflex'||round.phase!=='waiting')))return null;
  if(round.litAt!==null&&now>=round.litAt+round.responseWindow)return null;
  const optionCount=round.game==='length'?round.lengths.length:round.game==='cups'?4:3;
  if(!['reflex','timing'].includes(round.game)&&(!Number.isInteger(choice)||choice<0||choice>=optionCount))return null;
  const ms=round.litAt===null?null:Math.max(0,now-round.litAt);
- const press=round.game==='timing'?{kind:'hit',ms,errorMs:Math.abs(ms-round.targetMs)}:
-  round.game!=='reflex'?{kind:choice===round.odd?'hit':'wrong',ms,choice}:
-  ms===null?{kind:'early'}:{kind:'hit',ms};
+ let press;
+ if(round.game==='reflex'){
+  if(reactionMs===null)press={kind:'early'};
+  else{
+   if(ms===null||!Number.isInteger(reactionMs)||reactionMs<0||reactionMs>ms+1||reactionMs>=round.responseWindow)return null;
+   press={kind:'hit',ms:reactionMs};
+  }
+ }else if(round.game==='timing')press={kind:'hit',ms,errorMs:Math.abs(ms-round.targetMs)};
+ else press={kind:choice===round.odd?'hit':'wrong',ms,choice};
  round.presses.set(player,press);
  return visiblePress(round,press);
 }

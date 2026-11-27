@@ -200,7 +200,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=()=>Math.round(perfor
   bind('action',(data,ack,room,player,t)=>{
    if(!player||player.socketId!==socket.id||room.phase!=='round'||data.round!==room.number)
     return fail(ack,'Bu tur artık geçerli değil.');
-   const press=registerPress(room.round,player.id,t,data.choice);
+   const press=registerPress(room.round,player.id,t,data.choice,data.reactionMs);
    if(!press)return fail(ack,'Bu turda yeni bir tıklama yapılamaz.');
    ack({ok:true,press});publish(room,t);
   });
