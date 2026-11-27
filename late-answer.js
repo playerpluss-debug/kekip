@@ -252,6 +252,17 @@ function attachLateAnswer(io, accounts, {
   });
 
   return {
+    publicRooms(accountId){
+      return [...rooms.values()].reverse().filter(room=>{
+        const host=find(room,room.host);
+        return !room.party&&room.phase==='lobby'&&room.settings.visibility==='public'&&
+          room.players.length<game.MAX_PLAYERS&&host?.online&&
+          !room.players.some(player=>player.id===accountId)&&!room.kicked.has(accountId);
+      }).slice(0,50).map(room=>({
+        code:room.code,game:'late_answer',host:find(room,room.host).username,
+        players:room.players.length,capacity:game.MAX_PLAYERS
+      }));
+    },
     checkpoint(){
       return [...rooms.values()].map(room=>{
         const {rates,saving,kicked,votes,usedQuestions,turnStart,players,...state}=room;

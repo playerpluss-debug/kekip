@@ -402,7 +402,12 @@ io.on('connection', socket => {
       total++;
       if(open.length<40)open.push({code:room.code,game:'battleship',host:host.name,players:room.players.length,capacity:2});
     }
-    cb({ok:true,rooms:open,total});
+    const quizRooms=lateAnswer.publicRooms(account.id);
+    let footballRooms=[],partial=false;
+    try{footballRooms=await football.publicRooms(account.id);}
+    catch(error){partial=true;console.error('Public football rooms:',error.code||error.message);}
+    if(socket.connected)cb({ok:true,rooms:[...open,...quizRooms,...footballRooms],
+      total:total+quizRooms.length+footballRooms.length,partial});
   }));
   socket.on('createRoom', membershipHandler(async ({ name, visibility = 'private' }, cb, stillValid) => {
     if (!['public','private'].includes(visibility)) return cb({ok:false,error:'Geçersiz oda türü.'});

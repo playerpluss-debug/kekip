@@ -14,7 +14,7 @@ function rng(seed){let n=seed>>>0;return ()=>{n=(Math.imul(n,1664525)+1013904223
 function baseScores(room){let w=room.world;return fixtures(w).map(([a,b])=>{let strength=i=>levels[i]+15*(w.divisions.findIndex(g=>g.includes(i))-Math.floor(i/8));let d=strength(a)-strength(b),r=rng((room.seed+w.season*100003+w.week*7919+a*173+b*41)>>>0);return [a,b,Math.min(3,Math.round(clamp(r()*3+d*.065,0,4))),Math.min(3,Math.round(clamp(r()*3-d*.065,0,4)))]})}
 function advance(w,results){let n=clone(w);for(let [a,b,g,h] of results){let x=n.table[a],y=n.table[b];x.mp++;y.mp++;x.gf+=g;x.ga+=h;y.gf+=h;y.ga+=g;x.p+=g>h?3:g===h?1:0;y.p+=h>g?3:g===h?1:0;}if(n.week===14){let r=[0,1,2].map(t=>rank(n,t));n.divisions=[r[0].slice(2).concat(r[1].slice(-2)),r[1].slice(2,6).concat(r[0].slice(0,2),r[2].slice(-2)),r[2].slice(0,6).concat(r[1].slice(0,2))];n.season++;n.week=1;n.table=emptyTable()}else n.week++;return n}
 function makePlayer(name,pos,team){if(typeof name!=='string'||!name.trim()||name.trim().length>30||!['ST','LW','CAM'].includes(pos)||!int(team,0,7))fail('İsim, mevki ve kulübü kontrol et.');let key=token();return {key,player:{id:crypto.randomBytes(8).toString('hex'),auth:hash(key),name:name.trim(),pos,team,save:null,rev:0,submitted:null,applied:false}}}
-function create(body){let {player,key}=makePlayer(body.name,body.pos,body.team);let r={code:code(),seed:crypto.randomBytes(4).readUInt32LE(),host:player.id,stage:'lobby',players:[player],world:{season:1,week:1,table:emptyTable(),divisions:divisions()},round:null};return {room:r,key,player}}
+function create(body){let {player,key}=makePlayer(body.name,body.pos,body.team);let r={code:code(),seed:crypto.randomBytes(4).readUInt32LE(),host:player.id,stage:'lobby',visibility:body.visibility==='public'?'public':'private',players:[player],world:{season:1,week:1,table:emptyTable(),divisions:divisions()},round:null};return {room:r,key,player}}
 function equal(a,b){return JSON.stringify(a)===JSON.stringify(b)}
 function matchWorld(s,w){return s.season===w.season&&s.week===w.week&&equal(s.divisions,w.divisions)&&Array.isArray(s.table)&&s.table.length===24&&s.table.every((r,i)=>['name','p','gf','ga','mp'].every(k=>r[k]===w.table[i][k]))}
 function fresh(p,w){return {version:1,name:p.name,pos:p.pos,team:p.team,season:w.season,week:w.week,age:17,money:0,xp:0,games:0,goals:0,assists:0,passes:0,dribbles:0,energy:100,skill:55,table:clone(w.table),divisions:clone(w.divisions),history:[],match:null}}
@@ -59,6 +59,20 @@ async function createPartyRoom(db,accounts,stable){
  finally{client.release();}
  return '/football.html?footballRoom='+room.code+'&party=1';
 }
+async function publicRooms(accountId){
+  const db=await database();
+  const {rows}=await db.query(`SELECT code,data->'players' AS players,data->>'host' AS host
+    FROM kekip_football_rooms
+    WHERE data @> '{"stage":"lobby","visibility":"public"}'::jsonb
+      AND NOT (data ? 'partyPending')
+      AND NOT (data @> $1::jsonb)
+      AND jsonb_array_length(data->'players') BETWEEN 1 AND 7
+    ORDER BY updated_at DESC LIMIT 50`,[JSON.stringify({players:[{accountId}]})]);
+  return rows.flatMap(row=>{
+    const host=row.players.find(player=>player.id===row.host);
+    return host?[{code:row.code,game:'football',host:host.name,players:row.players.length,capacity:8}]:[];
+  });
+}
 function attachFootball(app){const json=require('express').json;
 app.post('/api/football/account/:action',json({limit:'16kb'}),async(req,res)=>{res.set('Cache-Control','no-store');let client;try{safeRequest(req);const db=await database(),b=req.body||{},action=req.params.action;
 const a=await requireAccount(db,req);
@@ -92,4 +106,4 @@ if(action==='submit')verified.submittedAccountId=verified.accountId||null;
 if(matchRecord){await recordGameResults('football',matchRecord.id,[matchRecord.row],client,matchRecord.eligible);if(matchRecord.eligible)result.matchCardMatchId=matchRecord.id;}
 if(p)result.accountPlayer=p.id;}
 if(action!=='state'||partyArrived)await client.query('UPDATE kekip_football_rooms SET data=$2,updated_at=now() WHERE code=$1',[c,JSON.stringify(room)]);await client.query('COMMIT');res.json(await attachAvatarNames(client,room,result))}catch(e){if(client)await client.query('ROLLBACK').catch(()=>{});if(!e.status)console.error('Football DB:',e.code||e.message);res.status(e.status||503).json({error:e.status?e.message:'Kariyer sunucusu/veritabanı erişilemiyor. Tekrar dene.'})}finally{client?.release()}})}
-module.exports={attachFootball,createPartyRoom,create,operate,summary,baseScores,advance,passwordHash,verifyPassword,claimPlayer,accountPlayer};
+module.exports={attachFootball,publicRooms,createPartyRoom,create,operate,summary,baseScores,advance,passwordHash,verifyPassword,claimPlayer,accountPlayer};
