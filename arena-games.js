@@ -39,7 +39,7 @@ function openRound(now,random,game='reflex'){
  }else if(game==='length'){
   round.target=48+random(25);
   const direction=random(2)?1:-1;
-  round.lengths=shuffle([round.target,round.target+direction*(4+random(2)),round.target-direction*(5+random(2))],random);
+  round.lengths=shuffle([-7,-4,0,3,6,9].map(offset=>round.target+direction*offset),random);
   round.odd=round.lengths.indexOf(round.target);
  }else round.flashAt=startsAt+500+random(4401);
  return round;
@@ -69,7 +69,8 @@ function advanceRound(round,now){
 
 function visiblePress(round,press){
  if(!press)return null;
- return round.game==='reflex'?press:{kind:'answer',choice:press.choice};
+ return round.game==='reflex'?press:{kind:'answer',choice:press.choice,
+  ...(round.game==='length'&&press.kind==='wrong'?{wrong:true}:{})};
 }
 function visibleRound(round,player){
  return {game:round.game,phase:round.phase,startsAt:round.startsAt,
@@ -83,7 +84,8 @@ function visibleRound(round,player){
 function registerPress(round,player,now,choice){
  if(round.phase==='prepare'||round.phase==='preview'||round.presses.has(player))return null;
  if(round.litAt!==null&&now>=round.litAt+round.responseWindow)return null;
- if(round.game!=='reflex'&&(!Number.isInteger(choice)||choice<0||choice>2))return null;
+ const optionCount=round.game==='length'?round.lengths.length:3;
+ if(round.game!=='reflex'&&(!Number.isInteger(choice)||choice<0||choice>=optionCount))return null;
  const ms=round.litAt===null?null:Math.max(0,now-round.litAt);
  const press=round.game!=='reflex'?{kind:choice===round.odd?'hit':'wrong',ms,choice}:
   ms===null?{kind:'early'}:{kind:'hit',ms};

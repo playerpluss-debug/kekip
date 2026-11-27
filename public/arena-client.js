@@ -77,7 +77,7 @@
   }
   return model;
  }
- function paintLengths({target,lengths,disabled,choice,answer}){
+ function paintLengths({target,lengths,disabled,choice,answer,wrong}){
   length.hidden=!Number.isFinite(target)&&!lengths;
   sample.hidden=!Number.isFinite(target);lengthChoices.hidden=!lengths;
   const key=JSON.stringify([target,lengths]);
@@ -94,6 +94,7 @@
    button.disabled=disabled;
    button.classList.toggle('selected',choice===index);
    button.classList.toggle('correct',answer===index);
+   button.classList.toggle('wrong',wrong===index);
   });
  }
  function renderStage(t){
@@ -119,7 +120,8 @@
     update(prompt,result+(answer?' · Farklı renk '+(answer.odd+1)+'. dairedeydi.':''));
    }else if(game==='length'){
     const own=current.players.find(player=>player.username===current.you)?.reaction,answer=current.lengthAnswer;
-    paintLengths({lengths:answer?.lengths,disabled:true,choice:own?.choice,answer:answer?.odd});
+    paintLengths({lengths:answer?.lengths,disabled:true,choice:own?.choice,answer:answer?.odd,
+     wrong:own?.kind==='wrong'?own.choice:undefined});
     const result=own?.kind==='hit'?'Doğru cevap · '+own.points+' puan':own?.kind==='wrong'?'Yanlış cevap · 0 puan':'Cevap verilmedi · 0 puan';
     update(prompt,result+(answer?' · Doğru çubuk '+(answer.odd+1)+'. sıradaydı.':''));
    }else update(prompt,'En hızlı geçerli tepki 100 puan alır.');
@@ -141,8 +143,9 @@
    const deadline=preview?challenge.previewEndsAt:lit?challenge.endsAt:challenge.startsAt;
    clock.textContent=Math.max(0,Math.ceil((deadline-t)/1000))+' sn';
    paintLengths({target:challenge.target,lengths:challenge.lengths,
-    disabled:!lit||expired||Boolean(press)||sending||!socket.connected,choice:press?.choice});
-   update(prompt,press?'Seçimin kaydedildi.':expired?'Süre doldu.':preview?'Örnek çubuğun boyunu aklında tut.':lit?'Örnekle aynı boydaki çubuğu seç.':'Tur başlıyor.');
+    disabled:!lit||expired||Boolean(press)||sending||!socket.connected,choice:press?.choice,
+    wrong:press?.wrong?press.choice:undefined});
+   update(prompt,press?.wrong?'Yanlış cevap · 0 puan':press?'Seçimin kaydedildi.':expired?'Süre doldu.':preview?'Örnek çubuğun boyunu aklında tut.':lit?'Örnekle aynı boydaki çubuğu seç.':'Tur başlıyor.');
    return;
   }
   clock.textContent=!ready?Math.max(0,Math.ceil((challenge.startsAt-t)/1000))+' sn':'';
