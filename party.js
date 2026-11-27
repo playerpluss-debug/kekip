@@ -83,7 +83,7 @@ function createPartyService(adapters,{now=Date.now,id=randomUUID}={}){
   if(action==='create'){
    if(!party){
     if(groups.size>=300)fail('Şu anda yeni parti açılamıyor.',503);
-    party={leader:a.id,members:new Map(),messages:[],touched:t,busy:false,launch:null};
+    party={voiceId:randomUUID(),leader:a.id,members:new Map(),messages:[],touched:t,busy:false,launch:null};
     groups.add(party);add(party,a,t);
    }
   }else if(action==='invite'){
@@ -159,7 +159,14 @@ function createPartyService(adapters,{now=Date.now,id=randomUUID}={}){
   }
   return view(a,now());
  }
- return {run,removeAccount:leave};
+ function voiceRoom(accountId){
+  const t=now();
+  sweep(t);
+  const party=byAccount.get(accountId);
+  const member=party?.members.get(accountId);
+  return member&&member.seen+onlineFor>t?party.voiceId:null;
+ }
+ return {run,removeAccount:leave,voiceRoom};
 }
 
 function attachParty(app,accounts,adapters){

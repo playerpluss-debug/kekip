@@ -168,7 +168,10 @@ body{background:#100c1b}.ambient-scene{opacity:.38}.ambient-scene:before,.ambien
 #kpOpenRooms .kp-rooms-status{padding:0;margin:0;border:0;background:none;flex:1 1 205px}
 #kpOpenRooms #kpCreatePublicRoom[hidden]{display:none}
 @media(max-width:540px){#kpOpenRooms .kp-rooms-tools{width:100%}#kpOpenRooms #kpCreatePublicRoom:not([hidden]){width:100%}}
-</style></head>
+</style><link rel="stylesheet" href="/lobby-voice.css?v=1">
+<script src="/late-answer-voice.js?v=lobbies" defer></script>
+<script src="/lobby-voice-client.js?v=1" defer></script>
+</head>
 <body data-kp-layout="home" class="kp-motion-page"><div class="kp-live-backdrop" aria-hidden="true"><span class="kp-light kp-light-a"></span><span class="kp-light kp-light-b"></span><span class="kp-rays"></span><span class="kp-stars"></span><span class="kp-vignette"></span></div><div class="ambient-scene" aria-hidden="true"><div class="ambient-grid"></div><div class="ambient-orb a"></div><div class="ambient-orb b"></div><div class="ambient-orb c"></div><div class="ambient-particles"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="shell">
 <aside class="side"><a class="brand kp-site-brand" href="/" aria-label="KEKIP ana sayfa" title="Ana sayfa" aria-current="page"><span class="kp-site-mark" aria-hidden="true">K</span><span class="kp-site-word">KEKIP<em>.</em> GAMES</span></a>
 <div><nav class="nav" aria-label="Hesap ve oyun menüsü">
@@ -217,6 +220,13 @@ body{background:#100c1b}.ambient-scene{opacity:.38}.ambient-scene:before,.ambien
   <aside class="rules-note rules-lobby" aria-labelledby="rulesLobbyTitle"><h4 id="rulesLobbyTitle">ⓘ NASIL OYNANIR?</h4><p><strong>1. Oda kur:</strong> Davet bağlantısını arkadaşına gönder. Oyun iki kişiyle oynanır.</p><p><strong>2. Filonu hazırla:</strong> 10×10 haritaya 5 gemini yerleştir. İkiniz de hazır olunca savaş başlar.</p><p><strong>3. Rakibini batır:</strong> Sırayla atış yap; rakibinin 5 gemisini ilk batıran kazanır.</p></aside>
  </div>
  <div id="roomArea" class="game-hidden">
+<section class="kp-lobby-voice" data-lobby-voice="battleship" aria-label="Lobi ses bağlantısı" hidden>
+  <div class="kp-voice-copy"><strong>Lobi sesi</strong><span data-voice-status role="status">Dinlemek için bağlan.</span></div>
+  <div class="kp-voice-actions">
+    <button type="button" data-voice-listen>Ses bağlantısını aç</button>
+    <button type="button" data-voice-mic aria-pressed="false">Mikrofonu aç</button>
+  </div>
+</section>
   <div id="kpRoomType" class="kp-room-type" role="status" hidden></div><div class="lobby-top" id="playerSlots"></div><div class="lobby-state" id="playersText" aria-live="polite"></div>
   <div class="invite-panel" id="invitePanel"><div class="kicker">ARKADAŞINI DAVET ET</div><div class="invite-code" id="roomCode">-----</div><p>Bağlantıyı arkadaşına gönder. Açtığında sadece ismini yazıp katılacak.</p><p class="kp-sh-note" id="kpDirectInviteResult" role="status" hidden></p><div class="invite-line"><input id="inviteLink" readonly aria-label="Davet bağlantısı"><button class="btn" onclick="copyInvite()">🔗 Bağlantıyı kopyala</button><button class="btn alt" onclick="shareInvite()">Paylaş</button></div><aside class="rules-note" aria-labelledby="rulesWaitingTitle"><h4 id="rulesWaitingTitle">ⓘ SAVAŞA HAZIRLIK</h4><p>Arkadaşın bağlantıya tıklayıp ismini yazarak katılır. İki oyuncu da gemilerini yerleştirip <strong>Hazırım</strong> dediğinde oyun başlar.</p></aside></div>
   <div id="setupArea" class="game-hidden"><aside class="rules-note" aria-labelledby="rulesSetupTitle"><h4 id="rulesSetupTitle">ⓘ GEMİ YERLEŞTİRME KURALLARI</h4><p>5 gemini seçerek yatay veya dikey yerleştir. Gemiler harita dışına taşamaz, çapraz ya da üst üste yerleştirilemez. Bitişik karelerde bulunabilirler. Rakibin gemilerini göremez. Filon tamamlanınca <strong>Hazırım</strong> butonuna bas; hazır olduktan sonra yerleşim değiştirilemez.</p></aside><div class="setup-layout"><section class="board-panel"><h3>⚓ Filonu yerleştir</h3><small>Gemiyi seç, yönünü ayarla, başlangıç karesine dokun.</small><div class="sea" id="placementBoard"></div></section><section class="board-panel"><h3>Gemilerin <span id="fleetProgress">0 / 5</span></h3><div class="setup-tools"><button id="horizontalBtn" onclick="setDirection(true)">↔ Yatay</button><button id="verticalBtn" onclick="setDirection(false)">↕ Dikey</button></div><div class="fleet-picker" id="fleetPicker"></div><div class="setup-message" id="setupMessage" aria-live="polite"></div><div class="setup-actions"><button class="btn alt" id="resetFleetBtn" onclick="resetFleet()">Temizle</button><button class="btn" id="readyBtn" onclick="readyFleet()" disabled>Hazırım</button></div></section></div></div>

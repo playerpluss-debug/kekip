@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="/party.css?v=1">
 <script src="/experience-settings.js?v=05195" defer></script><script src="/party-client.js?v=05129" defer></script>
 <link rel="stylesheet" href="/game-lobbies.css?v=2">
+<script src="/socket.io/socket.io.js" defer></script>
+<link rel="stylesheet" href="/lobby-voice.css?v=1">
+<script src="/late-answer-voice.js?v=lobbies" defer></script>
+<script src="/lobby-voice-client.js?v=1" defer></script>
 </head>
 <body>
 <main id="kpPartyShell" class="kp-lobby-shell">
@@ -23,6 +27,13 @@
  <h2>Parti davetleri</h2><ul class="rows" id="inviteList"></ul>
 </section>
 <div class="layout" id="party" hidden>
+<section class="kp-lobby-voice" data-lobby-voice="party" aria-label="Lobi ses bağlantısı" hidden>
+  <div class="kp-voice-copy"><strong>Lobi sesi</strong><span data-voice-status role="status">Dinlemek için bağlan.</span></div>
+  <div class="kp-voice-actions">
+    <button type="button" data-voice-listen>Ses bağlantısını aç</button>
+    <button type="button" data-voice-mic aria-pressed="false">Mikrofonu aç</button>
+  </div>
+</section>
  <section class="panel">
   <div class="section-head"><h2>Parti üyeleri</h2><span id="memberCount"></span></div>
   <ul class="rows" id="members"></ul>

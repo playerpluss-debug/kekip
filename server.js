@@ -192,12 +192,13 @@ const parties = require('./party').attachParty(app,accounts,{
 function disconnectSession(token){
  if(!token)return;
  lateAnswer.disconnectSession(token);
+ lobbyVoice.disconnectSession(token);
  for(const sock of [...io.sockets.sockets.values()]){
   if(accounts.sessionToken({get:k=>sock.request.headers[k.toLowerCase()]})===token)sock.disconnect(true);
  }
 }
 require('./favorites').attachFavorites(app);
-accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,lateInviteOpen:lateAnswer.inviteOpen,disconnectAccount:(id)=>{parties.removeAccount(id);lateAnswer.disconnectAccount(id);for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&!r.party&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
+accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,lateInviteOpen:lateAnswer.inviteOpen,disconnectAccount:(id)=>{parties.removeAccount(id);lateAnswer.disconnectAccount(id);lobbyVoice.disconnectAccount(id);for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&!r.party&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
 football.attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
@@ -205,6 +206,14 @@ const rooms = new Map();
 const REJOIN_GRACE_MS = 90000;
 const unfinishedResults=new Map();
 const connectedPlayer = p => !!p && !p.disconnectedUntil && !!io.sockets.sockets.get(p.id)?.connected;
+const lobbyVoice = require('./lobby-voice').attachLobbyVoice(io,accounts,{
+  battleship(code,id){
+    const room=rooms.get(code);
+    return room&&room.phase==='waiting'&&room.players.some(p=>p.accountId===id&&connectedPlayer(p))?room.chatId:null;
+  },
+  football:football.voiceRoom,
+  party:(_code,id)=>parties.voiceRoom(id)
+},()=>draining);
 require("./chat").attachChat(app,{lateRoom:lateAnswer.chatRoom,battleRoom:(code,id)=>{const r=rooms.get(code);return r?.players.some(p=>p.accountId===id&&connectedPlayer(p))?r.chatId:null;}});
 const SHIPS = [5, 4, 3, 3, 2];
 const makeCode = () => {

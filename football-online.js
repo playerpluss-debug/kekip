@@ -59,6 +59,13 @@ async function createPartyRoom(db,accounts,stable){
  finally{client.release();}
  return '/football.html?footballRoom='+room.code+'&party=1';
 }
+async function voiceRoom(code,accountId){
+  if(!/^[A-F0-9]{10}$/.test(code))return null;
+  const db=await database();
+  const {rows}=await db.query(`SELECT code FROM kekip_football_rooms
+    WHERE code=$1 AND data @> $2::jsonb`,[code,JSON.stringify({stage:'lobby',players:[{accountId}]})]);
+  return rows[0]?.code||null;
+}
 async function publicRooms(accountId){
   const db=await database();
   const {rows}=await db.query(`SELECT code,data->'players' AS players,data->>'host' AS host
@@ -106,4 +113,4 @@ if(action==='submit')verified.submittedAccountId=verified.accountId||null;
 if(matchRecord){await recordGameResults('football',matchRecord.id,[matchRecord.row],client,matchRecord.eligible);if(matchRecord.eligible)result.matchCardMatchId=matchRecord.id;}
 if(p)result.accountPlayer=p.id;}
 if(action!=='state'||partyArrived)await client.query('UPDATE kekip_football_rooms SET data=$2,updated_at=now() WHERE code=$1',[c,JSON.stringify(room)]);await client.query('COMMIT');res.json(await attachAvatarNames(client,room,result))}catch(e){if(client)await client.query('ROLLBACK').catch(()=>{});if(!e.status)console.error('Football DB:',e.code||e.message);res.status(e.status||503).json({error:e.status?e.message:'Kariyer sunucusu/veritabanı erişilemiyor. Tekrar dene.'})}finally{client?.release()}})}
-module.exports={attachFootball,publicRooms,createPartyRoom,create,operate,summary,baseScores,advance,passwordHash,verifyPassword,claimPlayer,accountPlayer};
+module.exports={attachFootball,publicRooms,voiceRoom,createPartyRoom,create,operate,summary,baseScores,advance,passwordHash,verifyPassword,claimPlayer,accountPlayer};
