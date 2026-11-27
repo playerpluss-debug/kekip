@@ -31,7 +31,8 @@
  join.onsubmit=event=>{event.preventDefault();run(()=>emit('join',{code:$('arenaCode').value.trim().toUpperCase()}));};
  const serverNow=()=>Date.now()+offset;
  const reflex=$('arenaReflex'),sound=$('arenaSound');
- const timing=$('arenaTiming'),timingStop=$('arenaTimingStop'),timingLabel=$('arenaTimingLabel'),timingTarget=$('arenaTimingTarget');
+ const timing=$('arenaTiming'),timingStop=$('arenaTimingStop'),timingLabel=$('arenaTimingLabel'),timingTarget=$('arenaTimingTarget'),timingClock=$('arenaTimingClock');
+ const timingClockVisibleMs=1500,timingClockFadeMs=450;
  const seconds=ms=>(ms/1000).toFixed(2).replace('.',',')+' sn';
  const picker=$('arenaGamePicker'),gameOptions=$('arenaGameOptions');
  let savingGames=false,catalogKey='';
@@ -146,6 +147,17 @@
   });
   positionCups(challenge,t,answer);
  }
+ function paintTimingClock(challenge,t){
+  const started=challenge?.startedAt;
+  const elapsed=Number.isFinite(started)?Math.max(0,t-started):Infinity;
+  const fade=Math.max(0,elapsed-timingClockVisibleMs)/timingClockFadeMs;
+  timingClock.hidden=Boolean(press)||fade>=1||t>=challenge?.endsAt;
+  if(timingClock.hidden)return false;
+  const text=seconds(elapsed);
+  if(timingClock.textContent!==text)timingClock.textContent=text;
+  timingClock.style.opacity=String(1-fade);
+  return true;
+ }
  function renderStage(t){
   if(!current)return;
   if(current.phase==='final'){
@@ -182,7 +194,7 @@
     const result=own?.kind==='hit'?'Doğru cevap · '+own.points+' puan':own?.kind==='wrong'?'Yanlış cevap · 0 puan':'Cevap verilmedi · 0 puan';
     update(prompt,result+(answer===null?'':' · Top '+(answer+1)+'. bardağın altındaydı.'));
    }else if(game==='timing'){
-    timing.hidden=false;timingStop.disabled=true;timingStop.dataset.state='result';
+    timing.hidden=false;timingClock.hidden=true;timingStop.disabled=true;timingStop.dataset.state='result';
     const own=current.players.find(player=>player.username===current.you)?.reaction;
     update(timingTarget,seconds(current.timingTarget));
     update(timingLabel,own?.kind==='hit'?own.ms+' ms':'Süre doldu');
@@ -221,6 +233,7 @@
   if(game==='timing'){
    const preview=challenge.phase==='preview';
    timing.hidden=!Number.isFinite(challenge.targetMs);
+   paintTimingClock(challenge,t);
    if(!timing.hidden)update(timingTarget,seconds(challenge.targetMs));
    clock.textContent=preview?Math.max(0,Math.ceil((challenge.previewEndsAt-t)/1000))+' sn':'';
    timingStop.disabled=!lit||expired||Boolean(press)||sending||!socket.connected;
@@ -433,16 +446,18 @@
   const link=new URL('/arena.html',location.origin);link.searchParams.set('room',current.code);
   await navigator.clipboard.writeText(link.toString());status('Davet bağlantısı kopyalandı.');
  });
- let cupFrame=0;
- function animateCups(){
-  if(current?.challenge?.game==='cups'&&current.challenge.phase==='mix'){
-   positionCups(current.challenge,serverNow());
-   cupFrame=requestAnimationFrame(animateCups);
-  }else cupFrame=0;
+ let stageFrame=0;
+ function animateStage(){
+  const challenge=current?.challenge,t=serverNow();
+  const mixing=challenge?.game==='cups'&&challenge.phase==='mix';
+  if(mixing)positionCups(challenge,t);
+  const ticking=challenge?.game==='timing'&&paintTimingClock(challenge,t);
+  stageFrame=mixing||ticking?requestAnimationFrame(animateStage):0;
  }
  setInterval(()=>{
   renderStage(serverNow());
-  if(!cupFrame&&current?.challenge?.game==='cups'&&current.challenge.phase==='mix')cupFrame=requestAnimationFrame(animateCups);
+  if(!stageFrame&&(current?.challenge?.game==='cups'&&current.challenge.phase==='mix'||
+      current?.challenge?.game==='timing'&&!timingClock.hidden))stageFrame=requestAnimationFrame(animateStage);
  },100);
  socket.connect();
 })();

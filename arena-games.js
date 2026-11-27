@@ -70,7 +70,7 @@ function openRound(now,random,game='reflex'){
   const {swaps,position}=cupSwaps(round.ballSlot,random);
   round.swaps=swaps;
   round.odd=position;
- }else if(game==='timing')round.targetMs=1000+random(601)*10;
+ }else if(game==='timing')round.targetMs=2000+random(501)*10;
  else round.flashAt=startsAt+500+random(4401);
  return round;
 }
@@ -118,7 +118,7 @@ function visibleRound(round,player){
   ...(round.game==='length'&&round.phase==='lit'?{lengths:round.lengths}:{}),
   ...(round.game==='cups'&&round.phase==='preview'?{ballSlot:round.ballSlot}:{}),
   ...(round.game==='cups'&&round.phase==='mix'?{ballSlot:round.ballSlot,swaps:round.swaps,coverStartsAt:round.coverStartsAt,mixStartsAt:round.mixStartsAt}:{}),
-  ...(round.game==='timing'&&['preview','lit'].includes(round.phase)?{targetMs:round.targetMs,previewEndsAt:round.previewEndsAt}:{})};
+  ...(round.game==='timing'&&['preview','lit'].includes(round.phase)?{targetMs:round.targetMs,previewEndsAt:round.previewEndsAt,startedAt:round.litAt}:{})};
 }
 
 function registerPress(round,player,now,choice){

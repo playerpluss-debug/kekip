@@ -6,12 +6,12 @@
  <title>KEKIP Arena | KEKIP Games</title>
  <link rel="stylesheet" href="/kekip-navigation.css?v=05122">
  <link rel="stylesheet" href="/game-lobbies.css?v=3">
- <link rel="stylesheet" href="/arena.css?v=timing1">
+ <link rel="stylesheet" href="/arena.css?v=timing2">
  <script src="/socket.io/socket.io.js" defer></script>
  <script src="/late-answer-voice.js?v=lobbies" defer></script>
  <script src="/lobby-voice-client.js?v=arena1" defer></script>
  <script src="/avatar-portraits.js?v=wings-natural2" defer></script>
- <script src="/arena-client.js?v=timing1" defer></script>
+ <script src="/arena-client.js?v=timing2" defer></script>
  <script src="/match-cards.js?v=arena2" defer></script>
  <link rel="stylesheet" href="/lobby-voice.css?v=1">
 </head>
@@ -85,6 +85,7 @@
    </div>
    <div id="arenaTiming" hidden>
     <div class="arena-timing-target">Hedef süre <strong id="arenaTimingTarget"></strong></div>
+    <div class="arena-timing-clock-slot" aria-hidden="true"><span id="arenaTimingClock" hidden>0,00 sn</span></div>
     <button id="arenaTimingStop" class="arena-timing-stop" type="button" disabled>
      <span class="arena-timing-icon" aria-hidden="true"></span>
      <span id="arenaTimingLabel">Hazırlan</span>
