@@ -47,7 +47,24 @@ async function main(){
   const audit=await db.query("SELECT action FROM kekip_admin_audit WHERE username IN ('qa_player','qa_rejected')");assert.ok(audit.rows.some(r=>r.action==='admin-registration-approve'));assert.ok(audit.rows.some(r=>r.action==='admin-registration-reject'));
   console.log('PASS: real PostgreSQL registration, authorization, onboarding, catalog and blocked purchases');
   browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:1280,height:800}});await context.addCookies([{name:'kekip_session',value:player.split('=')[1],url:base}]);const page=await context.newPage();
-  for(const item of neon){await page.goto(base+item.previewPath);await page.waitForFunction(()=>{const i=document.getElementById('avatar');return i&&!i.hidden&&i.getAttribute('src')?.startsWith('data:image/')&&i.complete&&i.naturalWidth>0},null,{timeout:30000});await page.locator('#avatar').evaluate(i=>i.decode());assert.ok(await page.locator('#avatar').evaluate(i=>i.complete&&i.naturalWidth>0),item.id);console.log('PASS preview '+item.id);}
+  const fs=require('node:fs/promises');await fs.mkdir('qa-neon',{recursive:true});
+  async function imageReady(id){await page.waitForFunction(id=>{const i=document.getElementById(id);return i&&!i.hidden&&i.complete&&i.naturalWidth>0},id,{timeout:30000});return page.locator('#'+id).evaluate(async i=>{await i.decode();return {width:i.naturalWidth,height:i.naturalHeight,src:i.src};});}
+  for(const item of neon){
+   await page.goto(base+item.previewPath);
+   const full=await imageReady('avatar'),detail=await imageReady('detail');assert.equal(full.width,480);assert.equal(full.height,660);assert.ok(detail.width>40&&detail.height>40,item.id);
+   const alpha=await page.locator('#avatar').evaluate(i=>{const c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;const g=c.getContext('2d');g.drawImage(i,0,0);const p=g.getImageData(0,0,c.width,c.height).data;let n=0;for(let k=3;k<p.length;k+=4)if(p[k]>16)n++;return n/(c.width*c.height)});
+   assert.ok(alpha>.03&&alpha<.95,item.id+' invalid transparency');
+   await page.screenshot({path:'qa-neon/'+item.id+'.png',fullPage:true});
+   console.log('PASS visual preview '+item.id+' 480x660 and isolated detail '+detail.width+'x'+detail.height);
+  }
+  for(const character of ['gece','golge']){
+   const item=neon.find(i=>i.character===character);await page.goto(base+item.previewPath);
+   const single=await imageReady('avatar');await page.locator('#full').click();const full=await imageReady('avatar');assert.notEqual(full.src,single.src,character+' full collection');
+   await page.screenshot({path:'qa-neon/'+character+'-full.png',fullPage:true});
+   await page.locator('#base').click();const basic=await imageReady('avatar');assert.notEqual(basic.src,full.src,character+' base comparison');await page.screenshot({path:'qa-neon/'+character+'-base.png',fullPage:true});
+   await page.setViewportSize({width:390,height:844});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),character+' mobile overflow');await page.screenshot({path:'qa-neon/'+character+'-mobile.png',fullPage:true});await page.setViewportSize({width:1280,height:800});
+   console.log('PASS collection comparison '+character);
+  }
   for(const viewport of [{width:1280,height:800},{width:390,height:844}]){await page.setViewportSize(viewport);for(const route of ['/','/profile.html','/shop.html']){await page.goto(base+route);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(1000);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),route+' horizontal overflow '+viewport.width);console.log('PASS viewport '+viewport.width+' '+route);}}
  }finally{await browser?.close();server.kill('SIGTERM');await db.end();}
 }
