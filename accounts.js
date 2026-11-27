@@ -503,8 +503,9 @@ async function missionAction(db,a,action,b){if(action==='missions')return missio
 // Coin prizes use the ledger; first-time clothing prizes use a separate daily claim table.
 const DAILY_LOGIN_KC=10;
 const WHEEL_DUPLICATE_COMPENSATION=250;
+const WHEEL_PET_ID='pet_ember_fox';
 const WHEEL_SEGMENTS=Object.freeze([
- {id:'kc10',type:'kc',amount:10,label:'10 KC',shortLabel:'10',weight:20},
+ {id:'kc10',type:'kc',amount:10,label:'10 KC',shortLabel:'10',weight:21},
  {id:'kc15',type:'kc',amount:15,label:'15 KC',shortLabel:'15',weight:18},
  {id:'kc20',type:'kc',amount:20,label:'20 KC',shortLabel:'20',weight:16},
  {id:'kc25',type:'kc',amount:25,label:'25 KC',shortLabel:'25',weight:14},
@@ -512,13 +513,18 @@ const WHEEL_SEGMENTS=Object.freeze([
  {id:'kc40',type:'kc',amount:40,label:'40 KC',shortLabel:'40',weight:10},
  {id:'kc50',type:'kc',amount:50,label:'50 KC',shortLabel:'50',weight:6},
  {id:'kc70',type:'kc',amount:70,label:'70 KC',shortLabel:'70',weight:4},
+ {id:WHEEL_PET_ID,type:'item',amount:0,itemId:WHEEL_PET_ID,label:'Kor Tilkisi',shortLabel:'TİLKİ',weight:1}
+]);
+const WHEEL_SEGMENT_INDEX=Object.freeze(Object.fromEntries(WHEEL_SEGMENTS.map(s=>[s.id,s])));
+// Preserve receipts for jackets earned before the pool changed.
+const WHEEL_LEGACY_PRIZES=Object.freeze([
  {id:'gece_top_esports',type:'item',amount:0,itemId:'gece_top_esports',label:'Gece · Mor detaylı e-spor ceketi',shortLabel:'GECE',weight:1,character:'gece'},
  {id:'golge_top_esports',type:'item',amount:0,itemId:'golge_top_esports',label:'Gölge · E-spor ceketi',shortLabel:'GÖLGE',weight:1,character:'golge'}
 ]);
-const WHEEL_SEGMENT_INDEX=Object.freeze(Object.fromEntries(WHEEL_SEGMENTS.map(s=>[s.id,s])));
+const WHEEL_RECEIPT_INDEX=Object.freeze({...WHEEL_SEGMENT_INDEX,...Object.fromEntries(WHEEL_LEGACY_PRIZES.map(s=>[s.id,s]))});
 const WHEEL_POOL=Object.freeze(WHEEL_SEGMENTS.flatMap(s=>Array.from({length:s.weight},()=>s.id)));
 function wheelSegmentsPublic(){return WHEEL_SEGMENTS.map(s=>({id:s.id,type:s.type,amount:s.amount,label:s.label,shortLabel:s.shortLabel,weight:s.weight,character:s.character||null,itemId:s.itemId||null}))}
-function parseWheelPrize(row){if(!row)return null;const match=(row.label||'').match(/ödül:([a-z0-9_]+)/i);if(match&&WHEEL_SEGMENT_INDEX[match[1]])return WHEEL_SEGMENT_INDEX[match[1]];if(Number(row.amount)>0)return WHEEL_SEGMENTS.find(s=>s.type==='kc'&&s.amount===Number(row.amount))||null;return null}
+function parseWheelPrize(row){if(!row)return null;const match=(row.label||'').match(/ödül:([a-z0-9_]+)/i);if(match&&Object.hasOwn(WHEEL_RECEIPT_INDEX,match[1]))return WHEEL_RECEIPT_INDEX[match[1]];if(Number(row.amount)>0)return WHEEL_SEGMENTS.find(s=>s.type==='kc'&&s.amount===Number(row.amount))||null;return null}
 function wheelPrizeText(row,prize){if(!row)return null;if(!prize)return Number(row.amount)>0?`+${Number(row.amount)} KC`:'Ödül alındı';if(prize.type==='kc')return `+${prize.amount} KC`;if(/telafi/i.test(row.label||''))return `${prize.label} zaten envanterinde olduğu için +${Number(row.amount)} KC telafi ödülü`;return `${prize.label} envantere eklendi`}
 function randomWheelPrize(){return WHEEL_SEGMENT_INDEX[WHEEL_POOL[crypto.randomInt(WHEEL_POOL.length)]]}
 async function rewardClock(db){const q=await db.query(`SELECT to_char(now() AT TIME ZONE 'Europe/Istanbul','YYYY-MM-DD') AS day, now() AS server_now, ((date_trunc('day',now() AT TIME ZONE 'Europe/Istanbul')+interval '1 day') AT TIME ZONE 'Europe/Istanbul') AS reset_at`);return q.rows[0];}
@@ -540,7 +546,7 @@ async function rewardAction(db,a,action,b){
  if(kind==='daily_wheel'||extra){
    awardedPrize=randomWheelPrize();label=`${extra?'Ekstra çark':'Günlük çark'} · ödül:${awardedPrize.id}`;amount=awardedPrize.amount;
    if(awardedPrize.type==='item'){
-     const item=Wardrobe.collections[awardedPrize.character]?.items.find(i=>i.id===awardedPrize.itemId);
+     const item=Pets.PETS.find(i=>i.id===awardedPrize.itemId);
      if(!item)fail('Çark ödülü yapılandırması eksik.',503);
      const granted=await c.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING item_id',[a.id,awardedPrize.itemId]);
      if(granted.rows.length){if(!extra){const claim=await c.query('INSERT INTO kekip_daily_wheel_items(account_id,day,item_id) VALUES($1,$2::date,$3) ON CONFLICT DO NOTHING RETURNING item_id',[a.id,clock.day,awardedPrize.itemId]);if(!claim.rows.length)fail('Bugünkü ödülünü zaten aldın.',409);}}
