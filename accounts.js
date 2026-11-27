@@ -42,7 +42,7 @@ await pool.query('CREATE INDEX IF NOT EXISTS kekip_dm_pair_recent ON kekip_direc
 await pool.query('CREATE INDEX IF NOT EXISTS kekip_dm_sender_time ON kekip_direct_messages(sender_id,created_at)');
 await pool.query('ALTER TABLE kekip_direct_messages ADD COLUMN IF NOT EXISTS read_at timestamptz');
 await pool.query('CREATE INDEX IF NOT EXISTS kekip_dm_unread_receiver ON kekip_direct_messages(receiver_id,sender_id,id) WHERE read_at IS NULL');
-await pool.query(`CREATE TABLE IF NOT EXISTS kekip_presence (token_hash text PRIMARY KEY REFERENCES kekip_football_sessions(token_hash) ON DELETE CASCADE, account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, activity text NOT NULL CHECK(activity IN ('home','battleship','football')), seen_at timestamptz NOT NULL DEFAULT now())`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_presence_account ON kekip_presence(account_id,seen_at)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_social_invites (id text PRIMARY KEY, sender_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, receiver_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, game text NOT NULL CHECK(game IN ('battleship','football')), room_code text NOT NULL, status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted','declined')), created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz NOT NULL, UNIQUE(sender_id,receiver_id,game,room_code), CHECK(sender_id<>receiver_id))`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_social_invites_receiver ON kekip_social_invites(receiver_id,expires_at)');await pool.query('CREATE INDEX IF NOT EXISTS kekip_game_results_account ON kekip_game_results(account_id,game)');await pool.query('CREATE INDEX IF NOT EXISTS kekip_game_results_date ON kekip_game_results(created_at,game)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_mission_claims (account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, mission_id text NOT NULL, period_start date NOT NULL, xp integer NOT NULL CHECK(xp>0), claimed_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(account_id,mission_id,period_start))`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_mission_claims_date ON kekip_mission_claims(claimed_at)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_coin_ledger (id bigserial PRIMARY KEY, account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, source_kind text NOT NULL, source_id text NOT NULL, label text NOT NULL, amount integer NOT NULL CHECK(amount<>0), created_at timestamptz NOT NULL DEFAULT now(), UNIQUE(account_id,source_kind,source_id))`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_coin_ledger_recent ON kekip_coin_ledger(account_id,id DESC)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_cosmetic_inventory(account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,item_id text NOT NULL,purchased_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(account_id,item_id))`);// 0.50.19.5: retain every formerly free piece referenced in existing active/saved outfits.
+await pool.query(`CREATE TABLE IF NOT EXISTS kekip_presence (token_hash text PRIMARY KEY REFERENCES kekip_football_sessions(token_hash) ON DELETE CASCADE, account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, activity text NOT NULL CHECK(activity IN ('home','battleship','football')), seen_at timestamptz NOT NULL DEFAULT now())`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_presence_account ON kekip_presence(account_id,seen_at)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_social_invites (id text PRIMARY KEY, sender_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, receiver_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, game text NOT NULL CHECK(game IN ('battleship','football')), room_code text NOT NULL, status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted','declined')), created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz NOT NULL, UNIQUE(sender_id,receiver_id,game,room_code), CHECK(sender_id<>receiver_id))`);await pool.query(require('node:fs').readFileSync(require('node:path').join(__dirname,'migrations','late-answer-up.sql'),'utf8'));await pool.query('CREATE INDEX IF NOT EXISTS kekip_social_invites_receiver ON kekip_social_invites(receiver_id,expires_at)');await pool.query('CREATE INDEX IF NOT EXISTS kekip_game_results_account ON kekip_game_results(account_id,game)');await pool.query('CREATE INDEX IF NOT EXISTS kekip_game_results_date ON kekip_game_results(created_at,game)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_mission_claims (account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, mission_id text NOT NULL, period_start date NOT NULL, xp integer NOT NULL CHECK(xp>0), claimed_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(account_id,mission_id,period_start))`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_mission_claims_date ON kekip_mission_claims(claimed_at)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_coin_ledger (id bigserial PRIMARY KEY, account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE, source_kind text NOT NULL, source_id text NOT NULL, label text NOT NULL, amount integer NOT NULL CHECK(amount<>0), created_at timestamptz NOT NULL DEFAULT now(), UNIQUE(account_id,source_kind,source_id))`);await pool.query('CREATE INDEX IF NOT EXISTS kekip_coin_ledger_recent ON kekip_coin_ledger(account_id,id DESC)');await pool.query(`CREATE TABLE IF NOT EXISTS kekip_cosmetic_inventory(account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,item_id text NOT NULL,purchased_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(account_id,item_id))`);// 0.50.19.5: retain every formerly free piece referenced in existing active/saved outfits.
 await pool.query(`INSERT INTO kekip_cosmetic_inventory(account_id,item_id)
  SELECT DISTINCT looks.account_id, part.value
  FROM (SELECT account_id,character,appearance FROM kekip_modular_avatars UNION ALL SELECT account_id,character,appearance FROM kekip_avatar_outfits) looks
@@ -93,10 +93,10 @@ async function recordGameResults(game,matchId,rows,transaction=null,allowCards=f
  const values=[],params=[];for(const row of unique){const i=params.length;values.push(`($${i+1},$${i+2},$${i+3},$${i+4}::jsonb)`);params.push(game,matchId,row.accountId,JSON.stringify(row.result));}
  const recorded=await db.query(`WITH fresh AS (INSERT INTO kekip_game_results(game,match_id,account_id,result) VALUES ${values.join(',')} ON CONFLICT DO NOTHING RETURNING game,match_id,account_id,result),
  awards AS (SELECT f.*, LEAST(10+CASE WHEN f.game='battleship' AND f.result->'win'='true'::jsonb THEN 5 ELSE 0 END,
- GREATEST(0,${MATCH_DAILY_CAP}-COALESCE((SELECT sum(l.amount) FROM kekip_coin_ledger l WHERE l.account_id=f.account_id AND l.source_kind='match' AND l.created_at >= (date_trunc('day',now() AT TIME ZONE 'Europe/Istanbul') AT TIME ZONE 'Europe/Istanbul') AND l.created_at < ((date_trunc('day',now() AT TIME ZONE 'Europe/Istanbul')+interval '1 day') AT TIME ZONE 'Europe/Istanbul')),0)))::integer AS reward FROM fresh f), credited AS (
+ GREATEST(0,${MATCH_DAILY_CAP}-COALESCE((SELECT sum(l.amount) FROM kekip_coin_ledger l WHERE l.account_id=f.account_id AND l.source_kind='match' AND l.created_at >= (date_trunc('day',now() AT TIME ZONE 'Europe/Istanbul') AT TIME ZONE 'Europe/Istanbul') AND l.created_at < ((date_trunc('day',now() AT TIME ZONE 'Europe/Istanbul')+interval '1 day') AT TIME ZONE 'Europe/Istanbul')),0)))::integer AS reward FROM fresh f WHERE f.game<>'late_answer' OR f.result->'complete'='true'::jsonb), credited AS (
  INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount)
- SELECT account_id,'match',jsonb_build_array(game,match_id)::text, CASE WHEN game='battleship' AND result->'win'='true'::jsonb THEN 'Amiral Battı · Galibiyet' WHEN game='battleship' THEN 'Amiral Battı · Maç' WHEN game='football' THEN 'Futbol Kariyer · Maç' ELSE 'Oyun · Maç' END,reward FROM awards WHERE reward>0 ON CONFLICT(account_id,source_kind,source_id) DO NOTHING RETURNING id) SELECT account_id FROM fresh`,params);
- if(allowCards && ['battleship','football'].includes(game))for(const row of recorded.rows)await createMatchCard(db,row.account_id,game,matchId);
+ SELECT account_id,'match',jsonb_build_array(game,match_id)::text, CASE WHEN game='battleship' AND result->'win'='true'::jsonb THEN 'Amiral Battı · Galibiyet' WHEN game='battleship' THEN 'Amiral Battı · Maç' WHEN game='football' THEN 'Futbol Kariyer · Maç' WHEN game='late_answer' THEN 'Gecikmeli Cevap · Maç' ELSE 'Oyun · Maç' END,reward FROM awards WHERE reward>0 ON CONFLICT(account_id,source_kind,source_id) DO NOTHING RETURNING id) SELECT account_id,result FROM fresh`,params);
+ if(allowCards&&['battleship','football','late_answer'].includes(game))for(const row of recorded.rows){if(game!=='late_answer'||row.result.complete===true)await createMatchCard(db,row.account_id,game,matchId);}
  if(!transaction)await db.query('COMMIT');
  }catch(e){if(!transaction)await db.query('ROLLBACK').catch(()=>{});throw e;}finally{if(!transaction)db.release();}
 }
@@ -115,7 +115,7 @@ async function createMatchCard(db,accountId,game,matchId){
 function validMatchDeck(prizes){return Array.isArray(prizes)&&[3,4].includes(prizes.length)&&prizes.every(p=>typeof p==='string')&&prizes.slice().sort().join(',')===(prizes.length===4?'empty,kc15,kc5,spin':'kc15,kc5,spin');}
 function cardPrizeText(prize){return prize==='spin'?'1 ekstra çark hakkı':prize==='kc5'?'+5 KC':prize==='kc15'?'+15 KC':'Bu kart boş çıktı. Bir sonraki maçta bol şans!'}
 async function matchCardsAction(db,a,action,b){
- if(action==='match-cards'){const q=await db.query(`SELECT id,game,match_id AS "matchId",jsonb_array_length(prizes) AS "cardCount" FROM kekip_match_cards WHERE account_id=$1 AND chosen IS NULL ORDER BY (game=$3 AND match_id=$2) DESC NULLS LAST,created_at,id LIMIT 20`,[a.id,typeof b.matchId==='string'&&b.matchId.length<=100?b.matchId:null,b.game==='football'?'football':'battleship']);return {username:a.username,offers:q.rows,dailyCap:MATCH_CARD_DAILY_CAP,chancePercent:Pets.cardChance(await Pets.accountPet(db,a.id))};}
+ if(action==='match-cards'){const q=await db.query(`SELECT id,game,match_id AS "matchId",jsonb_array_length(prizes) AS "cardCount" FROM kekip_match_cards WHERE account_id=$1 AND chosen IS NULL ORDER BY (game=$3 AND match_id=$2) DESC NULLS LAST,created_at,id LIMIT 20`,[a.id,typeof b.matchId==='string'&&b.matchId.length<=100?b.matchId:null,['football','late_answer'].includes(b.game)?b.game:'battleship']);return {username:a.username,offers:q.rows,dailyCap:MATCH_CARD_DAILY_CAP,chancePercent:Pets.cardChance(await Pets.accountPet(db,a.id))};}
  if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
  if(typeof b.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(b.id)||!Number.isInteger(b.choice)||b.choice<0||b.choice>3)fail('Kart seçimi geçersiz.');
  const c=await db.connect();try{await c.query('BEGIN');
@@ -128,38 +128,48 @@ async function matchCardsAction(db,a,action,b){
  const balance=await coinBalance(c,a);await c.query('COMMIT');return {username:a.username,id:offer.id,choice,prizes:offer.prizes,prize,text:cardPrizeText(prize),amount,balance,fresh};
  }catch(e){await c.query('ROLLBACK').catch(()=>{});throw e}finally{c.release()}
 }
-async function profileStats(db,a){const rows=await db.query('SELECT result FROM kekip_game_results WHERE account_id=$1 AND game=$2',[a.id,'battleship']);const battle={games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0};for(const {result:r} of rows.rows){battle.games++;battle[r.win===true?'wins':'losses']++;battle.shots+=statNumber(r.shots);battle.hits+=statNumber(r.hits);battle.shipsSunk+=statNumber(r.shipsSunk)}const q=await db.query('SELECT code,data FROM kekip_football_rooms WHERE data @> $1::jsonb',[JSON.stringify({players:[{accountId:a.id}]})]);const football={careers:0,games:0,goals:0,assists:0};for(const row of q.rows){for(const p of row.data.players.filter(p=>p.accountId===a.id)){football.careers++;football.games+=statNumber(p.save?.games);football.goals+=statNumber(p.save?.goals);football.assists+=statNumber(p.save?.assists);}}const totals=await db.query(`SELECT (SELECT COALESCE(sum(xp),0) FROM kekip_mission_claims WHERE account_id=$1) AS mission_xp, (SELECT COALESCE(sum(amount),0) FROM kekip_admin_grants WHERE account_id=$1 AND kind='xp') AS admin_xp`,[a.id]);return withProgress(battle,football,statNumber(totals.rows[0]?.mission_xp),statNumber(totals.rows[0]?.admin_xp))}
+const lateStats=(games=0,wins=0,correct=0,forfeits=0)=>({games:statNumber(games),wins:statNumber(wins),correct:statNumber(correct),forfeits:statNumber(forfeits)});
+const LATE_TOTALS=`count(*) FILTER (WHERE result->'complete'='true'::jsonb) AS late_games,
+ count(*) FILTER (WHERE result->'win'='true'::jsonb) AS late_wins,
+ sum(CASE WHEN result->'complete'='true'::jsonb AND result->>'correct' ~ '^[0-9]{1,2}$' THEN (result->>'correct')::int ELSE 0 END) AS late_correct,
+ count(*) FILTER (WHERE result->'forfeited'='true'::jsonb) AS late_forfeits`;
+const readLateStats=row=>lateStats(row?.late_games,row?.late_wins,row?.late_correct,row?.late_forfeits);
+async function profileStats(db,a){const rows=await db.query('SELECT result FROM kekip_game_results WHERE account_id=$1 AND game=$2',[a.id,'battleship']);const battle={games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0};for(const {result:r} of rows.rows){battle.games++;battle[r.win===true?'wins':'losses']++;battle.shots+=statNumber(r.shots);battle.hits+=statNumber(r.hits);battle.shipsSunk+=statNumber(r.shipsSunk)}const q=await db.query('SELECT code,data FROM kekip_football_rooms WHERE data @> $1::jsonb',[JSON.stringify({players:[{accountId:a.id}]})]);const football={careers:0,games:0,goals:0,assists:0};for(const row of q.rows){for(const p of row.data.players.filter(p=>p.accountId===a.id)){football.careers++;football.games+=statNumber(p.save?.games);football.goals+=statNumber(p.save?.goals);football.assists+=statNumber(p.save?.assists);}}const totals=await db.query(`SELECT (SELECT COALESCE(sum(xp),0) FROM kekip_mission_claims WHERE account_id=$1) AS mission_xp, (SELECT COALESCE(sum(amount),0) FROM kekip_admin_grants WHERE account_id=$1 AND kind='xp') AS admin_xp,${LATE_TOTALS} FROM kekip_game_results WHERE account_id=$1 AND game='late_answer'`,[a.id]);return withProgress(battle,football,statNumber(totals.rows[0]?.mission_xp),statNumber(totals.rows[0]?.admin_xp),readLateStats(totals.rows[0]))}
 // Read-only member leaderboard. Numeric values are sanitized and no private account or career identifiers leave the server.
 function statNumber(v){const n=Number(v);return Number.isSafeInteger(n)&&n>=0?n:0;}
 // Platform XP is derived from persisted match/career aggregates, not a client-submitted XP value.
 // To integrate another game, add its verified persisted stats and contribution here.
-function accountProgress(battle,football,bonus=0,adminBonus=0){
+function accountProgress(battle,football,bonus=0,adminBonus=0,lateAnswer=lateStats()){
   const battleXp=statNumber(battle.games)*20+Math.min(statNumber(battle.wins),statNumber(battle.games))*10;
   const footballXp=statNumber(football.games)*20+statNumber(football.goals)*5+statNumber(football.assists)*5;
-  const missionXp=statNumber(bonus),adminXp=statNumber(adminBonus);const xp=Math.min(Number.MAX_SAFE_INTEGER,battleXp+footballXp+missionXp+adminXp);
+  const lateAnswerXp=lateAnswer.games*20+Math.min(lateAnswer.wins,lateAnswer.games)*10;
+  const missionXp=statNumber(bonus),adminXp=statNumber(adminBonus);const xp=Math.min(Number.MAX_SAFE_INTEGER,battleXp+footballXp+lateAnswerXp+missionXp+adminXp);
   // Level 1 starts at 0. Cost to advance: 100, 125, 150, ...
   const threshold=n=>100*n+25*n*(n-1)/2;
   let n=Math.max(0,Math.floor((Math.sqrt(87.5**2+50*xp)-87.5)/25));
   while(n>0&&threshold(n)>xp)n--;
   while(threshold(n+1)<=xp)n++;
   const level=n+1, levelXp=xp-threshold(n), nextLevelXp=100+25*n;
-  return {xp,level,levelXp,nextLevelXp,remainingXp:nextLevelXp-levelXp,percent:Math.floor(100*levelXp/nextLevelXp),battleXp,footballXp,missionXp,adminXp};
+  return {xp,level,levelXp,nextLevelXp,remainingXp:nextLevelXp-levelXp,percent:Math.floor(100*levelXp/nextLevelXp),battleXp,footballXp,lateAnswerXp,missionXp,adminXp};
 }
 // Central achievement registry. Add future games by extending verified stats and this registry.
 const ACHIEVEMENTS = [
-  {id:'first_match',name:'İlk Adım',icon:'🎮',group:'Genel',rarity:'normal',target:1,description:'İlk kayıtlı maçını tamamla.',value:s=>s.battle.games+s.football.games},
+  {id:'late_first',name:'İlk Gecikme',icon:'⏳',group:'Gecikmeli Cevap',rarity:'normal',target:1,description:'Gecikmeli Cevap’ta bir maç tamamla.',value:s=>s.lateAnswer.games},
+  {id:'late_wins',name:'Zaman Ustası',icon:'🏆',group:'Gecikmeli Cevap',rarity:'rare',target:5,description:'Gecikmeli Cevap’ta 5 maç kazan.',value:s=>s.lateAnswer.wins},
+  {id:'late_correct',name:'Güçlü Hafıza',icon:'🧠',group:'Gecikmeli Cevap',rarity:'epic',target:25,description:'Yarışmacıyken 25 doğru cevap ver.',value:s=>s.lateAnswer.correct},
+  {id:'first_match',name:'İlk Adım',icon:'🎮',group:'Genel',rarity:'normal',target:1,description:'İlk kayıtlı maçını tamamla.',value:s=>s.battle.games+s.football.games+s.lateAnswer.games},
   {id:'first_win',name:'Zaferin Tadı',icon:'🏆',group:'Amiral Battı',rarity:'normal',target:1,description:'Amiral Battı’da ilk galibiyetini kazan.',value:s=>s.battle.wins},
   {id:'naval_admiral',name:'Denizlerin Amirali',icon:'⚓',group:'Amiral Battı',rarity:'epic',target:25,description:'Amiral Battı’da 25 galibiyet kazan.',value:s=>s.battle.wins},
   {id:'sharpshooter',name:'Keskin Nişancı',icon:'🎯',group:'Amiral Battı',rarity:'rare',target:100,description:'Amiral Battı’da 100 isabetli atış yap.',value:s=>s.battle.hits},
   {id:'goal_machine',name:'Gol Makinesi',icon:'⚽',group:'Futbol Kariyer',rarity:'epic',target:50,description:'Futbol Kariyer’de 50 gol at.',value:s=>s.football.goals},
   {id:'playmaker',name:'Oyun Kurucu',icon:'👟',group:'Futbol Kariyer',rarity:'rare',target:25,description:'Futbol Kariyer’de 25 asist yap.',value:s=>s.football.assists},
-  {id:'game_fan',name:'Oyun Tutkunu',icon:'🔥',group:'Genel',rarity:'legendary',target:100,description:'Toplam 100 kayıtlı maç tamamla.',value:s=>s.battle.games+s.football.games},
+  {id:'game_fan',name:'Oyun Tutkunu',icon:'🔥',group:'Genel',rarity:'legendary',target:100,description:'Toplam 100 kayıtlı maç tamamla.',value:s=>s.battle.games+s.football.games+s.lateAnswer.games},
   {id:'kekip_legend',name:'KEKIP Efsanesi',icon:'💎',group:'Genel',rarity:'mythic',target:50,description:'KEKIP hesabında 50. seviyeye ulaş.',value:s=>s.progress.level},
-  {id:'ten_matches',name:'Sahaya Alıştın',icon:'🎮',group:'Genel',rarity:'normal',target:10,description:'Toplam 10 kayıtlı maç tamamla.',value:s=>s.battle.games+s.football.games},
+  {id:'ten_matches',name:'Sahaya Alıştın',icon:'🎮',group:'Genel',rarity:'normal',target:10,description:'Toplam 10 kayıtlı maç tamamla.',value:s=>s.battle.games+s.football.games+s.lateAnswer.games},
   {id:'level_five',name:'Yükselen Yıldız',icon:'🌟',group:'Genel',rarity:'normal',target:5,description:'KEKIP hesabında 5. seviyeye ulaş.',value:s=>s.progress.level},
   {id:'level_fifteen',name:'Seçkin Oyuncu',icon:'👑',group:'Genel',rarity:'epic',target:15,description:'KEKIP hesabında 15. seviyeye ulaş.',value:s=>s.progress.level},
   {id:'mission_xp_500',name:'Görev Avcısı',icon:'📋',group:'Genel',rarity:'rare',target:500,description:'Görevlerden toplam 500 XP kazan.',value:s=>s.progress.missionXp},
-  {id:'matches_250',name:'Durmak Yok',icon:'🚀',group:'Genel',rarity:'mythic',target:250,description:'Toplam 250 kayıtlı maç tamamla.',value:s=>s.battle.games+s.football.games},
+  {id:'matches_250',name:'Durmak Yok',icon:'🚀',group:'Genel',rarity:'mythic',target:250,description:'Toplam 250 kayıtlı maç tamamla.',value:s=>s.battle.games+s.football.games+s.lateAnswer.games},
   {id:'battle_wins_5',name:'Denizci',icon:'🛟',group:'Amiral Battı',rarity:'normal',target:5,description:'Amiral Battı’da 5 galibiyet kazan.',value:s=>s.battle.wins},
   {id:'battle_wins_10',name:'Filo Komutanı',icon:'🧭',group:'Amiral Battı',rarity:'rare',target:10,description:'Amiral Battı’da 10 galibiyet kazan.',value:s=>s.battle.wins},
   {id:'battle_wins_50',name:'Okyanusun Hâkimi',icon:'🌊',group:'Amiral Battı',rarity:'legendary',target:50,description:'Amiral Battı’da 50 galibiyet kazan.',value:s=>s.battle.wins},
@@ -186,7 +196,7 @@ const SPECIAL_TITLES=Object.freeze({
 function accountTitles(achievements){
  return achievements.flatMap(a=>{const base={id:a.id,name:a.name,rarity:a.rarity,group:a.group,description:a.description,current:a.current,target:a.target,unlocked:a.unlocked,special:false};const name=SPECIAL_TITLES[a.id];return name?[base,{...base,id:'earned_title_'+a.id,name,special:true}]:[base]});
 }
-function withProgress(battle,football,bonus=0,adminBonus=0){const stats={battle,football,progress:accountProgress(battle,football,bonus,adminBonus)};return {...stats,achievements:accountAchievements(stats)};}
+function withProgress(battle,football,bonus=0,adminBonus=0,lateAnswer=lateStats()){const stats={battle,football,lateAnswer,progress:accountProgress(battle,football,bonus,adminBonus,lateAnswer)};return {...stats,achievements:accountAchievements(stats)};}
 
 async function leaderboardStats(db, viewer){
   const q=await db.query(`WITH battle AS (
@@ -203,15 +213,16 @@ async function leaderboardStats(db, viewer){
       sum(CASE WHEN (p->'save'->>'assists') ~ '^[0-9]{1,9}$' THEN (p->'save'->>'assists')::bigint ELSE 0 END) AS assists
     FROM kekip_football_rooms r CROSS JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(r.data->'players')='array' THEN r.data->'players' ELSE '[]'::jsonb END) AS players(p)
     WHERE p->>'accountId' IS NOT NULL GROUP BY p->>'accountId'
-  ) SELECT a.username, b.games AS battle_games, b.wins, b.shots, b.hits, b.ships_sunk,
+  ), late AS (SELECT account_id,${LATE_TOTALS} FROM kekip_game_results WHERE game='late_answer' GROUP BY account_id)
+  SELECT a.username, l.late_games,l.late_wins,l.late_correct,l.late_forfeits,b.games AS battle_games, b.wins, b.shots, b.hits, b.ships_sunk,
     f.careers, f.games AS football_games, f.goals, f.assists, COALESCE(m.xp,0) AS mission_xp, COALESCE(g.xp,0) AS admin_xp
-    FROM kekip_football_accounts a LEFT JOIN battle b ON b.account_id=a.id LEFT JOIN football f ON f.account_id=a.id LEFT JOIN (SELECT account_id,sum(xp) AS xp FROM kekip_mission_claims GROUP BY account_id) m ON m.account_id=a.id LEFT JOIN (SELECT account_id,sum(amount) AS xp FROM kekip_admin_grants WHERE kind='xp' GROUP BY account_id) g ON g.account_id=a.id
+    FROM kekip_football_accounts a LEFT JOIN battle b ON b.account_id=a.id LEFT JOIN football f ON f.account_id=a.id LEFT JOIN late l ON l.account_id=a.id LEFT JOIN (SELECT account_id,sum(xp) AS xp FROM kekip_mission_claims GROUP BY account_id) m ON m.account_id=a.id LEFT JOIN (SELECT account_id,sum(amount) AS xp FROM kekip_admin_grants WHERE kind='xp' GROUP BY account_id) g ON g.account_id=a.id
     WHERE a.blocked_at IS NULL
     ORDER BY a.username`);
   return {viewer:viewer.username,players:q.rows.map(r=>{
     const games=statNumber(r.battle_games), wins=Math.min(games,statNumber(r.wins)), shots=statNumber(r.shots), hits=Math.min(shots,statNumber(r.hits));
     const battle={games,wins,losses:games-wins,shots,hits,shipsSunk:statNumber(r.ships_sunk)},football={careers:statNumber(r.careers),games:statNumber(r.football_games),goals:statNumber(r.goals),assists:statNumber(r.assists)};
-    return {username:r.username,...withProgress(battle,football,statNumber(r.mission_xp),statNumber(r.admin_xp))};
+    return {username:r.username,...withProgress(battle,football,statNumber(r.mission_xp),statNumber(r.admin_xp),readLateStats(r))};
   })};
 }
 // Periodic rankings use immutable server-side match records, not room update timestamps.
@@ -220,16 +231,17 @@ async function periodLeaderboard(db){
   local_bounds AS (SELECT 'week'::text AS period, date_trunc('week',t) AS start_local, date_trunc('week',t)+interval '1 week' AS end_local FROM local_clock
     UNION ALL SELECT 'month',date_trunc('month',t),date_trunc('month',t)+interval '1 month' FROM local_clock),
   bounds AS (SELECT period,start_local AT TIME ZONE 'Europe/Istanbul' AS starts_at,end_local AT TIME ZONE 'Europe/Istanbul' AS ends_at FROM local_bounds),
-  totals AS (SELECT b.period,r.account_id,r.game,count(*) AS games,
+  totals AS (SELECT b.period,r.account_id,r.game,count(*) FILTER (WHERE r.game<>'late_answer' OR r.result->'complete'='true'::jsonb) AS games,
     count(*) FILTER (WHERE r.result->'win'='true'::jsonb) AS wins,
     sum(CASE WHEN (r.result->>'shots') ~ '^[0-9]{1,9}$' THEN (r.result->>'shots')::bigint ELSE 0 END) AS shots,
     sum(CASE WHEN (r.result->>'hits') ~ '^[0-9]{1,9}$' THEN (r.result->>'hits')::bigint ELSE 0 END) AS hits,
     sum(CASE WHEN (r.result->>'shipsSunk') ~ '^[0-9]{1,9}$' THEN (r.result->>'shipsSunk')::bigint ELSE 0 END) AS ships_sunk,
     sum(CASE WHEN (r.result->>'goals') ~ '^[0-9]{1,9}$' THEN (r.result->>'goals')::bigint ELSE 0 END) AS goals,
     sum(CASE WHEN (r.result->>'assists') ~ '^[0-9]{1,9}$' THEN (r.result->>'assists')::bigint ELSE 0 END) AS assists
+    ,${LATE_TOTALS}
     FROM bounds b JOIN kekip_game_results r ON r.created_at>=b.starts_at AND r.created_at<b.ends_at AND r.created_at<=now()
-    WHERE r.game IN ('battleship','football') GROUP BY b.period,r.account_id,r.game), mission_totals AS (SELECT b.period,c.account_id,sum(c.xp) AS xp FROM bounds b JOIN kekip_mission_claims c ON c.claimed_at>=b.starts_at AND c.claimed_at<b.ends_at AND c.claimed_at<=now() GROUP BY b.period,c.account_id), entries AS (SELECT period,account_id,game,games,wins,shots,hits,ships_sunk,goals,assists,0::bigint AS mission_xp FROM totals UNION ALL SELECT period,account_id,'mission',0,0,0,0,0,0,0,xp FROM mission_totals)
-  SELECT b.period,b.starts_at,b.ends_at,a.username,t.game,t.games,t.wins,t.shots,t.hits,t.ships_sunk,t.goals,t.assists,t.mission_xp
+    WHERE r.game IN ('battleship','football','late_answer') GROUP BY b.period,r.account_id,r.game), mission_totals AS (SELECT b.period,c.account_id,sum(c.xp) AS xp FROM bounds b JOIN kekip_mission_claims c ON c.claimed_at>=b.starts_at AND c.claimed_at<b.ends_at AND c.claimed_at<=now() GROUP BY b.period,c.account_id), entries AS (SELECT period,account_id,game,games,wins,shots,hits,ships_sunk,goals,assists,late_games,late_wins,late_correct,late_forfeits,0::bigint AS mission_xp FROM totals UNION ALL SELECT period,account_id,'mission',0,0,0,0,0,0,0,0,0,0,0,xp FROM mission_totals)
+  SELECT b.period,b.starts_at,b.ends_at,a.username,t.game,t.games,t.wins,t.shots,t.hits,t.ships_sunk,t.goals,t.assists,t.late_games,t.late_wins,t.late_correct,t.late_forfeits,t.mission_xp
   FROM bounds b LEFT JOIN entries t ON t.period=b.period LEFT JOIN kekip_football_accounts a ON a.id=t.account_id AND a.blocked_at IS NULL
   ORDER BY b.period,a.username,t.game`);
   const periods={};
@@ -237,12 +249,12 @@ async function periodLeaderboard(db){
     const period=periods[r.period]||(periods[r.period]={start:r.starts_at,end:r.ends_at,players:[],byName:new Map()});
     if(!r.username)continue;
     let p=period.byName.get(r.username);
-    if(!p){p={username:r.username,battle:{games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0},football:{games:0,goals:0,assists:0,careers:0}};period.byName.set(r.username,p);period.players.push(p)}
+    if(!p){p={username:r.username,battle:{games:0,wins:0,losses:0,shots:0,hits:0,shipsSunk:0},football:{games:0,goals:0,assists:0,careers:0},lateAnswer:lateStats()};period.byName.set(r.username,p);period.players.push(p)}
     const games=statNumber(r.games);
     if(r.game==='battleship'){const wins=Math.min(games,statNumber(r.wins)),shots=statNumber(r.shots);p.battle={games,wins,losses:games-wins,shots,hits:Math.min(shots,statNumber(r.hits)),shipsSunk:statNumber(r.ships_sunk)}}
-    if(r.game==='football')Object.assign(p.football,{games,goals:statNumber(r.goals),assists:statNumber(r.assists)});if(r.game==='mission')p.missionXp=statNumber(r.mission_xp);
+    if(r.game==='football')Object.assign(p.football,{games,goals:statNumber(r.goals),assists:statNumber(r.assists)});if(r.game==='late_answer')p.lateAnswer=readLateStats(r);if(r.game==='mission')p.missionXp=statNumber(r.mission_xp);
   }
-  for(const p of Object.values(periods)){delete p.byName;for(const player of p.players){const x=accountProgress(player.battle,player.football,player.missionXp);player.periodXp=x.xp;}}
+  for(const p of Object.values(periods)){delete p.byName;for(const player of p.players){const x=accountProgress(player.battle,player.football,player.missionXp,0,player.lateAnswer);player.periodXp=x.xp;}}
   return periods;
 }
 // Administrator key is configured only in the hosting environment, never in client files.
@@ -402,7 +414,7 @@ async function visitPlayerProfile(db,viewer,username){
  const stats=await profileStats(db,{id:row.id});
  const earned=stats.achievements.filter(x=>x.unlocked),badge=x=>({id:x.id,name:x.name,icon:x.icon,rarity:x.rarity});
  const title=accountTitles(stats.achievements).find(x=>x.unlocked&&x.id===d.title),featured=Array.isArray(d.featured)?d.featured.slice(0,3).map(id=>earned.find(x=>x.id===id)).filter(Boolean).map(badge):[];
- return {...base,bio:typeof d.bio==='string'?d.bio.slice(0,160):'',cover:PROFILE_COVERS.includes(d.cover)?d.cover:'violet',title:title?title.name:'KEKIP Oyuncusu',titleRarity:title?title.rarity:null,featured,...(statsVisible?{achievementCount:earned.length,achievementTotal:stats.achievements.length,progress:{xp:stats.progress.xp,level:stats.progress.level,percent:stats.progress.percent},battle:{games:stats.battle.games,wins:stats.battle.wins,hits:stats.battle.hits,shots:stats.battle.shots},football:{games:stats.football.games,goals:stats.football.goals,assists:stats.football.assists}}:{})};
+ return {...base,bio:typeof d.bio==='string'?d.bio.slice(0,160):'',cover:PROFILE_COVERS.includes(d.cover)?d.cover:'violet',title:title?title.name:'KEKIP Oyuncusu',titleRarity:title?title.rarity:null,featured,...(statsVisible?{achievementCount:earned.length,achievementTotal:stats.achievements.length,progress:{xp:stats.progress.xp,level:stats.progress.level,percent:stats.progress.percent},battle:{games:stats.battle.games,wins:stats.battle.wins,hits:stats.battle.hits,shots:stats.battle.shots},football:{games:stats.football.games,goals:stats.football.goals,assists:stats.football.assists},lateAnswer:stats.lateAnswer}:{})};
 }
 async function savePlayerProfile(db,a,b){const data=cleanProfile(b,await profileStats(db,a));await db.query(`INSERT INTO kekip_player_profiles(account_id,data) VALUES($1,$2::jsonb) ON CONFLICT(account_id) DO UPDATE SET data=COALESCE(kekip_player_profiles.data,'{}'::jsonb)||EXCLUDED.data`,[a.id,JSON.stringify(data)]);return {username:a.username,profile:{...data,modularAvatar:await Wardrobe.readSaved(db,a.id),cosmetics:await equippedCosmetics(db,a.id)}};}
 
@@ -440,12 +452,13 @@ async function friendAction(db,a,action,b){
 // Friend-only presence and short-lived lobby invites. Never disclose room codes in presence.
 async function socialRoomOpen(db,game,code,sender,receiver,options){
  if(game==='battleship')return !!options.battleInviteOpen?.(code,sender,receiver);
+ if(game==='late_answer')return !!options.lateInviteOpen?.(code,sender,receiver);
  const q=await db.query('SELECT data FROM kekip_football_rooms WHERE code=$1',[code]);const r=q.rows[0]?.data;
  return !!(r?.stage==='lobby'&&Array.isArray(r.players)&&r.players.length<8&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));
 }
 async function socialAction(db,req,a,action,b,options){
  if(action==='social-pulse'){
-  if(!['home','battleship','football'].includes(b.activity))fail('Geçersiz durum.');
+  if(!['home','battleship','football','late_answer'].includes(b.activity))fail('Geçersiz durum.');
   await db.query(`INSERT INTO kekip_presence(token_hash,account_id,activity) SELECT token_hash,account_id,$3 FROM kekip_football_sessions WHERE token_hash=$1 AND account_id=$2 AND expires_at>now() ON CONFLICT(token_hash) DO UPDATE SET activity=EXCLUDED.activity,seen_at=now()`,[hash(sessionToken(req)),a.id,b.activity]);
   const f=await db.query(`SELECT u.username,CASE WHEN pp.data->'privacy'->>'presence'='hidden' THEN 'offline' ELSE coalesce(p.activity,'offline') END AS activity FROM kekip_friendships f JOIN kekip_football_accounts u ON u.id=CASE WHEN f.low_id=$1 THEN f.high_id ELSE f.low_id END LEFT JOIN kekip_player_profiles pp ON pp.account_id=u.id LEFT JOIN LATERAL (SELECT pr.activity FROM kekip_presence pr JOIN kekip_football_sessions s ON s.token_hash=pr.token_hash WHERE pr.account_id=u.id AND pr.seen_at>now()-interval '80 seconds' AND s.expires_at>now() ORDER BY (pr.activity<>'home') DESC,pr.seen_at DESC LIMIT 1) p ON true WHERE (f.low_id=$1 OR f.high_id=$1) AND f.status='accepted' AND u.blocked_at IS NULL ORDER BY u.username`,[a.id]);
   const i=await db.query(`SELECT i.id,u.username AS sender,i.game,i.expires_at FROM kekip_social_invites i JOIN kekip_football_accounts u ON u.id=i.sender_id JOIN kekip_friendships f ON f.low_id=LEAST(i.sender_id,i.receiver_id) AND f.high_id=GREATEST(i.sender_id,i.receiver_id) AND f.status='accepted' WHERE i.receiver_id=$1 AND i.status='pending' AND i.expires_at>now() AND u.blocked_at IS NULL ORDER BY i.created_at DESC LIMIT 30`,[a.id]);
@@ -453,7 +466,7 @@ async function socialAction(db,req,a,action,b,options){
  }
  if(action==='social-invite'){
   const game=b.game,code=typeof b.code==='string'?b.code.toUpperCase():'',username=b.username;
-  if(!['battleship','football'].includes(game)||!(game==='battleship'?/^[A-Z2-9]{5}$/:/^[A-F0-9]{10}$/).test(code)||typeof username!=='string'||!/^[a-z0-9_]{3,24}$/.test(username)||username===a.username)fail('Davet bilgileri geçersiz.');
+  if(!['battleship','football','late_answer'].includes(game)||!(game==='football'?/^[A-F0-9]{10}$/:/^[A-Z2-9]{5}$/).test(code)||typeof username!=='string'||!/^[a-z0-9_]{3,24}$/.test(username)||username===a.username)fail('Davet bilgileri geçersiz.');
   const f=await db.query(`SELECT u.id FROM kekip_football_accounts u JOIN kekip_friendships f ON f.low_id=LEAST(u.id,$1) AND f.high_id=GREATEST(u.id,$1) AND f.status='accepted' WHERE u.username=$2 AND u.blocked_at IS NULL`,[a.id,username]);
   const receiver=f.rows[0]?.id;if(!receiver)fail('Yalnızca arkadaşlarını davet edebilirsin.',403);
   if(!await socialRoomOpen(db,game,code,a.id,receiver,options))fail('Davet için hesabına bağlı, boş yeri olan açık bir lobi gerekli.',409);
@@ -465,7 +478,7 @@ async function socialAction(db,req,a,action,b,options){
   const q=await db.query(`SELECT i.* FROM kekip_social_invites i JOIN kekip_football_accounts u ON u.id=i.sender_id AND u.blocked_at IS NULL JOIN kekip_friendships f ON f.low_id=LEAST(i.sender_id,i.receiver_id) AND f.high_id=GREATEST(i.sender_id,i.receiver_id) AND f.status='accepted' WHERE i.id=$1 AND i.receiver_id=$2 AND i.status='pending' AND i.expires_at>now()`,[b.id,a.id]);const i=q.rows[0];if(!i)fail('Davet artık geçerli değil.',409);
   if(action==='social-accept'&&!await socialRoomOpen(db,i.game,i.room_code,i.sender_id,a.id,options))fail('Oda kapandı, doldu veya oyun başladı.',409);
   const u=await db.query(`UPDATE kekip_social_invites SET status=$3 WHERE id=$1 AND receiver_id=$2 AND status='pending' AND expires_at>now() RETURNING id`,[b.id,a.id,action==='social-accept'?'accepted':'declined']);if(!u.rows.length)fail('Davet artık geçerli değil.',409);
-  return action==='social-accept'?{url:i.game==='battleship'?'/?room='+i.room_code:'/football.html?footballRoom='+i.room_code}:{ok:true};
+  return action==='social-accept'?{url:i.game==='battleship'?'/?room='+i.room_code:i.game==='late_answer'?'/late-answer.html?room='+i.room_code:'/football.html?footballRoom='+i.room_code}:{ok:true};
  }
  fail('İşlem bulunamadı.',404);
 }
@@ -473,6 +486,7 @@ async function socialAction(db,req,a,action,b,options){
 
 // Central mission definitions. Progress comes exclusively from persisted game results.
 const MISSIONS=[
+ {id:'daily_late_answer',period:'day',name:'Bir Soru Geride',description:'Gecikmeli Cevap’ta 1 kayıtlı maç tamamla.',metric:'late_games',target:1,xp:20,icon:'⏳'},
  {id:'daily_play',period:'day',name:'Günün maçı',description:'Herhangi bir oyunda 1 kayıtlı maç tamamla.',metric:'games',target:1,xp:25,icon:'🎮'},
  {id:'daily_battle',period:'day',name:'Deniz görevi',description:'Amiral Battı’da 1 maç kazan.',metric:'wins',target:1,xp:20,icon:'⚓'},
  {id:'daily_football',period:'day',name:'Skora katkı',description:'Futbol Kariyer’de toplam 2 gol veya asist yap.',metric:'contributions',target:2,xp:20,icon:'⚽'},
@@ -488,9 +502,10 @@ async function missionList(db,a){
  UNION ALL SELECT 'week',date_trunc('week',t),date_trunc('week',t)+interval '1 week' FROM clock), bounds AS (
  SELECT period,to_char(start_local,'YYYY-MM-DD') AS period_start,start_local AT TIME ZONE 'Europe/Istanbul' AS starts_at,end_local AT TIME ZONE 'Europe/Istanbul' AS ends_at FROM local_bounds)
  SELECT b.period,b.period_start,b.ends_at,count(r.match_id) AS games,
+ count(*) FILTER (WHERE r.game='late_answer') AS late_games,
  count(*) FILTER (WHERE r.game='battleship' AND r.result->'win'='true'::jsonb) AS wins,
  COALESCE(sum(CASE WHEN r.game='football' THEN (CASE WHEN r.result->>'goals' ~ '^[0-9]{1,9}$' THEN (r.result->>'goals')::bigint ELSE 0 END)+(CASE WHEN r.result->>'assists' ~ '^[0-9]{1,9}$' THEN (r.result->>'assists')::bigint ELSE 0 END) ELSE 0 END),0) AS contributions
- FROM bounds b LEFT JOIN kekip_game_results r ON r.account_id=$1 AND r.created_at>=b.starts_at AND r.created_at<b.ends_at AND r.created_at<=now() AND r.game IN ('battleship','football') GROUP BY b.period,b.period_start,b.ends_at`,[a.id]);
+ FROM bounds b LEFT JOIN kekip_game_results r ON r.account_id=$1 AND r.created_at>=b.starts_at AND r.created_at<b.ends_at AND r.created_at<=now() AND r.game IN ('battleship','football','late_answer') AND (r.game<>'late_answer' OR r.result->'complete'='true'::jsonb) GROUP BY b.period,b.period_start,b.ends_at`,[a.id]);
  const c=await db.query(`SELECT mission_id,to_char(period_start,'YYYY-MM-DD') AS period_start FROM kekip_mission_claims WHERE account_id=$1 AND period_start=ANY($2::date[])`,[a.id,q.rows.map(r=>r.period_start)]);
  return {username:a.username,missions:MISSIONS.map(d=>missionProgress(d,q.rows.find(r=>r.period===d.period),c.rows))};
 }

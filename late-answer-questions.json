@@ -1,0 +1,962 @@
+[
+  {
+    "category": "Matematik",
+    "question": "İki kere iki kaç eder?",
+    "answers": [
+      "4",
+      "dört"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Beş ile üçün toplamı kaçtır?",
+    "answers": [
+      "8",
+      "sekiz"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "On ikiden beş çıkarsa kaç kalır?",
+    "answers": [
+      "7",
+      "yedi"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Altı kere üç kaç eder?",
+    "answers": [
+      "18",
+      "on sekiz"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Yirminin yarısı kaçtır?",
+    "answers": [
+      "10",
+      "on"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Bir üçgenin kaç kenarı vardır?",
+    "answers": [
+      "3",
+      "üç"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Bir karenin kaç köşesi vardır?",
+    "answers": [
+      "4",
+      "dört"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Bir düzine kaç tanedir?",
+    "answers": [
+      "12",
+      "on iki"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Yüzün dörtte biri kaçtır?",
+    "answers": [
+      "25",
+      "yirmi beş"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Yedi kere yedi kaç eder?",
+    "answers": [
+      "49",
+      "kırk dokuz"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "On beşin bir fazlası kaçtır?",
+    "answers": [
+      "16",
+      "on altı"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Sıfıra dokuz eklenirse kaç olur?",
+    "answers": [
+      "9",
+      "dokuz"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Bir altıgenin kaç kenarı vardır?",
+    "answers": [
+      "6",
+      "altı"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Bir çift ayakkabı kaç ayakkabıdır?",
+    "answers": [
+      "2",
+      "iki"
+    ]
+  },
+  {
+    "category": "Matematik",
+    "question": "Otuzun üçte biri kaçtır?",
+    "answers": [
+      "10",
+      "on"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Bir saat kaç dakikadır?",
+    "answers": [
+      "60",
+      "altmış"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Bir dakika kaç saniyedir?",
+    "answers": [
+      "60",
+      "altmış"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Bir hafta kaç gündür?",
+    "answers": [
+      "7",
+      "yedi"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Bir yılda kaç ay vardır?",
+    "answers": [
+      "12",
+      "on iki"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Ocaktan sonra hangi ay gelir?",
+    "answers": [
+      "Şubat",
+      "Subat"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Yılın son ayı hangisidir?",
+    "answers": [
+      "Aralık",
+      "Aralik"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Cuma gününden sonra hangi gün gelir?",
+    "answers": [
+      "Cumartesi",
+      "cumartesi günü"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Pazartesiden önce hangi gün gelir?",
+    "answers": [
+      "Pazar",
+      "pazar günü"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Bir gün kaç saattir?",
+    "answers": [
+      "24",
+      "yirmi dört"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Bir metre kaç santimetredir?",
+    "answers": [
+      "100",
+      "yüz"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Bir kilogram kaç gramdır?",
+    "answers": [
+      "1000",
+      "bin"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Artık yıl olmayan bir yılda Şubat kaç gündür?",
+    "answers": [
+      "28",
+      "yirmi sekiz"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "İlkbahardan sonra hangi mevsim gelir?",
+    "answers": [
+      "Yaz",
+      "yaz mevsimi"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Ağustostan önce hangi ay gelir?",
+    "answers": [
+      "Temmuz",
+      "temmuz ayı"
+    ]
+  },
+  {
+    "category": "Zaman ve Ölçü",
+    "question": "Bir yüzyıl kaç yıldır?",
+    "answers": [
+      "100",
+      "yüz"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Bal yapan böcek hangisidir?",
+    "answers": [
+      "Arı",
+      "bal arısı"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Kurbağanın larvasına ne denir?",
+    "answers": [
+      "İribaş",
+      "iribas"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Yaprakların çoğuna yeşil rengi veren madde nedir?",
+    "answers": [
+      "Klorofil",
+      "klorofıl"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Kutup ayıları doğal olarak hangi kutup bölgesinde yaşar?",
+    "answers": [
+      "Kuzey Kutbu",
+      "Arktik"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Bir örümceğin kaç bacağı vardır?",
+    "answers": [
+      "8",
+      "sekiz"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Bir kelebeğin kaç kanadı vardır?",
+    "answers": [
+      "4",
+      "dört"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Zeytin hangi bitkinin meyvesidir?",
+    "answers": [
+      "Zeytin ağacı",
+      "zeytin"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Kaplumbağanın sırtındaki sert yapı nedir?",
+    "answers": [
+      "Kabuk",
+      "kaplumbağa kabuğu"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Meşe ağacının meyvesine ne denir?",
+    "answers": [
+      "Palamut",
+      "meşe palamudu"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "İpek böceği yetiştiriciliğinde en yaygın kullanılan yaprak hangisidir?",
+    "answers": [
+      "Dut yaprağı",
+      "dut"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "İnsanlar solunumda hangi gazı kullanır?",
+    "answers": [
+      "Oksijen",
+      "O2"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Suyun katı hâlinin adı nedir?",
+    "answers": [
+      "Buz",
+      "donmuş su"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Eşek yavrusunun adı nedir?",
+    "answers": [
+      "Sıpa",
+      "sipa"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Koyun yavrusunun adı nedir?",
+    "answers": [
+      "Kuzu",
+      "koyun yavrusu"
+    ]
+  },
+  {
+    "category": "Doğa",
+    "question": "Bir arının kaç bacağı vardır?",
+    "answers": [
+      "6",
+      "altı"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Türkiye’nin başkenti neresidir?",
+    "answers": [
+      "Ankara",
+      "ankara ili"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Fransa’nın başkenti neresidir?",
+    "answers": [
+      "Paris",
+      "paris şehri"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "İtalya’nın başkenti neresidir?",
+    "answers": [
+      "Roma",
+      "Rome"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Japonya’nın başkenti neresidir?",
+    "answers": [
+      "Tokyo",
+      "Tōkyō"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "İspanya’nın başkenti neresidir?",
+    "answers": [
+      "Madrid",
+      "madrid şehri"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Yunanistan’ın başkenti neresidir?",
+    "answers": [
+      "Atina",
+      "Athens"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Almanya’nın başkenti neresidir?",
+    "answers": [
+      "Berlin",
+      "berlin şehri"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Avrupa ve Asya’yı İstanbul’da ayıran boğaz hangisidir?",
+    "answers": [
+      "İstanbul Boğazı",
+      "Boğaziçi"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Mısır’daki ünlü piramitlerin bulunduğu bölge hangisidir?",
+    "answers": [
+      "Gize",
+      "Giza"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Yüzölçümü en büyük okyanus hangisidir?",
+    "answers": [
+      "Pasifik Okyanusu",
+      "Büyük Okyanus"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Eyfel Kulesi hangi şehirdedir?",
+    "answers": [
+      "Paris",
+      "paris fransa"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Sahra Çölü hangi kıtadadır?",
+    "answers": [
+      "Afrika",
+      "afrika kıtası"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Brezilya hangi kıtadadır?",
+    "answers": [
+      "Güney Amerika",
+      "Guney Amerika"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Türkiye’nin batısındaki deniz hangisidir?",
+    "answers": [
+      "Ege Denizi",
+      "Ege"
+    ]
+  },
+  {
+    "category": "Coğrafya",
+    "question": "Kız Kulesi hangi şehirdedir?",
+    "answers": [
+      "İstanbul",
+      "Istanbul"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Saç kesmek için hangi iki ağızlı alet kullanılır?",
+    "answers": [
+      "Makas",
+      "saç makası"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Kışın boyna sarılan giysinin adı nedir?",
+    "answers": [
+      "Atkı",
+      "atki"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Kapıyı kilitlemek için genellikle ne kullanılır?",
+    "answers": [
+      "Anahtar",
+      "kapı anahtarı"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Kâğıda yazılan kurşun kalem izini ne siler?",
+    "answers": [
+      "Silgi",
+      "lastik silgi"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Yağmurda başımızı korumak için açtığımız araç nedir?",
+    "answers": [
+      "Şemsiye",
+      "semsiye"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Müzik dinlemek için kulağa takılan cihaz nedir?",
+    "answers": [
+      "Kulaklık",
+      "kulaklik"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Mıknatısın çektiği yaygın metal nedir?",
+    "answers": [
+      "Demir",
+      "Fe"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Resimlerde beyazla siyahı karıştırınca hangi renk oluşur?",
+    "answers": [
+      "Gri",
+      "gri renk"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Trafik ışığında durmayı bildiren renk nedir?",
+    "answers": [
+      "Kırmızı",
+      "kirmizi"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Satrançta oyuna hangi renk başlar?",
+    "answers": [
+      "Beyaz",
+      "beyaz taşlar"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Dişleri temizlemek için diş macunu hangi alete sürülür?",
+    "answers": [
+      "Diş fırçası",
+      "dis fircasi"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Vücut sıcaklığı hangi aletle ölçülür?",
+    "answers": [
+      "Termometre",
+      "derece"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Duvara çivi çakmak için hangi alet kullanılır?",
+    "answers": [
+      "Çekiç",
+      "cekic"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Su kaynatmak için kullanılan elektrikli mutfak aleti nedir?",
+    "answers": [
+      "Su ısıtıcısı",
+      "kettle"
+    ]
+  },
+  {
+    "category": "Günlük Hayat",
+    "question": "Aracın arkasını görmek için kullanılan iç aynanın adı nedir?",
+    "answers": [
+      "Dikiz aynası",
+      "iç dikiz aynası"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Patlamış mısırın ana malzemesi nedir?",
+    "answers": [
+      "Mısır",
+      "mısır tanesi"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Yoğurdun ana malzemesi nedir?",
+    "answers": [
+      "Süt",
+      "inek sütü"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Humusun ana bakliyatı nedir?",
+    "answers": [
+      "Nohut",
+      "haşlanmış nohut"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Guacamole’nin ana meyvesi nedir?",
+    "answers": [
+      "Avokado",
+      "avocado"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Limonata hangi meyveden yapılır?",
+    "answers": [
+      "Limon",
+      "limon suyu"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Kuru üzüm hangi taze meyveden elde edilir?",
+    "answers": [
+      "Üzüm",
+      "taze üzüm"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "İncir kurusu hangi meyveden yapılır?",
+    "answers": [
+      "İncir",
+      "taze incir"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Pilavın en yaygın tahılı hangisidir?",
+    "answers": [
+      "Pirinç",
+      "pirinc"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Balın tadı genellikle nasıldır?",
+    "answers": [
+      "Tatlı",
+      "tatli"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Tahin hangi tohumdan yapılır?",
+    "answers": [
+      "Susam",
+      "susam tohumu"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Ayranın temel süt ürünü nedir?",
+    "answers": [
+      "Yoğurt",
+      "yogurt"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Zeytinyağı hangi meyveden elde edilir?",
+    "answers": [
+      "Zeytin",
+      "zeytin meyvesi"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Havuç denince en yaygın renk hangisidir?",
+    "answers": [
+      "Turuncu",
+      "portakal rengi"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Beyaz peynir hangi sıvıdan yapılır?",
+    "answers": [
+      "Süt",
+      "sut"
+    ]
+  },
+  {
+    "category": "Yiyecekler",
+    "question": "Turşu yapımında sirkenin tadı nasıldır?",
+    "answers": [
+      "Ekşi",
+      "eksi"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Futbolda normal sürede bir devre kaç dakikadır?",
+    "answers": [
+      "45",
+      "kırk beş"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Basketbolda serbest atış kaç puandır?",
+    "answers": [
+      "1",
+      "bir"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Voleybol sahasında bir takım aynı anda kaç oyuncuyla oynar?",
+    "answers": [
+      "6",
+      "altı"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Satrançta her oyuncu oyuna kaç şah ile başlar?",
+    "answers": [
+      "1",
+      "bir"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Satrançta L şeklinde hareket eden taş hangisidir?",
+    "answers": [
+      "At",
+      "satranç atı"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Satrançta köşelerde başlayan taş hangisidir?",
+    "answers": [
+      "Kale",
+      "satranç kalesi"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Bir satranç tahtası kaç karedir?",
+    "answers": [
+      "64",
+      "altmış dört"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Teniste sıfır puan İngilizce nasıl söylenir?",
+    "answers": [
+      "Love",
+      "lov"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Masa tenisinde topa hangi araçla vurulur?",
+    "answers": [
+      "Raket",
+      "masa tenisi raketi"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Yüzme müsabakaları genellikle nerede yapılır?",
+    "answers": [
+      "Havuz",
+      "yüzme havuzu"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Olimpiyat simgesinde kaç halka vardır?",
+    "answers": [
+      "5",
+      "beş"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Klasik zarın kaç yüzü vardır?",
+    "answers": [
+      "6",
+      "altı"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Futbolda kaleyi koruyan oyuncunun adı nedir?",
+    "answers": [
+      "Kaleci",
+      "kale bekçisi"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "İp atlamada hangi nesne kullanılır?",
+    "answers": [
+      "İp",
+      "atlama ipi"
+    ]
+  },
+  {
+    "category": "Spor ve Oyun",
+    "question": "Futbolda oyundan ihraç için hangi kart gösterilir?",
+    "answers": [
+      "Kırmızı kart",
+      "kırmızı"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Dünya’nın doğal uydusu nedir?",
+    "answers": [
+      "Ay",
+      "Dünya'nın ayı"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Güneş Sistemi’nin merkezindeki yıldız nedir?",
+    "answers": [
+      "Güneş",
+      "gunes"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Kızıl Gezegen hangisidir?",
+    "answers": [
+      "Mars",
+      "Merih"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Güneş’e en yakın gezegen hangisidir?",
+    "answers": [
+      "Merkür",
+      "Mercury"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Suyun kimyasal formülü nedir?",
+    "answers": [
+      "H2O",
+      "H₂O"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Güneş Sistemi’ndeki en büyük gezegen hangisidir?",
+    "answers": [
+      "Jüpiter",
+      "Jupiter"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Gözlemlerde gök cisimlerine bakmak için kullanılan araç nedir?",
+    "answers": [
+      "Teleskop",
+      "gök dürbünü"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Çok küçük nesneleri büyütmek için hangi laboratuvar aleti kullanılır?",
+    "answers": [
+      "Mikroskop",
+      "mikroskop cihazı"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Türk alfabesinin ilk harfi nedir?",
+    "answers": [
+      "A",
+      "a harfi"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Türk alfabesinin son harfi nedir?",
+    "answers": [
+      "Z",
+      "z harfi"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Kitapları ödünç alabildiğimiz kurum nedir?",
+    "answers": [
+      "Kütüphane",
+      "kutuphane"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Piyanoda beyaz tuşlarla birlikte hangi renk tuşlar bulunur?",
+    "answers": [
+      "Siyah",
+      "kara"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Gökkuşağının geleneksel olarak kaç rengi vardır?",
+    "answers": [
+      "7",
+      "yedi"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "Kanı vücuda pompalayan organ hangisidir?",
+    "answers": [
+      "Kalp",
+      "yürek"
+    ]
+  },
+  {
+    "category": "Bilim ve Kültür",
+    "question": "İşitme duyusunun organı hangisidir?",
+    "answers": [
+      "Kulak",
+      "kulaklar"
+    ]
+  }
+]

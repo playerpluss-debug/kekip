@@ -81,7 +81,7 @@ function paint(){const s=snapshot||{},events=Array.isArray(s.events)?s.events:[]
  const group=(label,rows,empty)=>{content.append(el('div',label,'kn-label'));if(rows.length)content.append(...rows);else content.append(el('div',empty,'kn-empty'));};
  if(category==='all'||category==='social'){const rows=[];
  if(requests)rows.push(row('users',requests+' arkadaşlık isteği',(s.requestNames||[]).map(x=>'@'+x).join(', '),link('Aç','/friends.html'),true));
- if(invites.length)rows.push(row('game',invites.length+' oyun daveti',invites.slice(0,5).map(i=>'@'+i.sender+' · '+(i.game==='football'?'Futbol Kariyer':'Amiral Battı')).join(' • '),button('Aç',openInvites),true));
+ if(invites.length)rows.push(row('game',invites.length+' oyun daveti',invites.slice(0,5).map(i=>'@'+i.sender+' · '+(i.game==='football'?'Futbol Kariyer':i.game==='late_answer'?'Gecikmeli Cevap':'Amiral Battı')).join(' • '),button('Aç',openInvites),true));
  group('SOSYAL',rows,known.social?'Bekleyen arkadaşlık isteği veya oyun daveti yok.':'Sosyal bildirimler henüz alınamadı.');}
  if(category==='all'||category==='messages'){const rows=[];
  if(num(direct))rows.push(row('message',direct+' okunmamış özel mesaj','Arkadaşlarınla özel sohbet',link('Mesajlar','/messages.html'),true));

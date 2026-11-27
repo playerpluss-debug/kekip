@@ -66,6 +66,7 @@ app.use(async (req,res,next)=>{
  pathname=path.posix.normalize(pathname).toLowerCase();
  if(pathname!=='/'&&!pathname.endsWith('.html')&&!pathname.endsWith('/'))return next();
  if(pathname==='/admin.html')return next(); // Admin endpoints retain their separate administrator-key checks.
+ if(pathname==='/late-answer.html')res.set('Permissions-Policy','microphone=(self), camera=()');
  const welcome=pathname==='/welcome.html';
  const worker=['/avatar-portrait-gece.html','/avatar-portrait-golge.html'].includes(pathname);
  res.set('Cache-Control','no-store');
@@ -179,21 +180,23 @@ function adminBattleSnapshot(){
 }
 // 0.51.12.5: invalidating a session also closes its existing game connections.
 // Match the exact revoked session, not every device of the same account.
+const lateAnswer = require('./late-answer').attachLateAnswer(io, accounts);
 function disconnectSession(token){
  if(!token)return;
+ lateAnswer.disconnectSession(token);
  for(const sock of [...io.sockets.sockets.values()]){
   if(accounts.sessionToken({get:k=>sock.request.headers[k.toLowerCase()]})===token)sock.disconnect(true);
  }
 }
 require('./favorites').attachFavorites(app);
-accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
+accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,lateInviteOpen:lateAnswer.inviteOpen,disconnectAccount:(id)=>{lateAnswer.disconnectAccount(id);for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
 require('./football-online').attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 const rooms = new Map();
 const REJOIN_GRACE_MS = 90000;
 const connectedPlayer = p => !!p && !p.disconnectedUntil && !!io.sockets.sockets.get(p.id)?.connected;
-require("./chat").attachChat(app,{battleRoom:(code,id)=>{const r=rooms.get(code);return r?.players.some(p=>p.accountId===id&&connectedPlayer(p))?r.chatId:null;}});
+require("./chat").attachChat(app,{lateRoom:lateAnswer.chatRoom,battleRoom:(code,id)=>{const r=rooms.get(code);return r?.players.some(p=>p.accountId===id&&connectedPlayer(p))?r.chatId:null;}});
 const SHIPS = [5, 4, 3, 3, 2];
 const makeCode = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
