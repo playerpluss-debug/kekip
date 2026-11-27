@@ -101,7 +101,7 @@ async function recordGameResults(game,matchId,rows,transaction=null,allowCards=f
 }
 async function recordBattle(matchId,players,winner){return recordGameResults('battleship',matchId,players.filter(p=>p.accountId).map(p=>({accountId:p.accountId,result:{win:p.id===winner,shots:p.shots.length,hits:p.shots.filter(s=>s.hit).length,shipsSunk:players.find(q=>q.id!==p.id)?.sunk.length||0}})),null,players.length===2&&players.every(p=>p.accountId)&&players[0].accountId!==players[1].accountId)}
 // 0.51.17.2: only fresh, eligible server-recorded game results can create card offers.
-const MATCH_CARD_DAILY_CAP=3;
+const MATCH_CARD_DAILY_CAP=20;
 const MATCH_CARD_CHANCE_PERCENT=20;
 function shuffledMatchPrizes(){const prizes=['kc5','kc15','spin','empty'];for(let i=prizes.length-1;i>0;i--){const j=crypto.randomInt(i+1);[prizes[i],prizes[j]]=[prizes[j],prizes[i]]}return prizes}
 async function createMatchCard(db,accountId,game,matchId){
