@@ -615,8 +615,8 @@ async function wardrobeWrite(db,a,work){
  const c=await db.connect();try{await c.query('BEGIN');const lock=await c.query('SELECT id FROM kekip_football_accounts WHERE id=$1 AND blocked_at IS NULL FOR UPDATE',[a.id]);if(!lock.rows.length)fail('Hesap erişimi kapalı.',403);const result=await work(c);await c.query('COMMIT');return result;}catch(e){await c.query('ROLLBACK').catch(()=>{});throw e;}finally{c.release();}
 }
 
-// 0.51.18.5.2 — real purchases remain disabled until equip and shop integration are complete.
-const chestAction=MysteryChest.createService({collections:ChestCollections,coinBalance,write:wardrobeWrite,enabled:false});
+// 0.51.18.6 — explicit deployment flag; disabled by default until live smoke test.
+const chestAction=MysteryChest.createService({collections:ChestCollections,coinBalance,write:wardrobeWrite,enabled:process.env.KEKIP_CHESTS_ENABLED==='true'});
 
 // 0.51.5.1 — private, persistent friend-to-friend messages.
 function dmPublic(row){return {id:String(row.id),sender:row.sender,receiver:row.receiver,text:row.body,createdAt:row.created_at,readAt:row.read_at||null};}
