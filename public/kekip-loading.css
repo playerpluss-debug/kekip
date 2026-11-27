@@ -1,0 +1,18 @@
+/* KEKIP startup indicator — no fake progress and no forced minimum display time. */
+#kpStartupLoader{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:24px;overflow:hidden;pointer-events:none;isolation:isolate;background:radial-gradient(ellipse at 50% 44%,#35205d 0,#1a112d 43%,#100b1d 78%);color:#f6efff;font:15px system-ui,sans-serif}
+#kpStartupLoader::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#b499f009 1px,transparent 1px),linear-gradient(#b499f009 1px,transparent 1px);background-size:40px 40px;mask-image:radial-gradient(ellipse at center,#000,transparent 70%)}
+#kpStartupLoader .kp-load-core{display:grid;justify-items:center;text-align:center;gap:18px;width:min(100%,360px)}
+#kpStartupLoader .kp-load-orbit{width:110px;height:110px;display:grid;place-items:center;position:relative}
+#kpStartupLoader .kp-load-orbit::before,#kpStartupLoader .kp-load-orbit::after{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid #9876d650;pointer-events:none}
+#kpStartupLoader .kp-load-orbit::after{inset:5px;border:2px solid transparent;border-top-color:#dbbfff;border-right-color:#8e60e8;animation:kp-load-orbit 1.6s linear infinite}
+#kpStartupLoader .kp-load-mark{display:grid;place-items:center;width:64px;height:64px;border:1px solid #e5d1ff;border-radius:19px;background:linear-gradient(145deg,#ddc5ff,#8b58e6);color:#211336;box-shadow:0 0 32px #b58aff55;font-size:37px;font-weight:950;line-height:1}
+#kpStartupLoader .kp-load-word{font-size:clamp(21px,6vw,32px);font-weight:950;letter-spacing:.075em;line-height:1.15}
+#kpStartupLoader .kp-load-word em{color:#c5a4ff;font-style:normal}
+#kpStartupLoader .kp-load-caption{font-size:12px;font-weight:650;color:#cbb8e9;letter-spacing:.06em}
+#kpStartupLoader .kp-load-track{height:3px;width:min(180px,75%);border-radius:4px;overflow:hidden;background:#bda0ff30}
+#kpStartupLoader .kp-load-track::after{content:"";display:block;width:40%;height:100%;border-radius:4px;background:linear-gradient(90deg,transparent,#d9bbff);animation:kp-load-sweep 1.2s ease-in-out infinite alternate}
+@keyframes kp-load-orbit{to{transform:rotate(360deg)}}
+@keyframes kp-load-sweep{from{transform:translateX(-25%)}to{transform:translateX(180%)}}
+@media(max-height:340px){#kpStartupLoader .kp-load-core{gap:8px}#kpStartupLoader .kp-load-orbit{width:70px;height:70px}#kpStartupLoader .kp-load-mark{width:44px;height:44px;font-size:24px;border-radius:12px}}
+@media(prefers-reduced-motion:reduce){#kpStartupLoader *,#kpStartupLoader *::before,#kpStartupLoader *::after{animation:none!important}}
+html[data-kp-effects="off"] #kpStartupLoader *,html[data-kp-effects="off"] #kpStartupLoader *::before,html[data-kp-effects="off"] #kpStartupLoader *::after{animation:none!important}
