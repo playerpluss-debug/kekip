@@ -30,7 +30,9 @@
  };
  join.onsubmit=event=>{event.preventDefault();run(()=>emit('join',{code:$('arenaCode').value.trim().toUpperCase()}));};
  const serverNow=()=>Date.now()+offset;
- const reflex=$('arenaReflex'),sound=$('arenaSound');
+ const reflex=$('arenaReflex'),sound=$('arenaSound'),gameSelect=$('arenaGame');
+ const colors=$('arenaColors'),colorButtons=[...colors.querySelectorAll('button')];
+ const gameNames={reflex:'Refleks Testi',color:'Renk Farkı'};
  function unlockSound(){
   if(!soundOn)return;
   const Context=window.AudioContext||window.webkitAudioContext;
@@ -53,6 +55,16 @@
   gain.gain.exponentialRampToValueAtTime(.001,start+length);osc.connect(gain);gain.connect(audio.destination);
   osc.start(start);osc.stop(start+length);
  }
+ function paintColors(palette,{disabled,choice,answer}){
+  colors.hidden=!palette;
+  if(!palette)return;
+  colorButtons.forEach((button,index)=>{
+   button.style.setProperty('--arena-color',palette[index]);
+   button.disabled=disabled;
+   button.classList.toggle('selected',choice===index);
+   button.classList.toggle('correct',answer===index);
+  });
+ }
  function renderStage(t){
   if(!current)return;
   if(current.phase==='final'){
@@ -62,17 +74,31 @@
   const {challenge,phase,number,settings}=current;
   const title=$('arenaRoundTitle'),prompt=$('arenaPrompt'),clock=$('arenaClock');
   const update=(element,value)=>{if(element.textContent!==value)element.textContent=value;};
-  reflex.hidden=!challenge;
+  reflex.hidden=!challenge||settings.game==='color';
+  if(settings.game!=='color')colors.hidden=true;
   if(!challenge){
    clock.textContent=current.deadline?Math.max(0,Math.ceil((current.deadline-t)/1000))+' sn':'';
    update(title,'Tur '+number+' sonuçları');
-   update(prompt,'En hızlı geçerli tepki 100 puan alır.');
+   if(settings.game==='color'){
+    const own=current.players.find(player=>player.username===current.you)?.reaction;
+    const answer=current.colorAnswer;
+    paintColors(answer?.colors,{disabled:true,choice:own?.choice,answer:answer?.odd});
+    const result=own?.kind==='hit'?'Doğru cevap · '+own.points+' puan':own?.kind==='wrong'?'Yanlış cevap · 0 puan':'Cevap verilmedi · 0 puan';
+    update(prompt,result+(answer?' · Farklı renk '+(answer.odd+1)+'. dairedeydi.':''));
+   }else update(prompt,'En hızlı geçerli tepki 100 puan alır.');
    return;
   }
   const lit=challenge.phase==='lit';
   const expired=challenge.endsAt!==null&&t>=challenge.endsAt;
   const ready=challenge.phase!=='prepare';
-  update(title,'Refleks Testi · '+number+'/'+settings.rounds);
+  update(title,gameNames[settings.game]+' · '+number+'/'+settings.rounds);
+  if(settings.game==='color'){
+   const palette=challenge.colors;
+   clock.textContent=(lit?Math.max(0,Math.ceil((challenge.endsAt-t)/1000)):Math.max(0,Math.ceil((challenge.startsAt-t)/1000)))+' sn';
+   paintColors(palette,{disabled:!lit||expired||Boolean(press)||sending||!socket.connected,choice:press?.choice});
+   update(prompt,press?'Seçimin kaydedildi.':expired?'Süre doldu.':ready?'Diğer ikisinden farklı olan daireyi seç.':'Tur başlıyor.');
+   return;
+  }
   clock.textContent=!ready?Math.max(0,Math.ceil((challenge.startsAt-t)/1000))+' sn':'';
   reflex.dataset.state=press?(press.kind==='hit'?'hit':'early'):lit&&!expired?'lit':'waiting';
   reflex.disabled=!ready||Boolean(press)||sending||expired||!socket.connected;
@@ -90,20 +116,22 @@
    cueKey=key;tone(660,.15);tone(880,.20,.075);
   }
  }
- reflex.onclick=async()=>{
-  if(reflex.disabled||!current?.challenge)return;
+ async function submit(choice){
+  if(sending||press||!current?.challenge)return;
   const {code,number}=current;
   const sameRound=()=>current?.code===code&&current.number===number;
   sending=true;renderStage(serverNow());
   try{
-   const result=await emit('action',{round:number});
+   const result=await emit('action',{round:number,choice});
    if(sameRound()){
     press=result.press;
-    tone(press.kind==='hit'?520:170,.15);
+    tone(press.kind==='early'?170:520,.15);
    }
   }catch(error){if(sameRound())status(error.message);}
   finally{if(sameRound()){sending=false;renderStage(serverNow());}}
- };
+ }
+ reflex.onclick=()=>{if(!reflex.disabled)submit();};
+ colorButtons.forEach((button,index)=>{button.onclick=()=>{if(!button.disabled)submit(index);};});
  function showResults(result){
   if(!result)return;
   results.hidden=false;
@@ -119,7 +147,7 @@
    row.dataset.rank=String(player.rank);
    const rank=node('span',player.rank+'.');rank.className='arena-result-rank';
    const copy=node('div',''),name=node('strong','@'+player.username);
-   const detail=node('small',player.hits+' tepki · '+player.early+' erken · '+player.missed+' kaçan'+
+   const detail=node('small',(result.game==='color'?player.hits+' doğru · '+player.wrong+' yanlış':player.hits+' tepki · '+player.early+' erken')+' · '+player.missed+' kaçan'+
      (player.fastest===null?'':' · En iyi '+player.fastest+' ms'));
    copy.append(name,detail);
    const score=node('strong',player.total+' puan');score.className='arena-result-score';
@@ -157,7 +185,7 @@
   offset=data.serverTime-Date.now();
   current=data;room.dataset.code=data.code;room.dataset.phase=data.phase;room.hidden=false;$('arenaEntry').hidden=true;
   stage.hidden=data.phase==='lobby'||data.phase==='final';$('arenaRoomTitle').textContent='Arena lobisi · '+data.code;
-  $('arenaRoomInfo').textContent=data.players.length+'/8 oyuncu · Refleks Testi';
+  $('arenaRoomInfo').textContent=data.players.length+'/8 oyuncu · '+gameNames[data.settings.game];
   const players=[...data.players].sort((a,b)=>b.total-a.total||a.username.localeCompare(b.username));
   const displayKey=JSON.stringify([data.phase==='summary',players]);
   if(displayKey!==rosterKey){
@@ -180,7 +208,7 @@
     }
     card.name.textContent='@'+player.username+(player.online?'':' · Çevrimdışı');
     const last=player.reaction;
-    const reaction=last?.kind==='hit'?last.ms+' ms':last?.kind==='early'?'Erken tıklama':'Süre doldu';
+    const reaction=last?.kind==='hit'?last.ms+' ms':last?.kind==='early'?'Erken tıklama':last?.kind==='wrong'?'Yanlış cevap':'Süre doldu';
     card.score.textContent=(data.phase==='summary'&&last?reaction+' · +'+player.last+' · ':'')+player.total+' puan';
     if(list.children[index]!==card.item)list.insertBefore(card.item,list.children[index]||null);
    });
@@ -189,6 +217,8 @@
    window.KEKIPPortraits?.refresh?.();
   }
   const start=$('arenaStart');
+  $('arenaGameLabel').hidden=data.phase!=='lobby'||data.host!==data.you;
+  gameSelect.value=data.settings.game;
   start.hidden=data.phase!=='lobby'||data.host!==data.you;
   start.disabled=data.players.length<2||players.some(player=>!player.online);
   $('arenaInvite').hidden=data.party||data.phase!=='lobby';
@@ -223,6 +253,11 @@
  });
  socket.on('connect_error',error=>{entry(false);status(error.message);});
  socket.on('disconnect',()=>{entry(false);status('Bağlantı kesildi. Yeniden bağlanılıyor…');});
+ gameSelect.onchange=()=>run(async()=>{
+  gameSelect.disabled=true;
+  try{await emit('game',{game:gameSelect.value});}
+  finally{gameSelect.disabled=false;}
+ });
  $('arenaStart').onclick=()=>run(()=>emit('start'));
  $('arenaLeave').onclick=()=>run(async()=>{
   await emit('leave');hideResults();renderedResult=null;cardQueue.clear();current=null;press=null;sending=false;cueKey='';room.hidden=true;room.dataset.code='';$('arenaEntry').hidden=false;create.querySelector('button').focus();

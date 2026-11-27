@@ -1,7 +1,7 @@
 'use strict';
 
 const {randomInt,randomUUID}=require('node:crypto');
-const {openRound,advanceRound,visibleRound,registerPress,settleRound,responseWindow}=require('./arena-games');
+const {openRound,advanceRound,visibleRound,registerPress,settleRound,gameModes}=require('./arena-games');
 const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const codePattern=/^[A-Z2-9]{5}$/;
 const roomLimit=150;
@@ -11,7 +11,7 @@ const resultsMs=9000;
 function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=randomInt,schedule=setInterval}={}){
  const namespace=io.of('/arena'),rooms=new Map(),membership=new Map(),pending=new Map();
  const fail=(ack,error)=>ack({ok:false,error});
- const member=(account,socket)=>({id:account.id,username:account.username,socketId:socket?.id||null,until:socket?null:now()+reconnectMs,total:0,last:0,reaction:null,played:0,fastest:null,early:0,missed:0});
+ const member=(account,socket)=>({id:account.id,username:account.username,socketId:socket?.id||null,until:socket?null:now()+reconnectMs,total:0,last:0,reaction:null,played:0,fastest:null,early:0,wrong:0,missed:0});
  function makeRoom(players,settings,party=false){
   if(rooms.size>=roomLimit)throw Error('Şu anda yeni lobi açılamıyor.');
   let code;
@@ -27,11 +27,11 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   return {
    code:room.code,phase:room.phase,settings:room.settings,party:room.party,number:room.number,deadline:room.deadline,
    serverTime:t,
-   results:result?{id:result.id,standings:result.standings,cancelled:result.cancelled}:null,
+   results:result?{id:result.id,game:result.game,standings:result.standings,cancelled:result.cancelled}:null,
    cardMatchId:result?.cards.has(player.id)?result.id:null,
    host:room.players.find(p=>p.id===room.host)?.username,you:player.username,
    players:room.players.map(p=>({username:p.username,online:!!p.socketId,total:p.total,last:p.last,reaction:p.reaction})),
-   challenge
+   challenge,colorAnswer:room.phase==='summary'&&room.round.game==='color'?{colors:room.round.colors,odd:room.round.odd}:null
   };
  }
  function publish(room,t=now()){
@@ -46,7 +46,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   publish(room);
  }
  function nextRound(room,t){
-  room.round=openRound(t,random);
+  room.round=openRound(t,random,room.settings.game);
   room.number++;
   room.phase='round';
   room.deadline=0;
@@ -57,15 +57,15 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   const sorted=[...room.players].sort((a,b)=>b.total-a.total||a.username.localeCompare(b.username));
   const standings=sorted.map(player=>({
    username:player.username,rank:sorted.findIndex(other=>other.total===player.total)+1,total:player.total,
-   hits:player.played,fastest:player.fastest,early:player.early,missed:player.missed
+   hits:player.played,fastest:player.fastest,early:player.early,wrong:player.wrong,missed:player.missed
   }));
-  const result={id:room.matchId,standings,cards:new Set(),cancelled};
+  const result={id:room.matchId,game:room.settings.game,standings,cards:new Set(),cancelled};
   room.lastResult=result;
   const eligible=room.players.filter(player=>player.played>=4);
   if(!cancelled&&eligible.length>=2){
    const uniqueWinner=standings.filter(player=>player.rank===1).length===1?sorted[0]:null;
    const rows=eligible.map(player=>({accountId:player.id,result:{
-    complete:true,win:uniqueWinner===player,score:player.total,rounds:player.played
+    complete:true,win:uniqueWinner===player,score:player.total,rounds:player.played,mode:room.settings.game
    }}));
    pending.set(result.id,{room,result,rows,nextAttempt:t,expires:t+300_000,busy:false});
   }
@@ -73,7 +73,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
  }
  function returnToLobby(room,t){
   room.phase='lobby';room.deadline=0;room.number=0;room.round=null;room.matchId=null;
-  for(const player of room.players)Object.assign(player,{total:0,last:0,reaction:null,played:0,fastest:null,early:0,missed:0});
+  for(const player of room.players)Object.assign(player,{total:0,last:0,reaction:null,played:0,fastest:null,early:0,wrong:0,missed:0});
   publish(room,t);
  }
  function saveRewards(t){
@@ -102,7 +102,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
    if(room.phase==='round'){
     if(advanceRound(room.round,t))publish(room,t);
     const litAt=room.round.litAt;
-    if(litAt!==null&&(t>=litAt+responseWindow||
+    if(litAt!==null&&(t>=litAt+room.round.responseWindow||
       (t>=litAt+200&&room.players.every(player=>room.round.presses.has(player.id))))){
      const results=settleRound(room.round,room.players.map(player=>player.id));
      for(const player of room.players){
@@ -114,6 +114,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
        player.played++;
        player.fastest=player.fastest===null?result.ms:Math.min(player.fastest,result.ms);
       }else if(result.kind==='early')player.early++;
+      else if(result.kind==='wrong')player.wrong++;
       else player.missed++;
      }
      room.phase='summary';room.deadline=t+3500;publish(room,t);
@@ -161,7 +162,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   });
   bind('create',(data,ack,existing)=>{
    if(existing)return fail(ack,'Önce mevcut lobiden ayrıl.');
-   const settings={visibility:data.visibility==='public'?'public':'private',rounds:6};
+   const settings={visibility:data.visibility==='public'?'public':'private',rounds:6,game:'reflex'};
    const room=makeRoom([member(account,socket)],settings);
    ack({ok:true});publish(room);
   });
@@ -173,6 +174,12 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
    room.players.push(member(account,socket));membership.set(account.id,room);
    ack({ok:true});publish(room);
   });
+  bind('game',(data,ack,room,player)=>{
+   if(!player||player.socketId!==socket.id||room.host!==player.id||room.phase!=='lobby')
+    return fail(ack,'Oyunu yalnızca oda sahibi lobide değiştirebilir.');
+   if(!gameModes.includes(data.game))return fail(ack,'Geçersiz mini oyun.');
+   room.settings.game=data.game;ack({ok:true});publish(room);
+  });
   bind('start',(_data,ack,room,player,t)=>{
    if(!player||player.socketId!==socket.id||room.host!==player.id||room.phase!=='lobby')return fail(ack,'Maçı oda sahibi başlatabilir.');
    if(room.players.length<2||room.players.some(p=>!p.socketId))return fail(ack,'En az iki oyuncu çevrimiçi olmalı.');
@@ -182,7 +189,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   bind('action',(data,ack,room,player,t)=>{
    if(!player||player.socketId!==socket.id||room.phase!=='round'||data.round!==room.number)
     return fail(ack,'Bu tur artık geçerli değil.');
-   const press=registerPress(room.round,player.id,t);
+   const press=registerPress(room.round,player.id,t,data.choice);
    if(!press)return fail(ack,'Bu turda yeni bir tıklama yapılamaz.');
    ack({ok:true,press});
   });
@@ -214,7 +221,7 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   },
   reserveParty(members){
    if(members.length<2||members.length>8||members.some(p=>membership.has(p.id)))throw Error('Parti üyeleri mevcut Arena lobilerinden ayrılmalı.');
-   const room=makeRoom(members.map(account=>member(account,null)),{visibility:'private',rounds:6},true);
+   const room=makeRoom(members.map(account=>member(account,null)),{visibility:'private',rounds:6,game:'reflex'},true);
    return '/arena.html?partyRoom='+room.code;
   },
   disconnectAccount,

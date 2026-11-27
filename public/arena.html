@@ -6,12 +6,12 @@
  <title>KEKIP Arena | KEKIP Games</title>
  <link rel="stylesheet" href="/kekip-navigation.css?v=05122">
  <link rel="stylesheet" href="/game-lobbies.css?v=3">
- <link rel="stylesheet" href="/arena.css?v=results1">
+ <link rel="stylesheet" href="/arena.css?v=color1">
  <script src="/socket.io/socket.io.js" defer></script>
  <script src="/late-answer-voice.js?v=lobbies" defer></script>
  <script src="/lobby-voice-client.js?v=arena1" defer></script>
  <script src="/avatar-portraits.js?v=wings-natural2" defer></script>
- <script src="/arena-client.js?v=results1" defer></script>
+ <script src="/arena-client.js?v=color1" defer></script>
  <script src="/match-cards.js?v=arena2" defer></script>
  <link rel="stylesheet" href="/lobby-voice.css?v=1">
 </head>
@@ -22,7 +22,7 @@
   <nav aria-label="Sayfa bağlantıları"><a href="/#kpOpenRooms" data-kp-header-link>Açık odalar</a> <a href="/party.html" data-kp-header-link>Parti</a></nav>
  </header>
  <section class="kp-lobby-hero arena-hero">
-  <div class="kp-lobby-copy"><p class="kp-lobby-meta">2–8 oyuncu · 6 tur</p><h1>KEKIP Arena</h1><p>Düğme parladığında tıkla ve en hızlı tepkiyi ver.</p></div>
+  <div class="kp-lobby-copy"><p class="kp-lobby-meta">2–8 oyuncu · 6 tur</p><h1>KEKIP Arena</h1><p>Refleks Testi’nde hızlı tıkla, Renk Farkı’nda benzer tonları ayırt et.</p></div>
   
  </section>
  <p id="arenaStatus" role="status">Oyun sunucusuna bağlanılıyor…</p>
@@ -42,6 +42,12 @@
   <div class="arena-panel">
    <div class="arena-row"><h2 id="arenaRoomTitle" tabindex="-1">Arena lobisi</h2><button id="arenaLeave" type="button">Lobiden ayrıl</button></div>
    <div class="arena-row"><p id="arenaRoomInfo"></p><button id="arenaInvite" type="button">Davet bağlantısını kopyala</button></div>
+   <label id="arenaGameLabel" hidden>Mini oyun
+    <select id="arenaGame">
+     <option value="reflex">Refleks Testi</option>
+     <option value="color">Renk Farkı</option>
+    </select>
+   </label>
    <ul id="arenaPlayers" class="arena-players" aria-label="Oyuncular ve puanlar"></ul>
    <button id="arenaStart" type="button" class="arena-primary" hidden>Maçı başlat</button>
    <button id="arenaLastResults" type="button" aria-expanded="false" aria-controls="arenaResults" hidden>Son maç sonuçları</button>
@@ -62,6 +68,11 @@
   <section id="arenaStage" class="arena-panel" aria-labelledby="arenaRoundTitle" hidden>
    <div class="arena-row"><h2 id="arenaRoundTitle"></h2><span id="arenaClock" aria-hidden="true"></span></div>
    <p id="arenaPrompt" aria-live="polite"></p>
+   <div id="arenaColors" role="group" aria-label="Farklı renkteki daireyi seç" hidden>
+    <button type="button" aria-label="1. daire" data-color-choice="0"></button>
+    <button type="button" aria-label="2. daire" data-color-choice="1"></button>
+    <button type="button" aria-label="3. daire" data-color-choice="2"></button>
+   </div>
    <button id="arenaReflex" class="arena-reflex" type="button" hidden>Bekle</button>
   </section>
  </section>

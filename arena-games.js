@@ -1,15 +1,31 @@
 'use strict';
 
 const responseWindow=2000;
-
-function openRound(now,random){
+const colorWindow=4000;
+const gameModes=['reflex','color'];
+const nearColors=[
+ [8,69,54,4,0], [43,79,53,0,3], [91,52,45,5,0],
+ [150,50,46,0,3], [181,57,46,5,0], [216,67,56,0,3],
+ [258,57,57,5,0], [296,51,55,0,3], [330,62,54,5,0]
+];
+const hsl=(h,s,l)=>'hsl('+h+' '+s+'% '+l+'%)';
+function openRound(now,random,game='reflex'){
  const startsAt=now+2000;
- return {startsAt,flashAt:startsAt+500+random(4401),litAt:null,phase:'prepare',presses:new Map()};
+ const round={game,startsAt,flashAt:null,litAt:null,phase:'prepare',presses:new Map(),
+  responseWindow:game==='color'?colorWindow:responseWindow};
+ if(game==='color'){
+  const [h,s,l,dh,dl]=nearColors[random(nearColors.length)],direction=random(2)?1:-1;
+  const base=hsl(h,s,l),odd=hsl(h+dh*direction,s,l+dl*direction);
+  round.odd=random(3);
+  round.colors=Array.from({length:3},(_,index)=>index===round.odd?odd:base);
+ }else round.flashAt=startsAt+500+random(4401);
+ return round;
 }
 
 function advanceRound(round,now){
  if(round.phase==='prepare'&&now>=round.startsAt){
-  round.phase='waiting';
+  round.phase=round.game==='color'?'lit':'waiting';
+  if(round.game==='color')round.litAt=now;
   return true;
  }
  if(round.phase==='waiting'&&now>=round.flashAt){
@@ -20,19 +36,27 @@ function advanceRound(round,now){
  return false;
 }
 
+function visiblePress(round,press){
+ if(!press)return null;
+ return round.game==='color'?{kind:'answer',choice:press.choice}:press;
+}
 function visibleRound(round,player){
- return {phase:round.phase,startsAt:round.startsAt,endsAt:round.litAt===null?null:round.litAt+responseWindow,
-  press:round.presses.get(player)||null};
+ return {game:round.game,phase:round.phase,startsAt:round.startsAt,
+  endsAt:round.litAt===null?null:round.litAt+round.responseWindow,
+  press:visiblePress(round,round.presses.get(player)),
+  ...(round.game==='color'&&round.phase==='lit'?{colors:round.colors}:{})};
 }
 
-function registerPress(round,player,now){
+function registerPress(round,player,now,choice){
  if(round.phase==='prepare'||round.presses.has(player))return null;
- if(round.litAt!==null&&now>=round.litAt+responseWindow)return null;
- const press=round.litAt===null?{kind:'early'}:{kind:'hit',ms:Math.max(0,now-round.litAt)};
+ if(round.litAt!==null&&now>=round.litAt+round.responseWindow)return null;
+ if(round.game==='color'&&(!Number.isInteger(choice)||choice<0||choice>2))return null;
+ const ms=round.litAt===null?null:Math.max(0,now-round.litAt);
+ const press=round.game==='color'?{kind:choice===round.odd?'hit':'wrong',ms,choice}:
+  ms===null?{kind:'early'}:{kind:'hit',ms};
  round.presses.set(player,press);
- return press;
+ return visiblePress(round,press);
 }
-
 function settleRound(round,players){
  const ranked=players.map(id=>round.presses.get(id)).filter(press=>press?.kind==='hit').map(press=>press.ms).sort((a,b)=>a-b);
  return new Map(players.map(id=>{
@@ -41,5 +65,4 @@ function settleRound(round,players){
   return [id,{...press,points:press.kind==='hit'?100-12*ranked.indexOf(press.ms):0}];
  }));
 }
-
-module.exports={openRound,advanceRound,visibleRound,registerPress,settleRound,responseWindow};
+module.exports={gameModes,openRound,advanceRound,visibleRound,registerPress,settleRound,responseWindow};
