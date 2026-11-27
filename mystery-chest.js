@@ -1,5 +1,5 @@
 'use strict';
-// 0.51.18.2.1 – Server-side, virtual KC-only chest foundation.
+// 0.51.18.5.2 – Server-side KC-only chest ownership and receipts.
 // Activation is intentionally disabled in accounts.js until the approved assets/UI exist.
 const crypto=require('node:crypto');
 const PRICE=100;
@@ -50,7 +50,12 @@ async function ensureSchema(db){
  await db.query(`ALTER TABLE kekip_chest_openings ALTER COLUMN item_id DROP NOT NULL`);
 }
 async function inventory(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);return q.rows.map(r=>r.item_id);}
-function createService({collections,coinBalance,write,enabled=false}){
+function ownedRewards(collections,owned,character=null){
+ if(character!==null)validateCharacter(character);
+ const ids=new Set(owned);
+ return (character===null?CHARACTERS:[character]).flatMap(k=>eligibleItems(collections,k).filter(i=>ids.has(i.id)).map(publicItem));
+}
+function createService({collections,coinBalance,write,enabled=false,randomInt=crypto.randomInt}){
  function describe(character,owned){
   const items=eligibleItems(collections,character),grouped=groups(items,owned);
   // At first launch every tier must be represented in the full approved collection.
@@ -63,6 +68,14 @@ function createService({collections,coinBalance,write,enabled=false}){
   if(kind==='chest-status'){
    const owned=await inventory(db,a);
    return {username:a.username,price:PRICE,enabled:enabled===true,balance:await coinBalance(db,a),chests:CHARACTERS.map(k=>describe(k,owned))};
+  }
+  if(kind==='chest-inventory'){
+   if(b.character!==undefined)validateCharacter(b.character);
+   return {username:a.username,items:ownedRewards(collections,await inventory(db,a),b.character??null)};
+  }
+  if(kind==='chest-history'){
+   const q=await db.query('SELECT request_id,character,price,reward,created_at FROM kekip_chest_openings WHERE account_id=$1 ORDER BY created_at DESC,request_id DESC LIMIT 50',[a.id]);
+   return {username:a.username,history:q.rows.map(p=>({requestId:p.request_id,character:p.character,price:p.price,reward:p.reward,createdAt:p.created_at}))};
   }
   if(kind!=='chest-open')fail('İşlem bulunamadı.',404);
   validateCharacter(b.character);
@@ -78,7 +91,7 @@ function createService({collections,coinBalance,write,enabled=false}){
    if(!state.ready)fail('Sandık koleksiyonu henüz hazır değil.',409);
    if(!state.remaining)fail('Bu koleksiyondaki tüm ürünlere sahipsin.',409);
    if(await coinBalance(c,a)<PRICE)fail('Yeterli KC yok.',409);
-   const result=draw(groups(eligibleItems(collections,b.character),owned)),item=result.item;
+   const result=draw(groups(eligibleItems(collections,b.character),owned),randomInt),item=result.item;
    const reward=item?{...publicItem(item),type:'cosmetic'}:{type:'refund',character:b.character,rarity:result.rarity,rarityLabel:result.rarityLabel,refundKC:result.refundKC};
    if(item)await c.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) VALUES($1,$2)',[a.id,item.id]);
    await c.query("INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'mystery_chest',$2,$3,$4)",[a.id,b.requestId,'Gizemli Sandık · '+(b.character==='gece'?'Gece':'Gölge'),-PRICE]);
@@ -88,4 +101,4 @@ function createService({collections,coinBalance,write,enabled=false}){
   });
  };
 }
-module.exports={PRICE,TIERS,eligibleItems,groups,effectiveOdds,draw,ensureSchema,createService};
+module.exports={PRICE,TIERS,eligibleItems,groups,effectiveOdds,draw,ensureSchema,ownedRewards,createService};
