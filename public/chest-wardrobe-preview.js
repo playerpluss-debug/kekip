@@ -1,14 +1,22 @@
-/* 0.51.18.5.3 — owned chest items and exclusive Mythic set controls. */
+/* 0.51.19.5 — chest wardrobe dialog, independent of the fixed-height editor. */
 (()=>{
  'use strict';
  const character=document.currentScript?.dataset.character;
  if(!['gece','golge'].includes(character))return;
  const q=new URLSearchParams(location.search);
  if(q.has('profile')||q.has('item')||q.has('preview'))return;
- const main=document.querySelector('main');if(!main||document.querySelector('#chest-mythic-sets'))return;
+ const main=document.querySelector('main'),header=main?.querySelector('header');if(!header||document.querySelector('#chest-mythic-sets'))return;
  const make=(tag,txt)=>{const e=document.createElement(tag);if(txt)e.textContent=txt;return e;};
  const css=make('style');css.textContent=`
- #chest-mythic-sets{margin-top:18px;border:1px solid #59416e;border-radius:16px;background:#20172e;padding:16px;color:#f5eaff;box-sizing:border-box}
+ #chest-mythic-sets{margin:auto;width:min(720px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;border:1px solid #59416e;border-radius:16px;background:#20172e;padding:16px;color:#f5eaff;box-sizing:border-box}
+ #chest-mythic-sets::backdrop{background:rgba(10,6,18,.76)}
+ #chest-mythic-sets .kp-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+ #chest-mythic-sets button,#kp-chest-wardrobe-open{border:1px solid #8c6bb5;border-radius:9px;background:#38284f;color:#fff;padding:8px 12px;font:inherit;font-size:13px;cursor:pointer;white-space:normal}
+ #chest-mythic-sets button:disabled{opacity:.45;cursor:not-allowed}
+ #kp-chest-wardrobe-open{flex:none;white-space:nowrap;font-weight:700}
+ #chest-mythic-sets .kp-chest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;margin:12px 0}
+ #chest-mythic-sets .kp-chest-grid img{width:100%;height:140px;aspect-ratio:auto;object-fit:contain}
+ #chest-mythic-sets .kp-chest-grid button{width:100%;margin-top:5px}
  #chest-mythic-sets h2{margin:0 0 6px;font-size:18px}#chest-mythic-sets p{margin:5px 0;color:#cdbbdf;font-size:13px;line-height:1.5}
  #chest-mythic-sets .kp-set-card{display:grid;grid-template-columns:minmax(95px,135px) minmax(0,1fr);gap:14px;align-items:center;border:1px solid #76445e;border-radius:12px;background:#291a34;padding:12px;margin:12px 0;min-width:0}
  #chest-mythic-sets img{display:block;width:100%;height:auto;aspect-ratio:480/660;object-fit:contain;background:#18111e;border-radius:8px}
@@ -16,7 +24,7 @@
  #chest-mythic-sets a{display:inline-block;color:#e3c8ff;text-decoration:underline;padding:6px 0}#chest-mythic-sets small{display:block;color:#d7c5e6;font-size:12px;margin:5px 0}
  @media(max-width:420px){#chest-mythic-sets{padding:12px}#chest-mythic-sets .kp-set-card{grid-template-columns:90px minmax(0,1fr);gap:10px;padding:10px}}
  `;document.head.append(css);
- const section=make('section');section.id='chest-mythic-sets';section.setAttribute('aria-labelledby','chest-mythic-title');
+ const section=make('dialog');section.id='chest-mythic-sets';section.setAttribute('aria-labelledby','chest-mythic-title');
  const title=make('h2','Mitik Setler');title.id='chest-mythic-title';
  const desc=make('p','Sandığa özel komple setler. Parçalar ayrı ayrı giyilmez veya başka kıyafetlerle kombinlenmez.');
  const card=make('div');card.className='kp-set-card';
@@ -28,9 +36,14 @@
  name.textContent=names[character][0];image.alt=name.textContent+' önizlemesi';image.src='/images/chest-collections/'+character+'/'+names[character][1]+'/preview.webp';
  text.append(name,tag,state,note,equip,remove,feedback);card.append(image,text);const inventoryTitle=make('h2','Sandıktan kazanılan kozmetikler');
  const inventoryState=make('p','Envanter kontrol ediliyor…');inventoryState.setAttribute('role','status');
- const inventoryList=make('div');inventoryList.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:10px;margin:12px 0';
- section.append(title,desc,card,link,inventoryTitle,inventoryState,inventoryList);main.append(section);
- function showInventory(items){inventoryList.replaceChildren();const owned=items.filter(i=>i.character===character&&!i.completeSet);inventoryState.textContent=owned.length?owned.length+' / 9 kozmetik kazanıldı · Seç ve kombinini kaydet.':'Henüz kazanılmış tekil sandık kozmetiği yok.';for(const item of owned){const tile=make('div');tile.style.cssText='border:1px solid #59416e;border-radius:10px;padding:8px;background:#291a34;min-width:0';const img=make('img');img.alt=item.name;img.loading='lazy';img.src=item.thumbnail;const label=make('strong',item.name);label.style.fontSize='13px';const rarity=make('small',item.rarityLabel);const pick=make('button','Kombine ekle');pick.type='button';pick.disabled=active&&!q.has('normal');pick.onclick=async()=>{try{if(!window.KPChestWardrobe)throw Error('Gardırop henüz hazır değil.');await window.KPChestWardrobe.selectItem(item);feedback.textContent=item.name+' seçildi. Normal kombini kaydet.';}catch(e){feedback.textContent=e.message;}};tile.append(img,label,rarity,pick);inventoryList.append(tile);}}
+ const inventoryList=make('div');inventoryList.className='kp-chest-grid';
+ const open=make('button','Sandık ödülleri');open.id='kp-chest-wardrobe-open';open.type='button';open.setAttribute('aria-haspopup','dialog');open.setAttribute('aria-controls',section.id);
+ const close=make('button','Kapat');close.type='button';const head=make('div');head.className='kp-dialog-head';head.append(title,close);
+ const inventoryFeedback=make('p');inventoryFeedback.setAttribute('role','status');
+ section.append(head,desc,card,link,inventoryTitle,inventoryState,inventoryList,inventoryFeedback);document.body.append(section);
+ (header.querySelector('.header-actions')||header).append(open);
+ open.onclick=()=>{if(!section.open){section.showModal();close.focus();}};close.onclick=()=>section.close();section.addEventListener('close',()=>open.focus());
+ function showInventory(items){inventoryList.replaceChildren();const owned=items.filter(i=>i.character===character&&!i.completeSet);inventoryState.textContent=owned.length?owned.length+' / 9 kozmetik kazanıldı · Seç ve kombinini kaydet.':'Henüz kazanılmış tekil sandık kozmetiği yok.';for(const item of owned){const tile=make('div');tile.style.cssText='border:1px solid #59416e;border-radius:10px;padding:8px;background:#291a34;min-width:0';const img=make('img');img.alt=item.name;img.loading='lazy';img.src=item.thumbnail;const label=make('strong',item.name);label.style.fontSize='13px';const rarity=make('small',item.rarityLabel);const pick=make('button','Kombine ekle');pick.type='button';pick.disabled=active&&!q.has('normal');pick.onclick=async()=>{try{if(!window.KPChestWardrobe)throw Error('Gardırop henüz hazır değil.');await window.KPChestWardrobe.selectItem(item);inventoryFeedback.textContent=item.name+' seçildi. Normal kombini kaydet.';section.close();}catch(e){inventoryFeedback.textContent=e.message;}};tile.append(img,label,rarity,pick);inventoryList.append(tile);}}
  function clearInventory(message){inventoryList.replaceChildren();inventoryState.textContent=message;}
 
  async function api(action,body={}){const r=await fetch('/api/account/'+action,{method:'POST',credentials:'same-origin',cache:'no-store',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw Error(j.error||'Hesap bilgisi alınamadı.');return j;}
