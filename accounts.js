@@ -245,13 +245,14 @@ async function periodLeaderboard(db){
   return periods;
 }
 // Administrator key is configured only in the hosting environment, never in client files.
-function requireAdmin(req,b){const expected=process.env.KEKIP_ADMIN_KEY||'';if(expected.length<32)fail('Yönetici anahtarı sunucuda henüz ayarlanmadı.',503);const supplied=typeof b.adminKey==='string'?b.adminKey:'';if(supplied.length>256||!crypto.timingSafeEqual(Buffer.from(hash(supplied),'hex'),Buffer.from(hash(expected),'hex'))){throttle(req,'admin-access');fail('Yönetici anahtarı geçersiz.',403)}}
-async function inviteAction(db,req,action,b){requireAdmin(req,b);if(action==='invite-list'){const q=await db.query('SELECT id,username,created_at,expires_at,used_at,revoked_at FROM kekip_registration_invites ORDER BY created_at DESC LIMIT 200');return {invites:q.rows};}if(action==='invite-create'){const name=typeof b.username==='string'?b.username.trim().toLowerCase():'';if(!/^[a-z0-9_]{3,24}$/.test(name))fail('Kullanıcı adı 3–24 harf/rakam/alt çizgi olmalı.');const existing=await db.query('SELECT id FROM kekip_football_accounts WHERE username=$1',[name]);if(existing.rows.length)fail('Bu kullanıcı zaten kayıtlı.',409);const code=token(),id=crypto.randomBytes(12).toString('hex');await db.query(`WITH created AS (INSERT INTO kekip_registration_invites(id,username,code_hash,expires_at) VALUES($1,$2,$3,now()+interval '7 days') RETURNING username) INSERT INTO kekip_admin_audit(username,action) SELECT username,'invite-create' FROM created`,[id,name,hash(code)]);return {username:name,code};}if(action==='invite-revoke'){if(typeof b.id!=='string'||!/^[a-f0-9]{24}$/.test(b.id))fail('Davet geçersiz.');const q=await db.query(`WITH changed AS (UPDATE kekip_registration_invites SET revoked_at=now() WHERE id=$1 AND used_at IS NULL AND revoked_at IS NULL RETURNING username) INSERT INTO kekip_admin_audit(username,action) SELECT username,'invite-revoke' FROM changed RETURNING id`,[b.id]);if(!q.rows.length)fail('Davet zaten kullanılmış veya iptal edilmiş.',409);return {ok:true};}fail('İşlem bulunamadı.',404)}
+function adminEligible(a){const names=(process.env.KEKIP_ADMIN_USERNAMES||'').split(',').map(n=>n.trim().toLowerCase()).filter(n=>/^[a-z0-9_]{3,24}$/.test(n));return Boolean(a&&names.includes(a.username));}
+async function requireAdmin(req,b,db){const actor=await getAccount(db,req);if(!actor)fail('Önce yönetici hesabınla giriş yap.',401);if(!adminEligible(actor))fail('Bu hesap yönetici olarak yetkilendirilmemiş.',403);const expected=process.env.KEKIP_ADMIN_KEY||'';if(expected.length<32)fail('Yönetici anahtarı sunucuda henüz ayarlanmadı.',503);const supplied=typeof b.adminKey==='string'?b.adminKey:'';if(supplied.length>256||!crypto.timingSafeEqual(Buffer.from(hash(supplied),'hex'),Buffer.from(hash(expected),'hex'))){throttle(req,'admin-access');fail('Yönetici anahtarı geçersiz.',403)}return actor;}
+async function inviteAction(db,req,action,b){await requireAdmin(req,b,db);if(action==='invite-list'){const q=await db.query('SELECT id,username,created_at,expires_at,used_at,revoked_at FROM kekip_registration_invites ORDER BY created_at DESC LIMIT 200');return {invites:q.rows};}if(action==='invite-create'){const name=typeof b.username==='string'?b.username.trim().toLowerCase():'';if(!/^[a-z0-9_]{3,24}$/.test(name))fail('Kullanıcı adı 3–24 harf/rakam/alt çizgi olmalı.');const existing=await db.query('SELECT id FROM kekip_football_accounts WHERE username=$1',[name]);if(existing.rows.length)fail('Bu kullanıcı zaten kayıtlı.',409);const code=token(),id=crypto.randomBytes(12).toString('hex');await db.query(`WITH created AS (INSERT INTO kekip_registration_invites(id,username,code_hash,expires_at) VALUES($1,$2,$3,now()+interval '7 days') RETURNING username) INSERT INTO kekip_admin_audit(username,action) SELECT username,'invite-create' FROM created`,[id,name,hash(code)]);return {username:name,code};}if(action==='invite-revoke'){if(typeof b.id!=='string'||!/^[a-f0-9]{24}$/.test(b.id))fail('Davet geçersiz.');const q=await db.query(`WITH changed AS (UPDATE kekip_registration_invites SET revoked_at=now() WHERE id=$1 AND used_at IS NULL AND revoked_at IS NULL RETURNING username) INSERT INTO kekip_admin_audit(username,action) SELECT username,'invite-revoke' FROM changed RETURNING id`,[b.id]);if(!q.rows.length)fail('Davet zaten kullanılmış veya iptal edilmiş.',409);return {ok:true};}fail('İşlem bulunamadı.',404)}
 
 
 // Admin-only management. No password hashes, session tokens or career secrets are returned.
 async function adminAction(db,req,action,b,options){
- requireAdmin(req,b);
+ const actor=await requireAdmin(req,b,db);
  if(action==='admin-system-status'){
   const start=Date.now();
   // Count only current valid sessions; respect users' hidden presence preference.
@@ -283,7 +284,12 @@ async function adminAction(db,req,action,b,options){
   const rows=await db.query(`SELECT id::text,username,action,created_at,${group} AS category FROM kekip_admin_audit WHERE ${where} ORDER BY kekip_admin_audit.id DESC LIMIT $3 OFFSET $4`,[search,category,size,(current-1)*size]);
   return {records:rows.rows,pagination:{page:current,pages,total,size}};
  }
- if(action==='admin-grant')return adminGrant(db,b);
+ if(action==='admin-kc-lookup'){
+  if(typeof b.username!=='string'||!/^[a-z0-9_]{3,24}$/.test(b.username))fail('Kullanıcı adı geçersiz.');
+  const q=await db.query('SELECT id,username,blocked_at FROM kekip_football_accounts WHERE username=$1',[b.username]);const a=q.rows[0];if(!a)fail('Üye bulunamadı.',404);
+  return {username:a.username,blocked:Boolean(a.blocked_at),balance:await coinBalance(db,a)};
+ }
+ if(action==='admin-grant')return adminGrant(db,b,actor);
  if(action==='admin-members'){
   const search=typeof b.search==='string'?b.search.trim().toLowerCase():'';
   if(!/^[a-z0-9_]{0,24}$/.test(search))fail('Arama geçersiz.');
@@ -588,7 +594,7 @@ function adminGiftCatalog(){
  const items=[...COSMETICS.filter(i=>valid(i)&&!i.legacy&&!i.slot.startsWith('av_')).map(i=>({...i,group:'Profil'})),...Object.entries(Wardrobe.collections).flatMap(([key,c])=>c.saleEnabled?c.items.filter(i=>valid(i)&&i.chestOnly!==true&&!i.starter&&i.status==='available').map(i=>({...i,group:key==='gece'?'Gece':'Gölge'})):[])];
  return [...new Map(items.map(i=>[i.id,{id:i.id,name:i.name||i.id,group:i.group}])).values()];
 }
-async function adminGrant(db,b){
+async function adminGrant(db,b,actor){
  const {username,kind,requestId}=b;const reason=typeof b.reason==='string'?b.reason.trim():'';
  if(typeof username!=='string'||!/^[a-z0-9_]{3,24}$/.test(username)||typeof requestId!=='string'||!/^[a-f0-9]{32}$/.test(requestId)||!['kc','xp','item'].includes(kind)||reason.length<3||reason.length>160||/[\x00-\x1f\x7f]/.test(reason))fail('Ödül isteği geçersiz.');
  const amount=kind==='item'?0:b.amount,itemId=kind==='item'?b.itemId:'';
@@ -605,7 +611,7 @@ async function adminGrant(db,b){
   await c.query('INSERT INTO kekip_admin_grants(request_id,account_id,kind,amount,item_id,reason) VALUES($1,$2,$3,$4,$5,$6)',[requestId,a.id,kind,amount,itemId,reason]);
   if(kind==='kc')await c.query("INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'admin_grant',$2,$3,$4)",[a.id,requestId,'Yönetici ödülü',amount]);
   if(kind==='item'){const r=await c.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) VALUES($1,$2) ON CONFLICT DO NOTHING RETURNING item_id',[a.id,itemId]);if(!r.rows.length)fail('Oyuncu bu ürüne zaten sahip.',409);}
-  await c.query('INSERT INTO kekip_admin_audit(username,action) VALUES($1,$2)',[username,'Ödül · '+(kind==='item'?item.name:amount+' '+kind.toUpperCase())+' · '+reason]);
+  await c.query('INSERT INTO kekip_admin_audit(username,action) VALUES($1,$2)',[username,'Ödül · '+(kind==='item'?item.name:amount+' '+kind.toUpperCase())+' · '+reason+' · Yönetici: @'+actor.username]);
   await c.query('COMMIT');return {ok:true,duplicate:false};
  }catch(e){await c.query('ROLLBACK').catch(()=>{});if(e.code==='23505')fail('İşlem çakıştı. Aynı isteği yeniden dene.',409);throw e;}finally{c.release()}
 }
@@ -726,7 +732,7 @@ if(action.startsWith('admin-'))return res.json(await adminAction(db,req,action,b
 if(action==='password-change')return res.json(await changePassword(db,req,res,b,options));
 if(action==='ui-preferences-read')return res.json(await readUiPreferences(db,await getAccount(db,req)));
 if(action==='ui-preferences-save')return res.json(await saveUiPreferences(db,await getAccount(db,req),b));
-if(action==='me'){const a=await getAccount(db,req);return res.json({user:a?{username:a.username,onboarded:a.onboarded}:null})}
+if(action==='me'){const a=await getAccount(db,req);return res.json({user:a?{username:a.username,onboarded:a.onboarded,isAdmin:adminEligible(a)}:null})}
 if(action==='logout'){const t=sessionToken(req);if(t){await db.query('DELETE FROM kekip_football_sessions WHERE token_hash=$1',[hash(t)]);options.disconnectSession?.(t);}cookie(res,req,'',0);clearLegacy(res,req);return res.json({ok:true})}
 if(action==='register'||action==='login'){const name=typeof b.username==='string'?b.username.trim().toLowerCase():'',password=b.password;if(!/^[a-z0-9_]{3,24}$/.test(name)||typeof password!=='string'||password.length<10||password.length>128)fail('Kullanıcı adı 3–24 harf/rakam/alt çizgi, şifre 10–128 karakter olmalı.');throttle(req,name);if(inFlight>=4)fail('Sunucu yoğun. Biraz sonra tekrar dene.',429);let a;inFlight++;try{if(action==='register'){const code=typeof b.inviteCode==='string'?b.inviteCode.trim().toLowerCase():'';if(!/^[a-f0-9]{48}$/.test(code))fail('Üyelik davetlidir. Yönetici tarafından verilen davet kodunu gir.',403);const id=token(),digest=await passwordHash(password);let q;try{q=await db.query(`WITH claimed AS (UPDATE kekip_registration_invites SET used_at=now() WHERE username=$2 AND code_hash=$4 AND used_at IS NULL AND revoked_at IS NULL AND expires_at>now() RETURNING id) INSERT INTO kekip_football_accounts(id,username,password_hash) SELECT $1,$2,$3 FROM claimed RETURNING id,username`,[id,name,digest,hash(code)])}catch(e){if(e.code==='23505')fail('Bu kullanıcı adı alınmış.',409);throw e}if(!q.rows.length)fail('Davet geçersiz, kullanılmış, iptal edilmiş, süresi dolmuş veya bu kullanıcı adına ait değil.',403);a=q.rows[0]}else{const q=await db.query('SELECT id,username,password_hash,blocked_at FROM kekip_football_accounts WHERE username=$1',[name]);a=q.rows[0];const ok=await verifyPassword(password,a?.password_hash||('0'.repeat(32)+':'+ '0'.repeat(128)));if(!a||!ok)fail('Kullanıcı adı veya şifre yanlış.',401);if(a.blocked_at)fail('Hesabın yönetici tarafından engellendi.',403)}}finally{inFlight--}const t=token(),old=sessionToken(req);if(old){await db.query('DELETE FROM kekip_football_sessions WHERE token_hash=$1',[hash(old)]);options.disconnectSession?.(old);}await db.query('DELETE FROM kekip_football_sessions WHERE expires_at<=now()');const c=await db.connect();try{await c.query('BEGIN');const check=await c.query('SELECT password_hash,blocked_at FROM kekip_football_accounts WHERE id=$1 FOR UPDATE',[a.id]);if(!check.rows.length||check.rows[0].blocked_at||(action==='login'&&check.rows[0].password_hash!==a.password_hash))fail('Hesap değişti. Tekrar giriş yap.',403);await c.query("INSERT INTO kekip_football_sessions(token_hash,account_id,expires_at) VALUES($1,$2,now()+interval '30 days')",[hash(t),a.id]);await c.query('COMMIT')}catch(e){await c.query('ROLLBACK').catch(()=>{});throw e}finally{c.release()}cookie(res,req,t,2592000);clearLegacy(res,req);return res.json({user:{username:a.username}})}
 
