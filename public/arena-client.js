@@ -30,9 +30,12 @@
  };
  join.onsubmit=event=>{event.preventDefault();run(()=>emit('join',{code:$('arenaCode').value.trim().toUpperCase()}));};
  const serverNow=()=>Date.now()+offset;
- const reflex=$('arenaReflex'),sound=$('arenaSound'),gameSelect=$('arenaGame');
+ const reflex=$('arenaReflex'),sound=$('arenaSound');
+ const picker=$('arenaGamePicker'),gameOptions=$('arenaGameOptions');
+ let savingGames=false,catalogKey='';
  const colors=$('arenaColors'),colorButtons=[...colors.querySelectorAll('button')];
- const gameNames={reflex:'Refleks Testi',color:'Renk Farkı'};
+ const gameNames=new Map();
+ const gameTitle=id=>gameNames.get(id)||id;
  function unlockSound(){
   if(!soundOn)return;
   const Context=window.AudioContext||window.webkitAudioContext;
@@ -71,15 +74,15 @@
    $('arenaReturnClock').textContent='Lobiye dönüş '+Math.max(0,Math.ceil((current.deadline-t)/1000))+' sn';return;
   }
   if(current.phase==='lobby')return;
-  const {challenge,phase,number,settings}=current;
+  const {challenge,number,settings,game}=current;
   const title=$('arenaRoundTitle'),prompt=$('arenaPrompt'),clock=$('arenaClock');
   const update=(element,value)=>{if(element.textContent!==value)element.textContent=value;};
-  reflex.hidden=!challenge||settings.game==='color';
-  if(settings.game!=='color')colors.hidden=true;
+  reflex.hidden=!challenge||game==='color';
+  if(game!=='color')colors.hidden=true;
   if(!challenge){
    clock.textContent=current.deadline?Math.max(0,Math.ceil((current.deadline-t)/1000))+' sn':'';
    update(title,'Tur '+number+' sonuçları');
-   if(settings.game==='color'){
+   if(game==='color'){
     const own=current.players.find(player=>player.username===current.you)?.reaction;
     const answer=current.colorAnswer;
     paintColors(answer?.colors,{disabled:true,choice:own?.choice,answer:answer?.odd});
@@ -91,8 +94,8 @@
   const lit=challenge.phase==='lit';
   const expired=challenge.endsAt!==null&&t>=challenge.endsAt;
   const ready=challenge.phase!=='prepare';
-  update(title,gameNames[settings.game]+' · '+number+'/'+settings.rounds);
-  if(settings.game==='color'){
+  update(title,gameTitle(game)+' · '+number+'/'+settings.rounds);
+  if(game==='color'){
    const palette=challenge.colors;
    clock.textContent=(lit?Math.max(0,Math.ceil((challenge.endsAt-t)/1000)):Math.max(0,Math.ceil((challenge.startsAt-t)/1000)))+' sn';
    paintColors(palette,{disabled:!lit||expired||Boolean(press)||sending||!socket.connected,choice:press?.choice});
@@ -147,7 +150,7 @@
    row.dataset.rank=String(player.rank);
    const rank=node('span',player.rank+'.');rank.className='arena-result-rank';
    const copy=node('div',''),name=node('strong','@'+player.username);
-   const detail=node('small',(result.game==='color'?player.hits+' doğru · '+player.wrong+' yanlış':player.hits+' tepki · '+player.early+' erken')+' · '+player.missed+' kaçan'+
+   const detail=node('small',(result.games.includes('color')&&result.games.includes('reflex')?player.hits+' başarılı · '+player.wrong+' yanlış · '+player.early+' erken':result.games.includes('color')?player.hits+' doğru · '+player.wrong+' yanlış':player.hits+' tepki · '+player.early+' erken')+' · '+player.missed+' kaçan'+
      (player.fastest===null?'':' · En iyi '+player.fastest+' ms'));
    copy.append(name,detail);
    const score=node('strong',player.total+' puan');score.className='arena-result-score';
@@ -176,6 +179,26 @@
  socket.on('arena:card',({matchId})=>{
   if(typeof matchId==='string'){cardQueue.add(matchId);showCards();}
  });
+ function renderGamePicker(data){
+  const key=JSON.stringify(data.availableGames);
+  if(key!==catalogKey){
+   catalogKey=key;gameNames.clear();
+   gameOptions.replaceChildren(...data.availableGames.map(game=>{
+    gameNames.set(game.id,game.title);
+    const label=node('label',''),input=document.createElement('input');
+    input.type='checkbox';input.value=game.id;
+    label.append(input,document.createTextNode(game.title));return label;
+   }));
+  }
+  picker.hidden=data.phase!=='lobby'||data.host!==data.you;
+  picker.disabled=savingGames;
+  for(const input of gameOptions.querySelectorAll('input'))input.checked=data.settings.games.includes(input.value);
+ }
+ function refreshStart(data){
+  const start=$('arenaStart');
+  start.hidden=data.phase!=='lobby'||data.host!==data.you;
+  start.disabled=savingGames||data.players.length<2||data.players.some(player=>!player.online);
+ }
  socket.on('arena:state',data=>{
   const entering=!current;
   const previousPhase=current?.phase;
@@ -185,7 +208,8 @@
   offset=data.serverTime-Date.now();
   current=data;room.dataset.code=data.code;room.dataset.phase=data.phase;room.hidden=false;$('arenaEntry').hidden=true;
   stage.hidden=data.phase==='lobby'||data.phase==='final';$('arenaRoomTitle').textContent='Arena lobisi · '+data.code;
-  $('arenaRoomInfo').textContent=data.players.length+'/8 oyuncu · '+gameNames[data.settings.game];
+  renderGamePicker(data);
+  $('arenaRoomInfo').textContent=data.players.length+'/8 oyuncu · '+(data.game?gameTitle(data.game):data.settings.games.map(gameTitle).join(' · '));
   const players=[...data.players].sort((a,b)=>b.total-a.total||a.username.localeCompare(b.username));
   const displayKey=JSON.stringify([data.phase==='summary',players]);
   if(displayKey!==rosterKey){
@@ -216,11 +240,7 @@
    rosterKey=displayKey;
    window.KEKIPPortraits?.refresh?.();
   }
-  const start=$('arenaStart');
-  $('arenaGameLabel').hidden=data.phase!=='lobby'||data.host!==data.you;
-  gameSelect.value=data.settings.game;
-  start.hidden=data.phase!=='lobby'||data.host!==data.you;
-  start.disabled=data.players.length<2||players.some(player=>!player.online);
+  refreshStart(data);
   $('arenaInvite').hidden=data.party||data.phase!=='lobby';
   if(entering){status('');$('arenaRoomTitle').focus();}
   lastResults.hidden=data.phase!=='lobby'||!data.results;
@@ -253,10 +273,14 @@
  });
  socket.on('connect_error',error=>{entry(false);status(error.message);});
  socket.on('disconnect',()=>{entry(false);status('Bağlantı kesildi. Yeniden bağlanılıyor…');});
- gameSelect.onchange=()=>run(async()=>{
-  gameSelect.disabled=true;
-  try{await emit('game',{game:gameSelect.value});}
-  finally{gameSelect.disabled=false;}
+ gameOptions.onchange=()=>run(async()=>{
+  if(!current||savingGames)return;
+  const games=[...gameOptions.querySelectorAll('input:checked')].map(input=>input.value);
+  if(!games.length){renderGamePicker(current);status('En az bir mini oyun seç.');return;}
+  savingGames=true;picker.disabled=true;refreshStart(current);
+  try{await emit('games',{games});status('');}
+  catch(error){if(current)renderGamePicker(current);throw error;}
+  finally{savingGames=false;picker.disabled=false;if(current)refreshStart(current);}
  });
  $('arenaStart').onclick=()=>run(()=>emit('start'));
  $('arenaLeave').onclick=()=>run(async()=>{

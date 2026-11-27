@@ -2,7 +2,23 @@
 
 const responseWindow=2000;
 const colorWindow=4000;
-const gameModes=['reflex','color'];
+const gameOptions=Object.freeze([
+ {id:'reflex',title:'Refleks Testi'},
+ {id:'color',title:'Renk Farkı'}
+]);
+const gameModes=gameOptions.map(game=>game.id);
+function shuffle(values,random){
+ const result=[...values];
+ for(let i=result.length-1;i>0;i--){
+  const j=random(i+1);
+  [result[i],result[j]]=[result[j],result[i]];
+ }
+ return result;
+}
+function buildPlaylist(games,rounds,random){
+ const shuffled=shuffle(games,random);
+ return shuffle(Array.from({length:rounds},(_,index)=>shuffled[index%shuffled.length]),random);
+}
 const nearColors=[
  [8,69,54,4,0], [43,79,53,0,3], [91,52,45,5,0],
  [150,50,46,0,3], [181,57,46,5,0], [216,67,56,0,3],
@@ -65,4 +81,4 @@ function settleRound(round,players){
   return [id,{...press,points:press.kind==='hit'?100-12*ranked.indexOf(press.ms):0}];
  }));
 }
-module.exports={gameModes,openRound,advanceRound,visibleRound,registerPress,settleRound,responseWindow};
+module.exports={gameOptions,gameModes,buildPlaylist,openRound,advanceRound,visibleRound,registerPress,settleRound,responseWindow};

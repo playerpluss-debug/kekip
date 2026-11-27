@@ -50,7 +50,12 @@ body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 72% 2%,#382
 @media(max-width:480px){#arenaStandings li{grid-template-columns:1.5rem minmax(0,1fr) auto;padding:8px;gap:7px}.arena-result-score{font-size:.85rem}}
 @media(prefers-reduced-motion:reduce){#arenaStandings li{animation:none}}
 
-#arenaGameLabel{max-width:300px}
+#arenaGamePicker{margin:10px 0 14px;padding:8px 12px 12px;border:1px solid #6d548c;border-radius:12px}
+#arenaGamePicker legend{padding:0 6px;font-weight:750}
+#arenaGameOptions{display:flex;flex-wrap:wrap;gap:8px 12px;margin-bottom:6px}
+#arenaGameOptions label{display:flex;align-items:center;gap:7px;margin:0;padding:6px 9px;border:1px solid #765c9b;border-radius:8px;cursor:pointer}
+#arenaGameOptions input{min-height:0;margin:0;accent-color:#c9a1ff}
+#arenaGamePicker small{color:#d7c5e9}
 #arenaColors:not([hidden]){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));justify-items:center;align-items:center;gap:clamp(8px,3vw,26px);padding:clamp(12px,4vw,36px);max-width:740px;margin:auto}
 #arenaColors button{width:min(100%,190px);aspect-ratio:1;min-height:0;padding:0;border:2px solid #d8c3ed;border-radius:50%;background:var(--arena-color);opacity:1}
 #arenaColors button:not(:disabled):hover{border-color:white}

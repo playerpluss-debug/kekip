@@ -6,12 +6,12 @@
  <title>KEKIP Arena | KEKIP Games</title>
  <link rel="stylesheet" href="/kekip-navigation.css?v=05122">
  <link rel="stylesheet" href="/game-lobbies.css?v=3">
- <link rel="stylesheet" href="/arena.css?v=color1">
+ <link rel="stylesheet" href="/arena.css?v=mix1">
  <script src="/socket.io/socket.io.js" defer></script>
  <script src="/late-answer-voice.js?v=lobbies" defer></script>
  <script src="/lobby-voice-client.js?v=arena1" defer></script>
  <script src="/avatar-portraits.js?v=wings-natural2" defer></script>
- <script src="/arena-client.js?v=color1" defer></script>
+ <script src="/arena-client.js?v=mix1" defer></script>
  <script src="/match-cards.js?v=arena2" defer></script>
  <link rel="stylesheet" href="/lobby-voice.css?v=1">
 </head>
@@ -42,12 +42,11 @@
   <div class="arena-panel">
    <div class="arena-row"><h2 id="arenaRoomTitle" tabindex="-1">Arena lobisi</h2><button id="arenaLeave" type="button">Lobiden ayrıl</button></div>
    <div class="arena-row"><p id="arenaRoomInfo"></p><button id="arenaInvite" type="button">Davet bağlantısını kopyala</button></div>
-   <label id="arenaGameLabel" hidden>Mini oyun
-    <select id="arenaGame">
-     <option value="reflex">Refleks Testi</option>
-     <option value="color">Renk Farkı</option>
-    </select>
-   </label>
+   <fieldset id="arenaGamePicker" hidden>
+    <legend>Mini oyunlar</legend>
+    <div id="arenaGameOptions"></div>
+    <small>Seçilen oyunlar turlara rastgele dağıtılır.</small>
+   </fieldset>
    <ul id="arenaPlayers" class="arena-players" aria-label="Oyuncular ve puanlar"></ul>
    <button id="arenaStart" type="button" class="arena-primary" hidden>Maçı başlat</button>
    <button id="arenaLastResults" type="button" aria-expanded="false" aria-controls="arenaResults" hidden>Son maç sonuçları</button>
