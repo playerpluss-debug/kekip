@@ -1,0 +1,74 @@
+[
+  {
+    "id": "wing_silver",
+    "slot": "wing",
+    "name": "Gümüş Tüy",
+    "rarity": "Nadir",
+    "price": 480,
+    "description": "Gümüş uçlu, kat kat şahin tüyleri.",
+    "animated": false
+  },
+  {
+    "id": "wing_frost",
+    "slot": "wing",
+    "name": "Buz Mızrağı",
+    "rarity": "Nadir",
+    "price": 650,
+    "description": "Soğuk mavi kristallerden keskin bir siluet.",
+    "animated": false
+  },
+  {
+    "id": "wing_moth",
+    "slot": "wing",
+    "name": "Ametist Güvesi",
+    "rarity": "Epik",
+    "price": 1050,
+    "description": "Mor göz benekli, kadife dokulu güve kanatları.",
+    "animated": false
+  },
+  {
+    "id": "wing_obsidian",
+    "slot": "wing",
+    "name": "Obsidyen Pençesi",
+    "rarity": "Epik",
+    "price": 1350,
+    "description": "Köz damarları taşıyan ejderha kanatları.",
+    "animated": false
+  },
+  {
+    "id": "wing_seraph",
+    "slot": "wing",
+    "name": "Altın Seraf",
+    "rarity": "Efsanevi",
+    "price": 2400,
+    "description": "Fildişi tüyler ve altın işlemeli ikinci kanat sırası.",
+    "animated": false
+  },
+  {
+    "id": "wing_chronos",
+    "slot": "wing",
+    "name": "Kronos Muhafızı",
+    "rarity": "Efsanevi",
+    "price": 2950,
+    "description": "Mavi enerji taşıyan bronz zırh plakaları.",
+    "animated": false
+  },
+  {
+    "id": "wing_phoenix",
+    "slot": "wing",
+    "name": "Sonsuz Anka",
+    "rarity": "Mitik",
+    "price": 5600,
+    "description": "Nabız gibi yanan, düzenli çırpınan kor tüyleri.",
+    "animated": true
+  },
+  {
+    "id": "wing_nova",
+    "slot": "wing",
+    "name": "Yıldız Hükümdarı",
+    "rarity": "Mitik",
+    "price": 7000,
+    "description": "Açılıp kapanan kozmik kanatlar ve yıldız parıltıları.",
+    "animated": true
+  }
+]
