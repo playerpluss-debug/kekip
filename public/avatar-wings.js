@@ -13,7 +13,7 @@ style.textContent = `
 .kp-wing-product{position:relative;min-height:170px;background:radial-gradient(ellipse,#43305c,#211830 76%)}
 .kp-wing-product .kp-wing-pair{width:min(95cqw,170cqh);aspect-ratio:480/265}
 .kp-wing-pair > .kp-wing-left,.kp-wing-pair > .kp-wing-right{
-  position:relative;inset:auto;flex:none;display:block;width:50%;height:40.15%;top:16.5%;
+  position:relative;inset:auto;flex:none;display:block;width:50%;height:40.15%;top:25%;
   min-width:0;object-fit:fill;pointer-events:none
 }
 .kp-wing-product .kp-wing-pair > div{top:0;height:100%}
