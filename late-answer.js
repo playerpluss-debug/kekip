@@ -54,7 +54,7 @@ function budget(map,key,max,now,windowMs=1000) {
 
 function attachLateAnswer(io, accounts, {
   now=Date.now, schedule=setInterval, cancel=clearInterval, rng=randomInt, uuid=randomUUID, env=process.env,
-  logger=console
+  logger=console, isDraining=()=>false
 }={}) {
   const nsp=io.of('/late-answer');
   const rooms=new Map(), members=new Map();
@@ -148,6 +148,7 @@ function attachLateAnswer(io, accounts, {
     function bind(event,keys,handler,{roomOnly=false,signal=false}={}){
       socket.on('late:'+event,(data,ack)=>{
         if(typeof ack!=='function')return;
+        if(isDraining())return fail(ack,'Sunucu yeniden başlatılıyor.');
         const t=now(),room=current(socket);
         const description=signal&&data?.kind==='description';
         const limitKey=signal?(description?'voice-description':'voice-candidate'):event;
@@ -251,6 +252,30 @@ function attachLateAnswer(io, accounts, {
   });
 
   return {
+    checkpoint(){
+      return [...rooms.values()].map(room=>{
+        const {rates,saving,kicked,votes,usedQuestions,turnStart,players,...state}=room;
+        return {...state,votes:[...votes],usedQuestions:[...usedQuestions],kicked:[...kicked],
+          turnStart:turnStart?[...turnStart]:null,players:players.map(({session,socketId,online,microphone,...player})=>player)};
+      });
+    },
+    restoreCheckpoint(entries,capturedAt){
+      if(!Array.isArray(entries)||!Number.isFinite(capturedAt))return;
+      const t=now();
+      for(const saved of entries.slice(0,MAX_ROOMS)){
+        if(!saved||!CODE.test(saved.code)||!Array.isArray(saved.players)||!saved.players.length||
+           saved.players.length>game.MAX_PLAYERS||rooms.has(saved.code)||saved.players.some(p=>!p?.id||(!p.left&&members.has(p.id))))continue;
+        const {votes,usedQuestions,kicked,turnStart,players,...state}=saved;
+        const room={...state,votes:new Map(votes||[]),usedQuestions:new Set(usedQuestions||[]),kicked:new Set(kicked||[]),
+          turnStart:turnStart?new Map(turnStart):null,rates:new Map(),saving:false,retryAt:0,touched:t,
+          players:players.map(p=>({...p,online:false,microphone:false,socketId:null,session:null,until:t+game.RESUME_MS}))};
+        if(Number.isFinite(room.deadline))room.deadline=t+Math.max(1,room.deadline-capturedAt);
+        reconcilePause(room,t);
+        rooms.set(room.code,room);
+        for(const p of room.players)if(!p.left)members.set(p.id,room);
+        persist(room,t);
+      }
+    },
     reserveParty(accounts){
       sweep();
       const error=message=>{throw Object.assign(new Error(message),{status:409});};

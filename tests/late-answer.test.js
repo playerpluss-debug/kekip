@@ -293,3 +293,24 @@ test('revocation closes authenticated lobby sockets without closing a different 
  assert.equal(unrelated.closed,undefined);
  h.backend.close();
 });
+
+test('restores a paused round and reserves the same seats across process restart',async()=>{
+ const before=harness();
+ const {sockets,code}=await open(before,3);
+ before.advance(3000);
+ const old=sockets[0].state();
+ assert.equal(old.phase,'answer');
+ const data=JSON.parse(JSON.stringify(before.backend.checkpoint()));
+ assert.ok(data[0].players.every(p=>!Object.hasOwn(p,'session')&&!Object.hasOwn(p,'socketId')));
+ before.backend.close();
+ const after=harness();
+ after.backend.restoreCheckpoint(data,before.now());
+ const [first,second,third,outsider]=await Promise.all([0,1,2,3].map(i=>after.connect(i)));
+ assert.equal(outsider.send('resume',{code}).ok,false);
+ for(const socket of [second,third,first])assert.equal(socket.send('resume',{code}).ok,true);
+ const restored=first.state();
+ assert.equal(restored.code,code);assert.equal(restored.phase,old.phase);
+ assert.equal(restored.sequence,old.sequence);assert.equal(restored.question,old.question);
+ assert.equal(restored.players.every(p=>p.online),true);
+ after.backend.close();
+});

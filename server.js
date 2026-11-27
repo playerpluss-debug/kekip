@@ -4,6 +4,8 @@ const { Server } = require('socket.io');
 const path = require('path');
 const crypto = require('crypto');
 const accounts = require('./accounts');
+const {initRoomCheckpoint}=require('./room-checkpoint');
+let draining=false;
 
 const app = express();
 const server = http.createServer(app);
@@ -180,7 +182,7 @@ function adminBattleSnapshot(){
 }
 // 0.51.12.5: invalidating a session also closes its existing game connections.
 // Match the exact revoked session, not every device of the same account.
-const lateAnswer = require('./late-answer').attachLateAnswer(io, accounts);
+const lateAnswer = require('./late-answer').attachLateAnswer(io, accounts,{isDraining:()=>draining});
 const football = require('./football-online');
 const parties = require('./party').attachParty(app,accounts,{
  battleship:(_db,members)=>reserveBattleParty(members),
@@ -201,6 +203,7 @@ app.get('/health', (_req, res) => res.json({ ok: true }));
 
 const rooms = new Map();
 const REJOIN_GRACE_MS = 90000;
+const unfinishedResults=new Map();
 const connectedPlayer = p => !!p && !p.disconnectedUntil && !!io.sockets.sockets.get(p.id)?.connected;
 require("./chat").attachChat(app,{lateRoom:lateAnswer.chatRoom,battleRoom:(code,id)=>{const r=rooms.get(code);return r?.players.some(p=>p.accountId===id&&connectedPlayer(p))?r.chatId:null;}});
 const SHIPS = [5, 4, 3, 3, 2];
@@ -211,6 +214,47 @@ const makeCode = () => {
   while (rooms.has(code));
   return code;
 };
+function battleResult(matchId,players,winner){
+  if(!matchId||unfinishedResults.has(matchId)||!players.some(p=>p.accountId))return;
+  const result={players,winner};
+  unfinishedResults.set(matchId,result);
+  persistBattleResult(matchId,result);
+}
+function persistBattleResult(matchId,result){
+  const save=async()=>{
+    try{
+      await accounts.recordBattle(matchId,result.players,result.winner);
+      unfinishedResults.delete(matchId);
+      for(const p of result.players)if(p.accountId)io.to(p.id).emit('statsSaved',{ok:true,matchId});
+    }catch(e){
+      console.error('Battle stats:',e.code||e.message);
+      if(!draining){const timer=setTimeout(save,5000);timer.unref?.();}
+    }
+  };
+  void save();
+}
+function battleCheckpoint(){
+  const battle=[...rooms.values()].filter(r=>r.phase!=='finished'&&r.players.every(p=>p.accountId)).map(room=>({
+    ...room,players:room.players.map(({rejoinTimer,...player})=>player)
+  }));
+  return {battle,battleResults:[...unfinishedResults]};
+}
+function restoreBattle(saved,results){
+  const until=Date.now()+REJOIN_GRACE_MS,users=new Set();
+  for(const item of Array.isArray(saved)?saved:[]){
+    if(!item||!/^[A-Z2-9]{5}$/.test(item.code)||!['waiting','playing'].includes(item.phase)||
+       !Array.isArray(item.players)||!item.players.length||item.players.length>2||rooms.has(item.code)||
+       item.players.some(p=>!p?.accountId||users.has(p.accountId)))continue;
+    const room={...item,players:item.players.map(p=>({...p,disconnectedUntil:until}))};
+    rooms.set(room.code,room);
+    for(const player of room.players){
+      users.add(player.accountId);
+      player.rejoinTimer=setTimeout(()=>{if(player.disconnectedUntil)removeRoomPlayer(room,player,'rejoin_expired');},REJOIN_GRACE_MS+25);
+      player.rejoinTimer.unref?.();
+    }
+  }
+  for(const [matchId,result] of Array.isArray(results)?results:[])if(result?.players)battleResult(matchId,result.players,result.winner);
+}
 function reserveBattleParty(members){
   expireReservations();
   if(members.length!==2||members.some(member=>[...rooms.values()].some(room=>room.players.some(p=>p.accountId===member.id))))
@@ -321,6 +365,7 @@ io.on('connection', socket => {
     const validated=validateGameHandler(handler);
     return (payload,ack)=>{
       const cb=typeof ack==='function'?ack:()=>{};
+      if(draining)return cb({ok:false,error:'Sunucu yeniden başlatılıyor.'});
       if(commandBudget('commands',60)||socketSessionBudget(sessionKey,sessionKey.startsWith('session:')?240:480))return cb({ok:false,error:'Çok sık oyun isteği gönderiyorsun. Biraz sonra tekrar dene.'});
       return validated(payload,cb);
     };
@@ -334,7 +379,7 @@ io.on('connection', socket => {
     if(membershipPending)return cb({ok:false,error:'Oda işlemi zaten sürüyor.'});
     membershipPending=true;
     const epoch=++membershipEpoch, started=Date.now();
-    const stillValid=()=>socket.connected&&epoch===membershipEpoch&&Date.now()-started<=8000;
+    const stillValid=()=>!draining&&socket.connected&&epoch===membershipEpoch&&Date.now()-started<=8000;
     const done=result=>{if(epoch===membershipEpoch)membershipPending=false;cb(result);};
     try{await handler(payload,done,stillValid);}finally{if(epoch===membershipEpoch)membershipPending=false;}
   });
@@ -456,11 +501,7 @@ io.on('connection', socket => {
     const sunkNow = hit && foe.sunk.includes(ship.id);
     room.lastShot = { seq: room.shotCount, playerId: socket.id, playerName: me.name, r, c, hit, sunk: sunkNow };
     if (allSunk) { room.phase = 'finished'; room.winner = socket.id;
-      const players=JSON.parse(JSON.stringify(room.players)), matchId=room.matchId, winner=socket.id;
-      if(players.some(p=>p.accountId)) {
-        const persist=async()=>{try{await accounts.recordBattle(matchId,players,winner);for(const p of players)if(p.accountId)io.to(p.id).emit('statsSaved',{ok:true,matchId});}catch(e){console.error('Battle stats:',e.code||e.message);throw e}};
-        persist().catch(()=>setTimeout(()=>persist().catch(()=>{for(const p of players)if(p.accountId)io.to(p.id).emit('statsSaved',{ok:false});}),2000));
-      }
+      battleResult(room.matchId,JSON.parse(JSON.stringify(room.players)),socket.id);
     }
     else room.turn = foe.id;
     cb({ ok: true, hit, sunk: sunkNow }); sendState(room);
@@ -476,4 +517,26 @@ app.use('/api',(err,_req,res,next)=>{
  return next(err);
 });
 const port = process.env.PORT || 3000;
-server.listen(port, () => console.log(`KEKIP server listening on ${port}`));
+async function startServer(){
+ let checkpoints=null;
+ if(process.env.DATABASE_URL){
+  try{
+   checkpoints=await initRoomCheckpoint(await accounts.database(),{
+    capture:()=>({...battleCheckpoint(),late:lateAnswer.checkpoint()}),
+    restore:saved=>{restoreBattle(saved.battle,saved.battleResults);lateAnswer.restoreCheckpoint(saved.late,saved.capturedAt);}
+   });
+  }catch(e){console.warn('Room checkpoint initialization:',e.code||e.message);}
+ }
+ if(checkpoints){
+  const timer=setInterval(()=>void checkpoints.flush(),2000);timer.unref?.();
+  process.once('SIGTERM',async()=>{
+   draining=true;
+   clearInterval(timer);
+   server.close();
+   const deadline=setTimeout(()=>process.exit(0),4000);
+   try{await checkpoints.flush();await checkpoints.flush();}finally{clearTimeout(deadline);process.exit(0);}
+  });
+ }
+ server.listen(port,()=>console.log(`KEKIP server listening on ${port}`));
+}
+void startServer();
