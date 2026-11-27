@@ -5,7 +5,7 @@
     "name": "Gümüş Tüy",
     "rarity": "Nadir",
     "price": 480,
-    "description": "Gümüş uçlu, kat kat şahin tüyleri.",
+    "description": "Doğan tüylerini andıran, gümüş grisi ve doğal çizgili kanatlar.",
     "animated": false
   },
   {
@@ -14,7 +14,7 @@
     "name": "Buz Mızrağı",
     "rarity": "Nadir",
     "price": 650,
-    "description": "Soğuk mavi kristallerden keskin bir siluet.",
+    "description": "Uçlarında saydam buz kristalleri taşıyan açık mavi tüyler.",
     "animated": false
   },
   {
@@ -23,7 +23,7 @@
     "name": "Ametist Güvesi",
     "rarity": "Epik",
     "price": 1050,
-    "description": "Mor göz benekli, kadife dokulu güve kanatları.",
+    "description": "İnce pullu dokusu ve göz benekleriyle mor güve kanatları.",
     "animated": false
   },
   {
@@ -32,7 +32,7 @@
     "name": "Obsidyen Pençesi",
     "rarity": "Epik",
     "price": 1350,
-    "description": "Köz damarları taşıyan ejderha kanatları.",
+    "description": "Koyu kemik hatları arasında gerilen, kızıl damarlı ejderha zarı.",
     "animated": false
   },
   {
@@ -41,7 +41,7 @@
     "name": "Altın Seraf",
     "rarity": "Efsanevi",
     "price": 2400,
-    "description": "Fildişi tüyler ve altın işlemeli ikinci kanat sırası.",
+    "description": "Altın uçlu, üst üste dizilmiş fildişi renkli kartal tüyleri.",
     "animated": false
   },
   {
@@ -50,7 +50,7 @@
     "name": "Kronos Muhafızı",
     "rarity": "Efsanevi",
     "price": 2950,
-    "description": "Mavi enerji taşıyan bronz zırh plakaları.",
+    "description": "Uçuş tüyleri gibi eklemlenmiş, turkuaz patinalı bronz kanatlar.",
     "animated": false
   },
   {
@@ -59,7 +59,7 @@
     "name": "Sonsuz Anka",
     "rarity": "Mitik",
     "price": 5600,
-    "description": "Nabız gibi yanan, düzenli çırpınan kor tüyleri.",
+    "description": "Kor uçlu kızıl tüyler, yumuşak bir ritimle açılıp kapanır.",
     "animated": true
   },
   {
@@ -68,7 +68,7 @@
     "name": "Yıldız Hükümdarı",
     "rarity": "Mitik",
     "price": 7000,
-    "description": "Açılıp kapanan kozmik kanatlar ve yıldız parıltıları.",
+    "description": "Yıldız benekli gece tüyleri, geniş ve ağır bir ritimle hareket eder.",
     "animated": true
   }
 ]
