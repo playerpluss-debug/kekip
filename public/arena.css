@@ -3,8 +3,7 @@ body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 72% 2%,#382
 [hidden]{display:none!important}
 #arena{width:min(1040px,calc(100% - 30px));margin:auto;padding:20px 0 48px}
 #arena .kp-page-header{margin-bottom:18px}
-.arena-hero{--lobby-accent:#dbb4ff}
-.arena-mark{position:absolute;right:11%;top:50%;width:clamp(110px,18vw,205px);aspect-ratio:1;rotate:35deg;translate:0 -50%;border:1px solid #d6b0ff;border-radius:28%;box-shadow:0 0 0 16px #a77cde35,0 0 0 32px #a77cde20,0 0 60px #ab74ff80;background:linear-gradient(130deg,#d4b3f753,#875bd710);opacity:.7}
+.arena-hero{--lobby-accent:#dbb4ff;--lobby-image:url('/images/kekip-arena-splash.webp')}
 .arena-entry{display:grid;grid-template-columns:1.45fr 1fr;gap:14px}
 .arena-panel{min-width:0;padding:18px;margin-bottom:12px;border:1px solid #71578f;border-radius:17px;background:#21192f}
 .arena-panel h2,.arena-panel p{margin:0 0 10px}
@@ -36,4 +35,4 @@ body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 72% 2%,#382
 .arena-lock-meter i{width:22%;background:#7752aa}
 .arena-lock-meter b{width:4px;background:#fff}
 #arenaBeat{display:inline-flex;min-height:36px;align-items:center;padding:0 10px;border:1px solid #ab8cc9;border-radius:9px;background:#38264d}
-@media(max-width:650px){.arena-entry{grid-template-columns:1fr}.arena-mark{opacity:.4}}
+@media(max-width:650px){.arena-entry{grid-template-columns:1fr}.arena-hero{background-image:linear-gradient(0deg,#141020f5 4%,#171025b8 47%,#17102514 100%),var(--lobby-image);background-position:center,72% center}}
