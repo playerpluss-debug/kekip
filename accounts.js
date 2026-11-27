@@ -615,7 +615,7 @@ async function wardrobeWrite(db,a,work){
 }
 
 // 0.51.18.1 — keep purchases disabled until exclusive collections and opening UI are approved.
-const chestAction=MysteryChest.createService({collections:Wardrobe.collections,coinBalance,write:wardrobeWrite,enabled:false});
+const chestAction=MysteryChest.createService({collections:require('./chest-collections.json'),coinBalance,write:wardrobeWrite,enabled:false});
 
 // 0.51.5.1 — private, persistent friend-to-friend messages.
 function dmPublic(row){return {id:String(row.id),sender:row.sender,receiver:row.receiver,text:row.body,createdAt:row.created_at,readAt:row.read_at||null};}

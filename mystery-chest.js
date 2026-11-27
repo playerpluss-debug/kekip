@@ -23,7 +23,8 @@ function eligibleItems(collections,character){
   i.onboardingEligible===true||i.price!==0||i.status!=='available'||
   !TIERS.some(t=>t.id===i.chestRarity)||typeof i.name!=='string'||!i.name.trim()||
   typeof i.thumbnail!=='string'||!i.thumbnail.startsWith('/images/')||
-  typeof i.slot!=='string'||!i.slot.startsWith('av_')))fail('Sandık koleksiyonu henüz hazır değil.',503);
+  typeof i.slot!=='string'||!i.slot.startsWith('av_')||
+  (i.chestRarity==='mythic'?(i.slot!=='av_set'||i.completeSet!==true):(i.slot==='av_set'||i.completeSet===true))))fail('Sandık koleksiyonu henüz hazır değil.',503);
  return marked;
 }
 function groups(items,owned){const set=new Set(owned);return TIERS.map(t=>({...t,items:items.filter(i=>i.chestRarity===t.id&&!set.has(i.id))}));}
@@ -35,7 +36,7 @@ function draw(grouped,randomInt=crypto.randomInt){
  for(const t of grouped){if(roll<t.weight){return t.items.length?{item:t.items[randomInt(t.items.length)],rewardType:'cosmetic'}:{item:null,rewardType:'refund',rarity:t.id,rarityLabel:t.label,refundKC:t.refund};}roll-=t.weight;}
  throw new Error('Invalid random roll');
 }
-function publicItem(i){const tier=TIERS.find(t=>t.id===i.chestRarity);return {id:i.id,character:i.character,name:i.name,slot:i.slot,thumbnail:i.thumbnail,rarity:tier.id,rarityLabel:tier.label};}
+function publicItem(i){const tier=TIERS.find(t=>t.id===i.chestRarity);return {id:i.id,character:i.character,name:i.name,slot:i.slot,thumbnail:i.thumbnail,rarity:tier.id,rarityLabel:tier.label,completeSet:i.completeSet===true,visualApprovalPending:i.visualApprovalPending===true};}
 async function ensureSchema(db){
  await db.query(`CREATE TABLE IF NOT EXISTS kekip_chest_openings (
   account_id text NOT NULL REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,
@@ -53,9 +54,9 @@ function createService({collections,coinBalance,write,enabled=false}){
  function describe(character,owned){
   const items=eligibleItems(collections,character),grouped=groups(items,owned);
   // At first launch every tier must be represented in the full approved collection.
-  const ready=TIERS.every(t=>items.some(i=>i.chestRarity===t.id));
+  const ready=TIERS.every(t=>items.filter(i=>i.chestRarity===t.id).length===(t.id==='mythic'?1:3))&&!items.some(i=>i.visualApprovalPending===true);
   const remaining=grouped.reduce((n,t)=>n+t.items.length,0);
-  return {character,price:PRICE,ready,enabled:enabled===true&&ready&&remaining>0,total:items.length,remaining,odds:effectiveOdds(grouped)};
+  return {character,price:PRICE,ready,enabled:enabled===true&&ready&&remaining>0,total:items.length,remaining,items:items.map(i=>({...publicItem(i),owned:owned.includes(i.id)})),odds:effectiveOdds(grouped)};
  }
  return async function action(db,a,kind,b,verify){
   if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
