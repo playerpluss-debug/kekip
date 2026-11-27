@@ -12,7 +12,7 @@
  const params=new URLSearchParams(location.search);
  const invite=params.get('room')?.trim().toUpperCase();
  if(invite)$('arenaCode').value=invite;
- const socket=io('/arena');
+ const socket=io('/arena',{autoConnect:false,forceNew:true});
  let current=null,offset=0,viewKey='',submitted=new Set(),inputRound=0;
  let useInvite=Boolean(invite);
  const notified=new Set();
@@ -263,4 +263,5 @@
   await navigator.clipboard.writeText(link.toString());status('Davet bağlantısı kopyalandı.');
  });
  setInterval(()=>renderStage(serverNow()),100);
+ socket.connect();
 })();
