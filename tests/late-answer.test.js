@@ -17,7 +17,7 @@ const choose=(r,id,correct,at=r.deadline-1)=>game.vote(r,id,{sequence:r.sequence
 test('120 editable unique questions, valid settings and bounded draw',()=>{
   assert.ok(bank.length>=120);
   assert.equal(new Set(bank.map(q=>q.question)).size,bank.length);
-  for(const q of bank)assert.ok(q.category&&q.question.endsWith('?')&&q.answers.length>=2);
+  for(const q of bank)assert.ok(q.category&&q.question.endsWith('?')&&q.answers.length>=1&&q.answers.every(answer=>typeof answer==='string'&&answer.trim()));
   assert.equal(game.validateSettings({visibility:'other'}),null);
   assert.deepEqual(game.validateSettings(settings),settings);
   assert.throws(()=>game.drawQuestions(bank.length+1),RangeError);
