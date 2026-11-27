@@ -1,0 +1,98 @@
+/* Shared header for player-facing pages. Typography inherits the page font. */
+.kp-page-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:.65rem 1rem;
+  padding-block-end:.65rem;
+  border-block-end:1px solid #b695f135;
+}
+.kp-site-brand {
+  display:inline-flex;
+  align-items:center;
+  gap:.65rem;
+  max-width:100%;
+  min-width:0;
+  margin:0;
+  color:#f7efff;
+  text-decoration:none;
+}
+.kp-site-brand > .kp-site-mark {
+  display:grid;
+  flex:0 0 40px;
+  width:40px;
+  height:40px;
+  place-items:center;
+  border:1px solid #dec7ff99;
+  border-radius:12px;
+  background:linear-gradient(150deg,#e4d2ff,#9e76ed 62%,#7046bd);
+  box-shadow:inset 0 1px 0 #fff7,0 4px 14px #7c51cb3b;
+  color:#211336;
+  font-size:1.22rem;
+  font-weight:950;
+  letter-spacing:0;
+  line-height:1;
+}
+.kp-site-brand .kp-site-word {
+  display:block;
+  color:#f7efff;
+  font-size:.92rem;
+  font-weight:900;
+  letter-spacing:.075em;
+  line-height:1.18;
+  overflow-wrap:anywhere;
+}
+.kp-site-brand .kp-site-word em {color:#c5a4ff;font-style:normal}
+.kp-page-header :is(a[data-kp-header-link],summary[data-kp-header-link]) {
+  display:inline-flex;
+  min-height:44px;
+  align-items:center;
+  justify-content:center;
+  max-width:100%;
+  padding:.45rem .72rem;
+  border:1px solid #674f85;
+  border-radius:9px;
+  background:#2b203d;
+  color:#f7efff;
+  font-size:.85rem;
+  font-weight:750;
+  line-height:1.24;
+  text-align:center;
+  text-decoration:none;
+  overflow-wrap:anywhere;
+}
+.kp-page-header :is(a[data-kp-header-link],summary[data-kp-header-link]):hover {background:#3f2d57;border-color:#ad8bd8}
+.kp-site-brand:focus-visible,.kp-page-header :is(a,button,summary):focus-visible {
+  outline:2px solid #ddc0ff;
+  outline-offset:3px;
+}
+.kp-page-header :is(nav,.nav,.actions,.header-actions,.mission-header-actions) {
+  min-width:0;
+  max-width:100%;
+  flex-wrap:wrap;
+}
+@media(max-width:480px){
+  .kp-page-header {gap:.5rem .7rem}
+  .kp-page-header :is(nav,.nav,.actions,.header-actions,.mission-header-actions) {justify-content:flex-start}
+  .kp-page-header :is(a[data-kp-header-link],summary[data-kp-header-link]) {padding-inline:.55rem}
+}
+@media(prefers-reduced-motion:no-preference){
+  @view-transition {navigation:auto}
+  ::view-transition-old(root) {animation-duration:110ms}
+  ::view-transition-new(root) {animation-duration:155ms}
+}
+
+/* Keep the existing home sidebar and compact wardrobe header layouts. */
+body[data-kp-layout="home"] .side .kp-site-brand {gap:.55rem}
+body[data-kp-layout="home"] .side .kp-site-word {font-size:.88rem}
+.kp-page-header .kp-site-brand .kp-site-mark {color:#211336}
+.kp-page-header .kp-site-brand .kp-site-word {color:#f7efff}
+.wardrobe-topbar.kp-page-header {align-items:center}
+@media(max-width:390px){
+  .kp-site-brand > .kp-site-mark {width:36px;height:36px;flex-basis:36px}
+  .kp-site-brand .kp-site-word {font-size:.80rem}
+}
+
+:root[data-kp-effects="off"]::view-transition-old(root),
+:root[data-kp-effects="off"]::view-transition-new(root) {animation:none}

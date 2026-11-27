@@ -145,3 +145,57 @@ html:not(.profile-view):not(.profile-only) body[data-kp-layout="wardrobe"] .layo
  body[data-kp-layout="home"] :is(.kp-hero-actions .btn,.kp-room-join,.kp-coin-info) { min-height:44px; }
  body[data-kp-layout="shop"] .product-actions button { min-height:40px; }
 }
+
+/* Gece's self-contained workshop loads the existing responsive sheet. */
+body[data-kp-layout="wardrobe"] header:has(> b + .back-shop):not(.kp-page-header) {
+  flex-wrap:wrap;
+  gap:.65rem 1rem;
+  border-block-end:1px solid #b695f135;
+}
+body[data-kp-layout="wardrobe"] header:has(> b + .back-shop):not(.kp-page-header) > b {
+  display:inline-flex;
+  align-items:center;
+  gap:.65rem;
+  color:#f7efff;
+  font-size:.92rem;
+  font-weight:900;
+  letter-spacing:.075em;
+}
+body[data-kp-layout="wardrobe"] header:has(> b + .back-shop):not(.kp-page-header) > b::before {
+  content:"K" / "";
+  display:grid;
+  width:40px;
+  height:40px;
+  place-items:center;
+  border:1px solid #dec7ff99;
+  border-radius:12px;
+  background:linear-gradient(150deg,#e4d2ff,#9e76ed 62%,#7046bd);
+  color:#211336;
+  font-size:1.22rem;
+  font-weight:950;
+  letter-spacing:0;
+}
+body[data-kp-layout="wardrobe"] header:has(> b + .back-shop):not(.kp-page-header) > .back-shop {
+  display:inline-flex;
+  min-height:44px;
+  align-items:center;
+  padding:.45rem .72rem;
+  border:1px solid #674f85;
+  border-radius:9px;
+  background:#2b203d;
+  color:#f7efff;
+  font-size:.85rem;
+  font-weight:750;
+}
+body[data-kp-layout="wardrobe"] header:has(> b + .back-shop):not(.kp-page-header) .back-shop:focus-visible {
+  outline:2px solid #ddc0ff;
+  outline-offset:3px;
+}
+@media(prefers-reduced-motion:no-preference){
+  @view-transition {navigation:auto}
+  ::view-transition-old(root) {animation-duration:110ms}
+  ::view-transition-new(root) {animation-duration:155ms}
+}
+
+:root[data-kp-effects="off"]::view-transition-old(root),
+:root[data-kp-effects="off"]::view-transition-new(root) {animation:none}

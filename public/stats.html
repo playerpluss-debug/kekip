@@ -202,23 +202,17 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
 #statsFilters .toolbar-group{min-width:0;max-width:100%}#statsFilters .chips{gap:6px}#statsFilters .chip,#badgeChips .chip{min-height:42px;max-width:100%;white-space:normal}#statsFilters .toolbar:has(#statsMetricGroup[hidden]){margin-bottom:0}
 #statsFilters .summary-grid{margin-top:8px}.stats-view{min-width:0}.stats-view .panel{min-width:0}.stats-view .panel-note{max-width:100%;overflow-wrap:anywhere}.stats-view .compare-select{max-width:100%;min-width:0}.row-stat b,.podium-score strong,.podium-meta b,.me-rank strong{overflow-wrap:anywhere}
 @media(max-width:620px){.stats-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;border-radius:13px}.stats-tabs button{min-height:44px;font-size:12px}.stats-view .panel-head{margin-bottom:12px}#statsFilters .toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}#statsFilters .chips{display:flex;flex-wrap:wrap}#statsFilters .chip,#badgeChips .chip{min-height:44px;padding:8px 10px}.stats-view .row{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stats-view .row .row-user{grid-column:2;grid-row:1;grid-template-columns:36px minmax(0,1fr);gap:6px}.stats-view .row .row-avatar{width:36px;height:36px}.stats-view .row .rank-pill{grid-column:1;grid-row:1}.stats-view .row-stat{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:8px;min-width:0}.stats-view .row-stat span{white-space:normal;overflow-wrap:anywhere}.stats-view .row-stat.extra{grid-column:1/-1}.stats-view .me-card{min-width:0}.stats-view .compare-head{min-width:0}.stats-view .compare-head strong{overflow-wrap:anywhere}}
-</style></head>
+</style><link rel="stylesheet" href="/kekip-navigation.css?v=05122"></head>
 <body data-kp-layout="stats" class="kp-motion-page kp-motion-legacy-pseudo"><div class="kp-live-backdrop" aria-hidden="true"><span class="kp-light kp-light-a"></span><span class="kp-light kp-light-b"></span><span class="kp-rays"></span><span class="kp-stars"></span><span class="kp-vignette"></span></div>
 <div class="page">
-  <header class="topbar">
-    <a class="brand" href="/" aria-label="Ana sayfaya dön">
-      <span class="brand-mark">K</span>
-      <span class="brand-copy">
-        <strong>KEKIP<span>.</span> GAMES</strong>
-        <small>LİDERLİK TABLOSU</small>
-      </span>
-    </a>
+  <header class="topbar kp-page-header">
+    <a class="brand kp-site-brand" href="/" aria-label="Ana sayfaya dön"><span class="kp-site-mark" aria-hidden="true">K</span><span class="kp-site-word">KEKIP<em>.</em> GAMES</span></a>
     <div class="header-actions">
-      <a class="header-btn" href="/">Ana Sayfa</a>
-      <a class="header-btn" href="/friends.html">Arkadaşlar</a>
-      <a class="header-btn" href="/avatar.html">Karakterim</a>
-      <a class="header-btn" href="/shop.html">Mağaza</a>
-      <a class="header-btn primary" href="/football.html">Futbol Kariyeri</a>
+      <a class="header-btn" href="/" data-kp-header-link>Ana Sayfa</a>
+      <a class="header-btn" href="/friends.html" data-kp-header-link>Arkadaşlar</a>
+      <a class="header-btn" href="/avatar.html" data-kp-header-link>Karakterim</a>
+      <a class="header-btn" href="/shop.html" data-kp-header-link>Mağaza</a>
+      <a class="header-btn primary" href="/football.html" data-kp-header-link>Futbol Kariyeri</a>
     </div>
   </header>
 
