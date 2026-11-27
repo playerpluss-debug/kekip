@@ -84,27 +84,41 @@ button:not(:disabled):hover{background:#573a77}.primary{background:#9363d9;color
   position:relative;border:1px solid #6b53a477;background:linear-gradient(180deg,#261d42e6,#1d1730);
   border-radius:14px;padding:7px;box-shadow:0 5px 0 #110e22,0 9px 20px #100c2869;
 }
-.game-studio[data-active=true] .actor{height:clamp(101px,17vw,177px);background:radial-gradient(ellipse at 50% 41%,#554380 5%,#211a39 73%);isolation:isolate;overflow:hidden}
-.game-studio[data-active=true] .actor::before{background:conic-gradient(from 145deg at 50% -12%,#ffe6b26e 0 68deg,transparent 69deg);opacity:0;z-index:1}
+.studio-seated{display:none}
+.game-studio[data-active=true] .actor{
+  height:auto;aspect-ratio:1.38;min-height:100px;display:block;position:relative;isolation:isolate;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 41%,#554380 5%,#211a39 73%);
+}
+.game-studio[data-active=true] .actor::before{background:conic-gradient(from 148deg at 50% -12%,#ffe6b26e 0 64deg,transparent 65deg);opacity:0;z-index:1}
 .game-studio[data-active=true] .studio-chair{
-  display:block;position:absolute;inset:auto 15% 12% 15%;height:62%;border-radius:23% 23% 16% 16%;z-index:2;
-  border:1px solid #a17ad0;background:repeating-linear-gradient(90deg,#614688 0 12px,#57407b 12px 14px);
-  box-shadow:inset 0 2px 7px #c29beb75,0 9px 0 #211531,0 17px 20px #110c23ba;
+  display:block;position:absolute;left:23%;right:23%;top:26%;bottom:33%;border-radius:23% 23% 13% 13%;z-index:2;
+  border:1px solid #a17ad0;background:repeating-linear-gradient(90deg,#604688 0 12px,#543e79 12px 14px);
+  box-shadow:inset 0 2px 7px #c29beb75,0 8px 0 #211531,0 14px 18px #110c23ba;
 }
-.game-studio[data-active=true] .studio-chair::before{content:"";position:absolute;inset:auto 9% -10% 9%;height:25%;transform:rotateX(27deg);border-radius:25% 25% 30% 30%;background:linear-gradient(#8d6bba,#4c376b);border:1px solid #a281c7}
+.game-studio[data-active=true] .studio-chair::before{
+  content:"";position:absolute;left:-7%;right:-7%;bottom:-20%;height:36%;transform:skewX(-6deg);
+  border:1px solid #a281c7;border-radius:22%;background:linear-gradient(#8767af,#46345f);
+  box-shadow:0 5px 0 #36274b;
+}
+.game-studio[data-active=true] .studio-chair::after{
+  content:"";position:absolute;top:114%;left:2%;right:2%;height:46%;z-index:-1;
+  background:linear-gradient(90deg,#735a90 0 6%,transparent 6% 94%,#735a90 94%);
+}
 .game-studio[data-active=true] .actor::after{
-  content:"";position:absolute;inset:auto 13% 13%;height:13%;z-index:4;pointer-events:none;border-radius:22% 22% 32% 32%;
-  border-top:1px solid #ba96e2;background:linear-gradient(90deg,#8d6bb5 0 15%,transparent 16% 84%,#8d6bb5 85% 100%);
-  box-shadow:0 9px 8px #170e282d;
+  content:"";position:absolute;left:19%;right:19%;top:57%;height:12%;z-index:4;pointer-events:none;border-radius:17%;
+  background:linear-gradient(90deg,#9b7ac1 0 12%,transparent 12% 88%,#9b7ac1 88%);
+  filter:drop-shadow(0 3px 0 #4b386b);
 }
-.game-studio[data-active=true] .late-portrait{
-  position:absolute;z-index:3;bottom:20%;left:21%;height:75%;width:58%;aspect-ratio:auto;overflow:hidden;
-  border-radius:0 0 19% 19%;transform-origin:50% 94%;
+.game-studio[data-active=true] .late-portrait,.game-studio[data-active=true] .studio-seated{
+  position:absolute;z-index:3;bottom:6%;left:50%;height:90%;width:auto;max-width:75%;
+  object-fit:contain;transform:translateX(-50%);
 }
-.game-studio[data-active=true] .late-portrait>.kp-portrait-image{
-  height:182%!important;object-fit:contain!important;object-position:50% 0!important;background:transparent!important;
-}
+.game-studio[data-active=true] .late-portrait{aspect-ratio:8/11;animation:none;overflow:hidden}
+.game-studio[data-active=true] .late-portrait>.kp-portrait-image{object-fit:contain!important;background:transparent!important}
 .game-studio[data-active=true] .late-portrait[data-kp-pet]::after{display:none}
+.game-studio[data-active=true] .studio-seated:not([hidden]){display:block}
+.game-studio[data-active=true] .actor:has(>.studio-seated:not([hidden])) .late-portrait{visibility:hidden}
+.game-studio[data-active=true] .stage[data-count="8"] .actor{min-height:92px}
 .game-studio[data-active=true] .player[data-jury=true]{border-color:#7e74bb}
 .game-studio[data-active=true] .player[data-contestant=true]{border-color:#ffd69a;box-shadow:0 0 18px #e7a65065,0 5px 0 #714321}
 .game-studio[data-active=true] .player[data-contestant=true] .actor::before{opacity:.78}
