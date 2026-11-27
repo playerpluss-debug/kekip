@@ -3,12 +3,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Gecikmeli Cevap | KEKIP Games</title>
-<link rel="stylesheet" href="/late-answer.css?v=podium1">
+<link rel="stylesheet" href="/late-answer.css?v=reader-answer1">
 <script src="/socket.io/socket.io.js" defer></script>
 <script src="/experience-settings.js" defer></script>
 <script src="/avatar-portraits.js" defer></script>
 <script src="/late-answer-voice.js" defer></script>
-<script src="/late-answer-client.js?v=timed60" defer></script>
+<script src="/late-answer-client.js?v=reader-answer1" defer></script>
 <script src="/social.js" defer></script>
 <script src="/chat-client.js" defer></script>
 <script src="/reward-effects.js" defer></script>
@@ -53,7 +53,7 @@
       <div class="row"><strong id="role"></strong><span id="timer" aria-hidden="true"></span></div>
       <span id="timerLive" class="sr-only" aria-live="polite"></span>
       <div class="question" aria-live="polite" aria-atomic="true"><small id="questionMeta"></small><h2 id="prompt" tabindex="-1"></h2><p id="instruction"></p></div>
-      <p id="answer" class="answer" hidden></p>
+      <p id="answer" class="answer" aria-live="polite" hidden></p>
       <div id="votes" class="actions" hidden><button id="yes" class="primary" type="button">Doğru</button><button id="no" type="button">Yanlış / geç</button></div>
       <p id="lastResult" role="status"></p>
       <button id="turnReady" class="primary" type="button" hidden>Hazırım</button>

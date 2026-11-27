@@ -39,7 +39,10 @@ test('first contestant is ready, the next player reads, and one deadline governs
   assert.equal(game.snapshot(r,'id0',20).question,bank[1].question);
   assert.equal(game.snapshot(r,'id0',20).answers,null);
   assert.equal(game.snapshot(r,'id2',20).answers,null);
-  assert.deepEqual(game.snapshot(r,'id1',20).answers,bank[0].answers);
+  const readerView=game.snapshot(r,'id1',20);
+  assert.deepEqual(readerView.answers,bank[0].answers);
+  assert.equal(readerView.question,bank[1].question);
+  assert.equal(Object.hasOwn(readerView,'expectedQuestion'),false);
   assert.equal(game.vote(r,'id1',{sequence:r.sequence-1,correct:true},30),false);
   assert.equal(choose(r,'id0',true,30),false);
   assert.ok(choose(r,'id1',true,30));

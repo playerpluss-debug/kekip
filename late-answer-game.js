@@ -150,7 +150,7 @@ function snapshot(room,id,now){
     me:me?.username,host:room.players.find(p=>p.id===room.host)?.username,
     contestant:player?.username??null,reader:activeReader?.username??null,turn:Math.min(room.turn+1,room.order.length),turns:room.order.length,
     sequence:room.sequence,question:question?.question??null,category:question?.category??null,
-    answers:expected?.answers??null,expectedQuestion:expected?.question??null,
+    answers:expected?.answers??null,
     pausedFor:playing&&!room.deadline?(!player?.online?'contestant':'reader'):null,
     last:room.last,persisted:room.persisted,savingError:!!room.savingError,
     players:room.players.map(p=>{

@@ -148,8 +148,9 @@
     if(state.phase==='final')instruction=state.persisted?'Sıralama 60 saniyedeki doğru cevap sayısına göre hesaplandı.':
        state.savingError?'Sonuç kaydedilemedi. Sunucu tekrar deniyor.':'Sonuç kaydediliyor…';
     text('instruction',instruction);
-    $('answer').hidden=!state.answers?.length;
-    text('answer',state.answers?.length?'Önceki soru: '+state.expectedQuestion+' · Kabul edilen cevaplar: '+state.answers.join(' / '):'');
+    const readerAnswer=isReader&&state.phase==='answer'?state.answers?.join(' / '):'';
+    $('answer').hidden=!readerAnswer;
+    text('answer',readerAnswer||'');
     $('votes').hidden=!playing||!isReader;
     $('no').hidden=state.phase==='intro';
     text('yes',state.phase==='intro'?'İlk soruyu okudum':'Doğru');
