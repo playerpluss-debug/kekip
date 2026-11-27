@@ -185,6 +185,7 @@ function disconnectSession(token){
   if(accounts.sessionToken({get:k=>sock.request.headers[k.toLowerCase()]})===token)sock.disconnect(true);
  }
 }
+require('./favorites').attachFavorites(app);
 accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,disconnectAccount:(id)=>{for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
 require('./football-online').attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
