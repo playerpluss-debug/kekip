@@ -38,7 +38,7 @@ function cupSwaps(ballSlot,random){
  for(let i=0;i<6;i++){
   const options=pairs.filter(pair=>pair!==previous&&(!trackedMoves.has(i)||pair.includes(position)));
   const pair=options[random(options.length)],direction=random(2)?1:-1;
-  swaps.push({from:pair[0],to:pair[1],duration:520+random(121),direction});
+  swaps.push({from:pair[0],to:pair[1],duration:450+random(111),direction});
   if(pair[0]===position)position=pair[1];
   else if(pair[1]===position)position=pair[0];
   previous=pair;
