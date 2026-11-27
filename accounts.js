@@ -592,17 +592,17 @@ const COSMETICS=Object.freeze([
  ...BACKGROUNDS.filter(i=>i.price>0),
  ...Pets.PETS,
  ...Wings,
- {id:'frame_violet',slot:'frame',name:'Neon Çember',description:'Mor ışıklı profil çerçevesi',price:80},
- {id:'frame_gold',slot:'frame',name:'Altın Seri',description:'Altın renkli profil çerçevesi',price:180},
- {id:'cover_nebula',slot:'cover',name:'Nebula',description:'Yavaş hareketli mor galaksi kapağı',price:150},
- {id:'cover_tide',slot:'cover',name:'Aurora Akışı',description:'Mavi ve turkuaz ışıklı hareketli kapak',price:160},
- {id:'name_lilac',slot:'name',name:'Ametist',description:'Lila kullanıcı adı',price:65},
- {id:'name_gold',slot:'name',name:'Altın İmza',description:'Altın renkli kullanıcı adı',price:120},
- {id:'title_pioneer',slot:'title',name:'Öncü',description:'Özel kozmetik oyuncu unvanı',price:100},
- {id:'title_night',slot:'title',name:'Gece Oyuncusu',description:'Özel kozmetik oyuncu unvanı',price:100},
- {id:'effect_glow',slot:'effect',name:'Yıldız Işığı',description:'Profil kartında yumuşak ışık efekti',price:140},
- {id:'chat_violet',slot:'chat',name:'Mor Mürekkep',description:'Mor sohbet balonu ve renkli kenar',price:90},
- {id:'chat_gold',slot:'chat',name:'Altın Sohbet',description:'Altın çizgili sohbet balonu',price:130}
+ {id:'frame_violet',slot:'frame',name:'Neon Çember',description:'Mor ışıklı profil çerçevesi',price:80,rarity:'Nadir'},
+ {id:'frame_gold',slot:'frame',name:'Altın Seri',description:'Altın renkli profil çerçevesi',price:180,rarity:'Efsanevi'},
+ {id:'cover_nebula',slot:'cover',name:'Nebula',description:'Yavaş hareketli mor galaksi kapağı',price:150,rarity:'Epik'},
+ {id:'cover_tide',slot:'cover',name:'Aurora Akışı',description:'Mavi ve turkuaz ışıklı hareketli kapak',price:160,rarity:'Epik'},
+ {id:'name_lilac',slot:'name',name:'Ametist',description:'Lila kullanıcı adı',price:65,rarity:'Standart'},
+ {id:'name_gold',slot:'name',name:'Altın İmza',description:'Altın renkli kullanıcı adı',price:120,rarity:'Nadir'},
+ {id:'title_pioneer',slot:'title',name:'Öncü',description:'Özel kozmetik oyuncu unvanı',price:100,rarity:'Nadir'},
+ {id:'title_night',slot:'title',name:'Gece Oyuncusu',description:'Özel kozmetik oyuncu unvanı',price:100,rarity:'Nadir'},
+ {id:'effect_glow',slot:'effect',name:'Yıldız Işığı',description:'Profil kartında yumuşak ışık efekti',price:140,rarity:'Epik'},
+ {id:'chat_violet',slot:'chat',name:'Mor Mürekkep',description:'Mor sohbet balonu ve renkli kenar',price:90,rarity:'Standart'},
+ {id:'chat_gold',slot:'chat',name:'Altın Sohbet',description:'Altın çizgili sohbet balonu',price:130,rarity:'Nadir'}
 ]);
 const COSMETIC_SLOTS=[...new Set(COSMETICS.filter(x=>x.slot!=='pet').map(x=>x.slot))];
 async function equippedCosmetics(db,id){const q=await db.query('SELECT slot,item_id FROM kekip_cosmetic_equipped WHERE account_id=$1',[id]);return Object.fromEntries(q.rows.filter(r=>COSMETICS.some(c=>c.id===r.item_id&&c.slot===r.slot)).map(r=>[r.slot,r.item_id]));}
