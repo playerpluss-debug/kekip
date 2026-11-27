@@ -88,3 +88,15 @@ body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 72% 2%,#382
 #arenaLength button.wrong .arena-length-cap{background:#9c2543}
 @keyframes arena-length-wrong{0%{box-shadow:0 0 0 2px #ff7894}40%{box-shadow:0 0 22px 5px #ff577db3}100%{box-shadow:0 0 0 1px #ff7894}}
 @media(prefers-reduced-motion:reduce){#arenaLength button.wrong{animation:none}}
+
+#arenaCups:not([hidden]){position:relative;isolation:isolate;overflow:hidden;width:min(650px,100%);height:clamp(182px,31vw,240px);margin:12px auto 18px;border:1px solid #7855a0;border-radius:16px;background:radial-gradient(ellipse at 50% 34%,#533869,#21182f 72%)}
+#arenaCups::before{content:"";position:absolute;inset:auto 0 0;height:37%;background:linear-gradient(180deg,#52416f,#292036);border-top:1px solid #9f77c9}
+#arenaCups button{position:absolute;bottom:23%;width:clamp(48px,19%,108px);height:clamp(58px,15vw,104px);min-height:0;padding:0;transform:translate(-50%,var(--cup-lift,0));border:0;border-radius:10px;background:none;box-shadow:none;opacity:1}
+#arenaCups button::before{content:"";position:absolute;inset:0;background:linear-gradient(98deg,#6b479c 0%,#c8a1f4 28%,#a275db 53%,#503077 100%);clip-path:polygon(20% 0,80% 0,99% 96%,91% 100%,9% 100%,1% 96%);border-radius:30% 30% 12% 12%}
+#arenaCups button::after{content:"";position:absolute;left:20%;width:60%;top:0;height:14%;border-radius:50%;background:linear-gradient(#e2c5ff,#a375d3);box-shadow:0 1px 3px #522782}
+#arenaCups button span{position:absolute;z-index:1;left:0;right:0;bottom:17%;font-weight:850;color:#1c102c;opacity:0}
+#arenaCups.choosing button span{opacity:1}
+#arenaCups button:not(:disabled):hover::before,#arenaCups button.selected::before{filter:brightness(1.23)}
+#arenaCups button.selected{outline:2px dashed #e6caff;outline-offset:3px}
+#arenaCups button.correct{outline:2px solid #92ffbe;outline-offset:3px}
+#arenaCupBall{position:absolute;z-index:1;bottom:23%;width:clamp(15px,4.8vw,26px);aspect-ratio:1;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle at 28% 22%,#fff4d5,#ffc76a 36%,#b86623 82%);box-shadow:0 3px 8px #160c22}

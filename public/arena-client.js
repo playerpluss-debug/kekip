@@ -35,6 +35,7 @@
  let savingGames=false,catalogKey='';
  const colors=$('arenaColors'),colorButtons=[...colors.querySelectorAll('button')];
  const length=$('arenaLength'),sample=$('arenaLengthSample'),lengthChoices=$('arenaLengthChoices');
+ const cups=$('arenaCups'),cupBall=$('arenaCupBall'),cupButtons=[...cups.querySelectorAll('button')];
  let lengthKey='';
  const gameNames=new Map();
  const gameTitle=id=>gameNames.get(id)||id;
@@ -97,6 +98,52 @@
    button.classList.toggle('wrong',wrong===index);
   });
  }
+ function positionCups(challenge,t,reveal=null){
+  const places=[0,1,2,3],lift=[0,0,0,0],depth=[2,2,2,2];
+  let ball=reveal;
+  if(challenge?.phase==='preview'){
+   ball=challenge.ballSlot;lift[ball]=48;
+  }else if(challenge?.phase==='mix'){
+   const elapsed=t-challenge.mixStartsAt;
+   if(elapsed<0){
+    const cover=Math.max(1,challenge.mixStartsAt-challenge.coverStartsAt);
+    const started=Math.max(0,1+elapsed/cover);
+    lift[challenge.ballSlot]=48*(1-started);
+    if(started<.82)ball=challenge.ballSlot;
+   }else{
+    let remaining=elapsed;
+    for(const {from,to,duration,direction} of challenge.swaps){
+     const first=places.indexOf(from),second=places.indexOf(to);
+     if(remaining>=duration){
+      places[first]=to;places[second]=from;remaining-=duration;continue;
+     }
+     const fraction=Math.max(0,remaining/duration),ease=fraction*fraction*(3-2*fraction);
+     const arc=Math.sin(Math.PI*fraction)*27*direction;
+     places[first]=from+(to-from)*ease;places[second]=to+(from-to)*ease;
+     lift[first]=arc;lift[second]=-arc;depth[first]=direction>0?3:4;depth[second]=direction>0?4:3;
+     break;
+    }
+   }
+  }else if(reveal!==null)lift[reveal]=48;
+  else if(challenge?.phase==='prepare')lift.fill(0);
+  cupButtons.forEach((button,index)=>{
+   button.style.left=(12.5+places[index]*25)+'%';
+   button.style.setProperty('--cup-lift',-lift[index]+'px');
+   button.style.zIndex=String(depth[index]);
+  });
+  cupBall.hidden=ball===null;
+  if(ball!==null)cupBall.style.left=(12.5+ball*25)+'%';
+ }
+ function paintCups(challenge,t,{disabled,choice,answer=null}){
+  cups.hidden=false;
+  cups.classList.toggle('choosing',challenge?.phase==='lit'||answer!==null);
+  cupButtons.forEach((button,index)=>{
+   button.disabled=disabled;
+   button.classList.toggle('selected',choice===index);
+   button.classList.toggle('correct',answer===index);
+  });
+  positionCups(challenge,t,answer);
+ }
  function renderStage(t){
   if(!current)return;
   if(current.phase==='final'){
@@ -109,6 +156,7 @@
   reflex.hidden=!challenge||game!=='reflex';
   if(game!=='color')colors.hidden=true;
   if(game!=='length')length.hidden=true;
+  if(game!=='cups')cups.hidden=true;
   if(!challenge){
    clock.textContent=current.deadline?Math.max(0,Math.ceil((current.deadline-t)/1000))+' sn':'';
    update(title,'Tur '+number+' sonuçları');
@@ -124,6 +172,12 @@
      wrong:own?.kind==='wrong'?own.choice:undefined});
     const result=own?.kind==='hit'?'Doğru cevap · '+own.points+' puan':own?.kind==='wrong'?'Yanlış cevap · 0 puan':'Cevap verilmedi · 0 puan';
     update(prompt,result+(answer?' · Doğru çubuk '+(answer.odd+1)+'. sıradaydı.':''));
+   }else if(game==='cups'){
+    const own=current.players.find(player=>player.username===current.you)?.reaction;
+    const answer=current.cupsAnswer;
+    paintCups(null,t,{disabled:true,choice:own?.choice,answer});
+    const result=own?.kind==='hit'?'Doğru cevap · '+own.points+' puan':own?.kind==='wrong'?'Yanlış cevap · 0 puan':'Cevap verilmedi · 0 puan';
+    update(prompt,result+(answer===null?'':' · Top '+(answer+1)+'. bardağın altındaydı.'));
    }else update(prompt,'En hızlı geçerli tepki 100 puan alır.');
    return;
   }
@@ -146,6 +200,13 @@
     disabled:!lit||expired||Boolean(press)||sending||!socket.connected,choice:press?.choice,
     wrong:press?.wrong?press.choice:undefined});
    update(prompt,press?.wrong?'Yanlış cevap · 0 puan':press?'Seçimin kaydedildi.':expired?'Süre doldu.':preview?'Örnek çubuğun boyunu aklında tut.':lit?'Örnekle aynı boydaki çubuğu seç.':'Tur başlıyor.');
+   return;
+  }
+  if(game==='cups'){
+   const preview=challenge.phase==='preview',mixing=challenge.phase==='mix';
+   clock.textContent=lit?Math.max(0,Math.ceil((challenge.endsAt-t)/1000))+' sn':!ready?Math.max(0,Math.ceil((challenge.startsAt-t)/1000))+' sn':'';
+   paintCups(challenge,t,{disabled:!lit||expired||Boolean(press)||sending||!socket.connected,choice:press?.choice});
+   update(prompt,press?'Seçimin kaydedildi.':expired?'Süre doldu.':preview?'Topun yerini aklında tut.':mixing?'Topu kapatan bardağı takip et.':lit?'Top hangi bardağın altında?':'Tur başlıyor.');
    return;
   }
   clock.textContent=!ready?Math.max(0,Math.ceil((challenge.startsAt-t)/1000))+' sn':'';
@@ -180,7 +241,7 @@
   finally{if(sameRound()){sending=false;renderStage(serverNow());}}
  }
  reflex.onclick=()=>{if(!reflex.disabled)submit();};
- colorButtons.forEach((button,index)=>{button.onclick=()=>{if(!button.disabled)submit(index);};});
+ for(const buttons of [colorButtons,cupButtons])buttons.forEach((button,index)=>{button.onclick=()=>{if(!button.disabled)submit(index);};});
  function showResults(result){
   if(!result)return;
   results.hidden=false;
@@ -347,6 +408,16 @@
   const link=new URL('/arena.html',location.origin);link.searchParams.set('room',current.code);
   await navigator.clipboard.writeText(link.toString());status('Davet bağlantısı kopyalandı.');
  });
- setInterval(()=>renderStage(serverNow()),100);
+ let cupFrame=0;
+ function animateCups(){
+  if(current?.challenge?.game==='cups'&&current.challenge.phase==='mix'){
+   positionCups(current.challenge,serverNow());
+   cupFrame=requestAnimationFrame(animateCups);
+  }else cupFrame=0;
+ }
+ setInterval(()=>{
+  renderStage(serverNow());
+  if(!cupFrame&&current?.challenge?.game==='cups'&&current.challenge.phase==='mix')cupFrame=requestAnimationFrame(animateCups);
+ },100);
  socket.connect();
 })();

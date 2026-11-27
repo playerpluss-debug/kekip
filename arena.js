@@ -32,7 +32,8 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
    host:room.players.find(p=>p.id===room.host)?.username,you:player.username,
    players:room.players.map(p=>({username:p.username,online:!!p.socketId,total:p.total,last:p.last,reaction:p.reaction,answered:room.phase==='round'&&room.round.presses.has(p.id)})),
    challenge,colorAnswer:room.phase==='summary'&&room.round.game==='color'?{colors:room.round.colors,odd:room.round.odd}:null,
-   lengthAnswer:room.phase==='summary'&&room.round.game==='length'?{lengths:room.round.lengths,odd:room.round.odd}:null
+   lengthAnswer:room.phase==='summary'&&room.round.game==='length'?{lengths:room.round.lengths,odd:room.round.odd}:null,
+   cupsAnswer:room.phase==='summary'&&room.round.game==='cups'?room.round.odd:null
   };
  }
  function publish(room,t=now()){

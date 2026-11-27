@@ -3,10 +3,13 @@
 const responseWindow=2000;
 const choiceWindow=4000;
 const lengthPreview=2200;
+const cupsPreview=1250;
+const cupsCover=360;
 const gameOptions=Object.freeze([
  {id:'reflex',title:'Refleks Testi'},
  {id:'color',title:'Renk Farkı'},
- {id:'length',title:'Hedef Boyu'}
+ {id:'length',title:'Hedef Boyu'},
+ {id:'cups',title:'Bardak Altında'}
 ]);
 const gameModes=gameOptions.map(game=>game.id);
 function shuffle(values,random){
@@ -27,6 +30,21 @@ const nearColors=[
  [258,57,57,5,0], [296,51,55,0,3], [330,62,54,5,0]
 ];
 const hsl=(h,s,l)=>'hsl('+h+' '+s+'% '+l+'%)';
+function cupSwaps(ballSlot,random){
+ const pairs=[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]];
+ const trackedMoves=new Set(shuffle([0,1,2,3,4,5],random).slice(0,3));
+ const swaps=[];
+ let position=ballSlot,previous=null;
+ for(let i=0;i<6;i++){
+  const options=pairs.filter(pair=>pair!==previous&&(!trackedMoves.has(i)||pair.includes(position)));
+  const pair=options[random(options.length)],direction=random(2)?1:-1;
+  swaps.push({from:pair[0],to:pair[1],duration:520+random(121),direction});
+  if(pair[0]===position)position=pair[1];
+  else if(pair[1]===position)position=pair[0];
+  previous=pair;
+ }
+ return {swaps,position};
+}
 function openRound(now,random,game='reflex'){
  const startsAt=now+2000;
  const round={game,startsAt,flashAt:null,litAt:null,phase:'prepare',presses:new Map(),
@@ -41,15 +59,26 @@ function openRound(now,random,game='reflex'){
   const direction=random(2)?1:-1;
   round.lengths=shuffle([-7,-4,0,3,6,9].map(offset=>round.target+direction*offset),random);
   round.odd=round.lengths.indexOf(round.target);
+ }else if(game==='cups'){
+  round.ballSlot=random(4);
+  const {swaps,position}=cupSwaps(round.ballSlot,random);
+  round.swaps=swaps;
+  round.odd=position;
  }else round.flashAt=startsAt+500+random(4401);
  return round;
 }
 
 function advanceRound(round,now){
- if(round.phase==='prepare'&&now>=round.startsAt&&round.game==='length'){
-  round.phase='preview';round.previewEndsAt=now+lengthPreview;
+ if(round.phase==='prepare'&&now>=round.startsAt&&['length','cups'].includes(round.game)){
+  round.phase='preview';round.previewEndsAt=now+(round.game==='cups'?cupsPreview:lengthPreview);
   return true;
  }
+ if(round.phase==='preview'&&now>=round.previewEndsAt&&round.game==='cups'){
+  round.phase='mix';round.coverStartsAt=now;round.mixStartsAt=now+cupsCover;
+  round.mixEndsAt=round.mixStartsAt+round.swaps.reduce((total,swap)=>total+swap.duration,0)+180;
+  return true;
+ }
+ if(round.phase==='mix'&&now>=round.mixEndsAt){round.phase='lit';round.litAt=now;return true;}
  if(round.phase==='preview'&&now>=round.previewEndsAt){
   round.phase='lit';round.litAt=now;
   return true;
@@ -78,13 +107,15 @@ function visibleRound(round,player){
   press:visiblePress(round,round.presses.get(player)),
   ...(round.game==='color'&&round.phase==='lit'?{colors:round.colors}:{}),
   ...(round.game==='length'&&round.phase==='preview'?{target:round.target,previewEndsAt:round.previewEndsAt}:{}),
-  ...(round.game==='length'&&round.phase==='lit'?{lengths:round.lengths}:{})};
+  ...(round.game==='length'&&round.phase==='lit'?{lengths:round.lengths}:{}),
+  ...(round.game==='cups'&&round.phase==='preview'?{ballSlot:round.ballSlot}:{}),
+  ...(round.game==='cups'&&round.phase==='mix'?{ballSlot:round.ballSlot,swaps:round.swaps,coverStartsAt:round.coverStartsAt,mixStartsAt:round.mixStartsAt}:{})};
 }
 
 function registerPress(round,player,now,choice){
- if(round.phase==='prepare'||round.phase==='preview'||round.presses.has(player))return null;
+ if(round.presses.has(player)||(round.phase!=='lit'&&(round.game!=='reflex'||round.phase!=='waiting')))return null;
  if(round.litAt!==null&&now>=round.litAt+round.responseWindow)return null;
- const optionCount=round.game==='length'?round.lengths.length:3;
+ const optionCount=round.game==='length'?round.lengths.length:round.game==='cups'?4:3;
  if(round.game!=='reflex'&&(!Number.isInteger(choice)||choice<0||choice>=optionCount))return null;
  const ms=round.litAt===null?null:Math.max(0,now-round.litAt);
  const press=round.game!=='reflex'?{kind:choice===round.odd?'hit':'wrong',ms,choice}:
