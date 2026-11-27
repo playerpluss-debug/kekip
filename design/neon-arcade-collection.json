@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "design_only",
+  "status": "concept_approved_layer_production_pending",
   "saleEnabled": false,
   "collectionName": "Neon Arcade",
   "theme": "Retro-fütüristik sokak modası",
@@ -21,7 +21,9 @@
     "Katman adları üretim taslağıdır; her biri mevcut gardırop ve portre renderer'ındaki gerçek eşlemelerle doğrulanmadan katalog eklenmez.",
     "Renk varyantları ayrı ücretli ürün olmaz.",
     "Mevcut mağaza, sandık, envanter, fiyatlar ve Mitik setler değiştirilmez.",
-    "Her ürün eski kombinlerle test edilir. Fiyatlar ve satışa açma için yönetici onayı gerekir."
+    "Her ürün eski kombinlerle test edilir. Fiyatlar ve satışa açma için yönetici onayı gerekir.",
+    "Konsept görseli katman dosyası değildir. Gölge el-ceket-pantolon birleşimleri ve Gece saç/kol kesişimleri eski sabit temel üzerinde yeniden çizilip onaylanmalıdır.",
+    "Gölge kolye katman adı neck olmalıdır. Bileklik, saç gölgesi, kol/ayakkabı maskeleme ve portre renderer desteği ayrı doğrulanır."
   ],
   "items": [
     {
@@ -37,7 +39,24 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "hair-back",
+        "hair-front"
+      ],
+      "assets": [
+        {
+          "layer": "hair-back",
+          "standard": "public/images/neon-arcade/gece/gece_retro_hair_ribbon_braid/hair-back.png",
+          "hd": "public/images/neon-arcade/gece/gece_retro_hair_ribbon_braid/hair-back-hd.png"
+        },
+        {
+          "layer": "hair-front",
+          "standard": "public/images/neon-arcade/gece/gece_retro_hair_ribbon_braid/hair-front.png",
+          "hd": "public/images/neon-arcade/gece/gece_retro_hair_ribbon_braid/hair-front-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_hair_ribbon_braid/preview.webp"
     },
     {
       "id": "gece_retro_eye_pixel",
@@ -51,7 +70,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "eyes"
+      ],
+      "assets": [
+        {
+          "layer": "eyes",
+          "standard": "public/images/neon-arcade/gece/gece_retro_eye_pixel/eyes.png",
+          "hd": "public/images/neon-arcade/gece/gece_retro_eye_pixel/eyes-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_eye_pixel/preview.webp"
     },
     {
       "id": "gece_retro_top_arcade",
@@ -65,7 +95,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "top-clothing"
+      ],
+      "assets": [
+        {
+          "layer": "top",
+          "standard": "public/images/neon-arcade/gece/gece_retro_top_arcade/top.png",
+          "hd": "public/images/neon-arcade/gece/gece_retro_top_arcade/top-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_top_arcade/preview.webp"
     },
     {
       "id": "gece_retro_bottom_wrap",
@@ -79,7 +120,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "bottom-clothing"
+      ],
+      "assets": [
+        {
+          "layer": "bottom",
+          "standard": "public/images/neon-arcade/gece/gece_retro_bottom_wrap/bottom.png",
+          "hd": "public/images/neon-arcade/gece/gece_retro_bottom_wrap/bottom-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_bottom_wrap/preview.webp"
     },
     {
       "id": "gece_retro_shoes_high",
@@ -93,7 +145,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "shoes"
+      ],
+      "assets": [
+        {
+          "layer": "shoes",
+          "standard": "public/images/neon-arcade/gece/gece_retro_shoes_high/shoes.png",
+          "hd": "public/images/neon-arcade/gece/gece_retro_shoes_high/shoes-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_shoes_high/preview.webp"
     },
     {
       "id": "gece_retro_ear_cassette",
@@ -107,7 +170,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "access-ear"
+      ],
+      "assets": [
+        {
+          "layer": "earring",
+          "standard": "public/images/neon-arcade/gece/gece_retro_ear_cassette/earring.png",
+          "hd": "public/images/neon-arcade/gece/gece_retro_ear_cassette/earring-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_ear_cassette/preview.webp"
     },
     {
       "id": "gece_retro_wrist_pixel",
@@ -121,7 +195,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "access-wrist"
+      ],
+      "assets": [
+        {
+          "layer": "wrist",
+          "standard": "public/images/neon-arcade/gece/gece_retro_wrist_pixel/wrist.png",
+          "hd": "public/images/neon-arcade/gece/gece_retro_wrist_pixel/wrist-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/gece/gece_retro_wrist_pixel/preview.webp"
     },
     {
       "id": "golge_retro_hair_curtain",
@@ -136,7 +221,24 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "kp-chest-hair-back",
+        "hair"
+      ],
+      "assets": [
+        {
+          "layer": "hair-back",
+          "standard": "public/images/neon-arcade/golge/golge_retro_hair_curtain/hair-back.png",
+          "hd": "public/images/neon-arcade/golge/golge_retro_hair_curtain/hair-back-hd.png"
+        },
+        {
+          "layer": "hair-front",
+          "standard": "public/images/neon-arcade/golge/golge_retro_hair_curtain/hair-front.png",
+          "hd": "public/images/neon-arcade/golge/golge_retro_hair_curtain/hair-front-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_hair_curtain/preview.webp"
     },
     {
       "id": "golge_retro_eye_scan",
@@ -150,7 +252,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "eyes"
+      ],
+      "assets": [
+        {
+          "layer": "eyes",
+          "standard": "public/images/neon-arcade/golge/golge_retro_eye_scan/eyes.png",
+          "hd": "public/images/neon-arcade/golge/golge_retro_eye_scan/eyes-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_eye_scan/preview.webp"
     },
     {
       "id": "golge_retro_top_track",
@@ -164,7 +277,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "top"
+      ],
+      "assets": [
+        {
+          "layer": "top",
+          "standard": "public/images/neon-arcade/golge/golge_retro_top_track/top.png",
+          "hd": "public/images/neon-arcade/golge/golge_retro_top_track/top-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_top_track/preview.webp"
     },
     {
       "id": "golge_retro_bottom_panel",
@@ -178,7 +302,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "bottom"
+      ],
+      "assets": [
+        {
+          "layer": "bottom",
+          "standard": "public/images/neon-arcade/golge/golge_retro_bottom_panel/bottom.png",
+          "hd": "public/images/neon-arcade/golge/golge_retro_bottom_panel/bottom-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_bottom_panel/preview.webp"
     },
     {
       "id": "golge_retro_shoes_court",
@@ -192,7 +327,18 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "shoe"
+      ],
+      "assets": [
+        {
+          "layer": "shoes",
+          "standard": "public/images/neon-arcade/golge/golge_retro_shoes_court/shoes.png",
+          "hd": "public/images/neon-arcade/golge/golge_retro_shoes_court/shoes-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_shoes_court/preview.webp"
     },
     {
       "id": "golge_retro_neck_token",
@@ -202,11 +348,22 @@
       "rarity": "Nadir",
       "brief": "Küçük yuvarlak arcade jetonu, ince boyun zinciri.",
       "layers": [
-        "necklace"
+        "neck"
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "acc-neck"
+      ],
+      "assets": [
+        {
+          "layer": "neck",
+          "standard": "public/images/neon-arcade/golge/golge_retro_neck_token/neck.png",
+          "hd": "public/images/neon-arcade/golge/golge_retro_neck_token/neck-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_neck_token/preview.webp"
     },
     {
       "id": "golge_retro_wrist_watch",
@@ -220,7 +377,30 @@
       ],
       "price": null,
       "visualApprovalPending": true,
-      "assetStatus": "not_created"
+      "assetStatus": "not_created",
+      "targetRendererNodes": [
+        "acc-wrist"
+      ],
+      "assets": [
+        {
+          "layer": "wrist",
+          "standard": "public/images/neon-arcade/golge/golge_retro_wrist_watch/wrist.png",
+          "hd": "public/images/neon-arcade/golge/golge_retro_wrist_watch/wrist-hd.png"
+        }
+      ],
+      "thumbnail": "public/images/neon-arcade/golge/golge_retro_wrist_watch/preview.webp"
     }
-  ]
+  ],
+  "baseReference": {
+    "gece": {
+      "source": "public/part-3/a2ed72f5f7f3581ceed3562dee96f6728abfbefe124b65c6ef51e9a4954b080f.webp",
+      "gitBlob": "e5996ab969a17b5f3f09e24f4e159ce45b794968",
+      "renderer": "public/gece-gardirop.html"
+    },
+    "golge": {
+      "source": "public/part-4/d17f09aedcd8741fa2ec720b0f1c68a74a9231dd629bfeaedd27ee05ee59eade.webp",
+      "note": "Renderer-defined eyeless base; verify active base variant before final art alignment.",
+      "renderer": "public/golge-gardirop.html"
+    }
+  }
 }
