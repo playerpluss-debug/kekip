@@ -1,5 +1,6 @@
 'use strict';
 
+const {extra,extraPrompt,extraAction,settleExtra}=require('./arena-extra');
 const catalog = Object.freeze([
   {id:'lock', title:'Kilit Hattı', category:'Zamanlama'},
   {id:'route', title:'Hayalet Rota', category:'Hafıza'},
@@ -37,6 +38,7 @@ function shuffle(items,random){
 }
 
 const games={
+  ...extra,
   reaction(random){
     const target=symbols[random(symbols.length)];
     const other=shuffle(symbols.filter(symbol=>symbol!==target),random).slice(0,3);
@@ -46,6 +48,9 @@ const games={
   color(random){
     const rule=()=>({color:colors[random(colors.length)],shape:shapes[random(shapes.length)]});
     const rules=[rule(),rule()];
+    if(rules[0].color===rules[1].color&&rules[0].shape===rules[1].shape){
+      rules[1].shape=shapes[(shapes.indexOf(rules[0].shape)+1)%shapes.length];
+    }
     const sets=rules.map(({color,shape})=>shuffle([{color,shape},{color,shape},...Array.from({length:6},()=>{
       const candidate=rule();
       if(candidate.color===color&&candidate.shape===shape)candidate.color=colors[(colors.indexOf(color)+1)%colors.length];
@@ -64,9 +69,10 @@ const games={
   }
 };
 
-function playlist(selected,rounds,random){
-  const eligible=catalog.filter(game=>Object.hasOwn(games,game.id)&&(!selected||selected.includes(game.id)));
-  if(!eligible.length)throw Error('En az bir oynanabilir oyun seç.');
+function playlist(selected,rounds,random,playerCount){
+  const eligible=catalog.filter(game=>(!selected||selected.includes(game.id))&&
+    (!game.paired||(playerCount>=4&&playerCount%2===0)));
+  if(!eligible.length)throw Error('Çift Kumanda için 4, 6 veya 8 oyuncu gerekli. Oyuncu ekle veya başka bir listeyle yeni lobi kur.');
   const result=[];
   while(result.length<rounds){
     const cycle=shuffle(eligible,random);
@@ -76,14 +82,16 @@ function playlist(selected,rounds,random){
   return result.slice(0,rounds);
 }
 
-function openRound(id,now,random){
-  const challenge=games[id](random);
+function openRound(id,now,random,players=[]){
+  const challenge=games[id](random,players);
   const startsAt=now+2700;
   return {...challenge,id,startsAt,endsAt:startsAt+challenge.duration,scores:new Map(),actions:new Map()};
 }
 
-function visibleRound(round,now){
+function visibleRound(round,now,player){
   const {id,startsAt,endsAt,prompt}=round;
+  if(now<startsAt)return {id,startsAt,endsAt,prompt:null};
+  if(Object.hasOwn(extra,id))return {id,startsAt,endsAt,prompt:extraPrompt(round,now,player)};
   if(id==='missing'){
     const {shown,remaining,options}=prompt;
     return {id,startsAt,endsAt,prompt:now<startsAt+round.preview?{shown}:{remaining,options}};
@@ -106,7 +114,11 @@ function scoreAction(round,player,input,now){
   const oldScore=round.scores.get(player)||0;
   const actions=round.actions.get(player)||new Set();
   let key,score;
-  if(round.id==='reaction'){
+  if(Object.hasOwn(extra,round.id)){
+    const scored=extraAction(round,player,input,now,actions,oldScore);
+    if(!scored)return false;
+    ({key,score}=scored);
+  }else if(round.id==='reaction'){
     const {frames,interval,delay}=round.prompt;
     const index=Math.floor((now-round.startsAt-delay)/interval);
     if(input!==index||index<0||index>=frames.length)return false;
@@ -131,4 +143,4 @@ function scoreAction(round,player,input,now){
   return true;
 }
 
-module.exports={catalog,games,playlist,openRound,visibleRound,scoreAction};
+module.exports={catalog,games,playlist,openRound,visibleRound,scoreAction,settleRound:settleExtra};

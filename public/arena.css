@@ -29,4 +29,11 @@ body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 72% 2%,#382
 .arena-tile[data-color=mor]{border-color:#bd9afb}
 .arena-tile[data-color=altın]{border-color:#f0c86c}
 .arena-tile[data-color=turkuaz]{border-color:#70e0d4}
+.arena-choice-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:360px;width:100%}
+.arena-choice-grid button.lit,.arena-panel button[aria-pressed=true],#arenaBeat.lit{background:#d5b3ff;color:#221332}
+.arena-lock-meter{box-sizing:border-box;position:relative;overflow:hidden;height:28px;margin:12px 0;border-radius:14px;background:#35264a;border:1px solid #76569b}
+.arena-lock-meter i,.arena-lock-meter b{position:absolute;top:0;bottom:0;translate:-50%}
+.arena-lock-meter i{width:22%;background:#7752aa}
+.arena-lock-meter b{width:4px;background:#fff}
+#arenaBeat{display:inline-flex;min-height:36px;align-items:center;padding:0 10px;border:1px solid #ab8cc9;border-radius:9px;background:#38264d}
 @media(max-width:650px){.arena-entry{grid-template-columns:1fr}.arena-mark{opacity:.4}}

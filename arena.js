@@ -1,7 +1,7 @@
 'use strict';
 
 const {randomInt}=require('node:crypto');
-const {catalog,games,playlist,openRound,visibleRound,scoreAction}=require('./arena-games');
+const {catalog,games,playlist,openRound,visibleRound,scoreAction,settleRound}=require('./arena-games');
 const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const codePattern=/^[A-Z2-9]{5}$/;
 const roomLimit=150;
@@ -21,10 +21,10 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   return room;
  }
  function state(room,player,t){
-  const challenge=room.phase==='round'?visibleRound(room.round,t):null;
+  const challenge=room.phase==='round'?visibleRound(room.round,t,player.id):null;
   return {
    code:room.code,phase:room.phase,settings:room.settings,party:room.party,number:room.number,deadline:room.deadline,
-   serverTime:t,host:room.players.find(p=>p.id===room.host)?.username,you:player.username,
+   serverTime:t,cancelled:!!room.cancelled,host:room.players.find(p=>p.id===room.host)?.username,you:player.username,
    players:room.players.map(p=>({username:p.username,online:!!p.socketId,total:p.total,last:p.last})),
    challenge,actions:room.round?.actions.get(player.id)?[...room.round.actions.get(player.id)]:[]
   };
@@ -41,7 +41,12 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   publish(room);
  }
  function nextRound(room,t){
-  room.round=openRound(room.queue[room.number],t,random);
+  if(room.queue[room.number]==='co-op'&&(room.players.length<4||room.players.length%2)){
+   const alternatives=catalog.filter(game=>!game.paired&&(!room.settings.selected||room.settings.selected.includes(game.id)));
+   if(!alternatives.length){room.phase='final';room.deadline=0;room.cancelled=true;publish(room,t);return;}
+   room.queue[room.number]=alternatives[random(alternatives.length)].id;
+  }
+  room.round=openRound(room.queue[room.number],t,random,room.players.map(player=>player.id));
   room.number++;
   room.phase='round';
   room.deadline=room.round.endsAt;
@@ -55,13 +60,14 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
    if(!rooms.has(room.code))continue;
    if(room.phase==='round'){
     if(t>=room.deadline){
+     settleRound(room.round,room.players.map(player=>player.id));
      for(const player of room.players){
       player.last=Math.max(0,room.round.scores.get(player.id)||0);
       player.total+=player.last;
      }
      room.phase='summary';room.deadline=t+3500;publish(room,t);
     }else{
-     const view=visibleRound(room.round,t);
+     const view=visibleRound(room.round,t,room.players[0]?.id);
      const key=JSON.stringify(view.prompt);
      if(key!==room.viewKey){room.viewKey=key;publish(room,t);}
     }
@@ -122,13 +128,14 @@ function attachArena(io,accounts,{isDraining=()=>false,now=Date.now,random=rando
   bind('start',(_data,ack,room,player,t)=>{
    if(!player||player.socketId!==socket.id||room.host!==player.id||room.phase!=='lobby')return fail(ack,'Maçı oda sahibi başlatabilir.');
    if(room.players.length<2||room.players.some(p=>!p.socketId))return fail(ack,'En az iki oyuncu çevrimiçi olmalı.');
-   room.queue=playlist(room.settings.selected,room.settings.rounds,random);
+   room.queue=playlist(room.settings.selected,room.settings.rounds,random,room.players.length);
    ack({ok:true});nextRound(room,t);
   });
   bind('action',(data,ack,room,player,t)=>{
    if(!player||player.socketId!==socket.id||room.phase!=='round'||data.round!==room.number||
       !scoreAction(room.round,player.id,data.input,t))return fail(ack,'Bu hamle artık geçerli değil.');
    ack({ok:true});
+   if((room.round.id==='vault'&&data.input==='risk')||(room.round.id==='co-op'&&data.input==='hint'))publish(room,t);
   });
   bind('leave',(_data,ack,room,player)=>{
    if(!player||player.socketId!==socket.id)return fail(ack,'Bu sekmede açık lobi yok.');
