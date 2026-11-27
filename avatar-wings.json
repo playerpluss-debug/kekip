@@ -6,7 +6,8 @@
     "rarity": "Nadir",
     "price": 480,
     "description": "Doğan tüylerini andıran, gümüş grisi ve doğal çizgili kanatlar.",
-    "animated": false
+    "animated": false,
+    "releasedOn": "2026-11-27"
   },
   {
     "id": "wing_frost",
@@ -15,7 +16,8 @@
     "rarity": "Nadir",
     "price": 650,
     "description": "Uçlarında saydam buz kristalleri taşıyan açık mavi tüyler.",
-    "animated": false
+    "animated": false,
+    "releasedOn": "2026-11-27"
   },
   {
     "id": "wing_moth",
@@ -24,7 +26,8 @@
     "rarity": "Epik",
     "price": 1050,
     "description": "İnce pullu dokusu ve göz benekleriyle mor güve kanatları.",
-    "animated": false
+    "animated": false,
+    "releasedOn": "2026-11-27"
   },
   {
     "id": "wing_obsidian",
@@ -33,7 +36,8 @@
     "rarity": "Epik",
     "price": 1350,
     "description": "Koyu kemik hatları arasında gerilen, kızıl damarlı ejderha zarı.",
-    "animated": false
+    "animated": false,
+    "releasedOn": "2026-11-27"
   },
   {
     "id": "wing_seraph",
@@ -42,7 +46,8 @@
     "rarity": "Efsanevi",
     "price": 2400,
     "description": "Altın uçlu, üst üste dizilmiş fildişi renkli kartal tüyleri.",
-    "animated": false
+    "animated": false,
+    "releasedOn": "2026-11-27"
   },
   {
     "id": "wing_chronos",
@@ -51,7 +56,8 @@
     "rarity": "Efsanevi",
     "price": 2950,
     "description": "Uçuş tüyleri gibi eklemlenmiş, turkuaz patinalı bronz kanatlar.",
-    "animated": false
+    "animated": false,
+    "releasedOn": "2026-11-27"
   },
   {
     "id": "wing_phoenix",
@@ -60,7 +66,8 @@
     "rarity": "Mitik",
     "price": 5600,
     "description": "Kor uçlu kızıl tüyler, yumuşak bir ritimle açılıp kapanır.",
-    "animated": true
+    "animated": true,
+    "releasedOn": "2026-11-27"
   },
   {
     "id": "wing_nova",
@@ -69,6 +76,7 @@
     "rarity": "Mitik",
     "price": 7000,
     "description": "Yıldız benekli gece tüyleri, geniş ve ağır bir ritimle hareket eder.",
-    "animated": true
+    "animated": true,
+    "releasedOn": "2026-11-27"
   }
 ]
