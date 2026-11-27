@@ -1,0 +1,34 @@
+:root{color-scheme:dark;--text:#f7efff;--muted:#cbbade;--border:#604982}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 60% 0,#482b69,transparent 52%),#160f22;color:var(--text);font:16px/1.5 system-ui,sans-serif;min-height:100vh}
+[hidden]{display:none!important}
+main{max-width:1080px;margin:auto;padding:clamp(12px,4vw,32px)}
+h1,h2,p{margin:0}h1{font-size:clamp(2rem,5vw,3rem);line-height:1.12}
+h2{font-size:1.2rem}p{color:var(--muted)}
+.party-title{display:grid;gap:6px;padding-block:clamp(16px,5vw,32px)}
+.notice:not(:empty){margin-bottom:12px;padding:9px 12px;border:1px solid var(--border);border-radius:9px}.notice.error{color:#ffd6dd}
+.layout{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+.panel{min-width:0;padding:clamp(12px,3vw,20px);border:1px solid var(--border);border-radius:14px;background:#231831;box-shadow:0 12px 30px #09061038}
+.panel + .panel,.layout{margin-top:12px}.layout .panel{margin-top:0}
+.section-head,.rows li,.actions{display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:space-between}
+.section-head span,.person small{color:var(--muted)}
+.actions{justify-content:flex-start;margin-top:14px}
+.rows{padding:0;margin:10px 0;list-style:none}
+.rows li{padding:7px 0;overflow-wrap:anywhere}
+.rows li+li{border-top:1px solid #60498260}
+.person{display:grid;min-width:0}
+.person[data-online=true] small{color:#b8e8d2}
+button,.button,select,input{min-height:44px;max-width:100%;min-width:0;border:1px solid #76599a;border-radius:9px;background:#2b203d;color:inherit;font:inherit;padding:.45rem .65rem}
+button,.button{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;font-weight:700;text-align:center}
+button.primary{background:#7050ad;border-color:#b28cf4}
+button:hover:not(:disabled),.button:hover{filter:brightness(1.17)}
+button:disabled{cursor:default;opacity:.55}
+:focus-visible{outline:2px solid #e1c4ff;outline-offset:3px}
+form,label{min-width:0}form{display:flex;flex-wrap:wrap;align-items:end;gap:8px;margin-top:13px}label{display:grid;gap:4px;font-size:.9rem}
+#inviteForm label{flex:1 1 140px}#leaderGames label{margin-top:10px}
+#gameNote,#memberGameNote{margin-block:8px}#returnToGame{margin-top:10px}#create{margin-top:10px}
+.chat{grid-column:1/-1}.messages{max-height:240px;overflow:auto;overscroll-behavior:contain}
+.messages li{display:block;overflow-wrap:anywhere}.messages strong{margin-inline-end:8px;color:#d9befd}
+#chat{flex:1 1 165px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:670px){.layout{grid-template-columns:1fr}}

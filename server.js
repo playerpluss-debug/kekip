@@ -181,6 +181,12 @@ function adminBattleSnapshot(){
 // 0.51.12.5: invalidating a session also closes its existing game connections.
 // Match the exact revoked session, not every device of the same account.
 const lateAnswer = require('./late-answer').attachLateAnswer(io, accounts);
+const football = require('./football-online');
+const parties = require('./party').attachParty(app,accounts,{
+ battleship:(_db,members)=>reserveBattleParty(members),
+ late_answer:(_db,members)=>lateAnswer.reserveParty(members),
+ football:football.createPartyRoom
+});
 function disconnectSession(token){
  if(!token)return;
  lateAnswer.disconnectSession(token);
@@ -189,8 +195,8 @@ function disconnectSession(token){
  }
 }
 require('./favorites').attachFavorites(app);
-accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,lateInviteOpen:lateAnswer.inviteOpen,disconnectAccount:(id)=>{lateAnswer.disconnectAccount(id);for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
-require('./football-online').attachFootball(app);
+accounts.attachAccounts(app,{adminBattleSnapshot,disconnectSession,lateInviteOpen:lateAnswer.inviteOpen,disconnectAccount:(id)=>{parties.removeAccount(id);lateAnswer.disconnectAccount(id);for(const room of [...rooms.values()])for(const p of [...room.players])if(p.accountId===id){const sock=io.sockets.sockets.get(p.id);if(sock?.connected)sock.disconnect(true);else removeRoomPlayer(room,p,'left');}},battleInviteOpen:(code,sender,receiver)=>{const r=rooms.get(code);return !!(r&&!r.party&&r.phase==='waiting'&&r.players.length===1&&r.players.some(p=>p.accountId===sender&&connectedPlayer(p))&&!r.players.some(p=>p.accountId===receiver));}});
+football.attachFootball(app);
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
 const rooms = new Map();
@@ -205,6 +211,22 @@ const makeCode = () => {
   while (rooms.has(code));
   return code;
 };
+function reserveBattleParty(members){
+  expireReservations();
+  if(members.length!==2||members.some(member=>[...rooms.values()].some(room=>room.players.some(p=>p.accountId===member.id))))
+    throw Object.assign(new Error('En az bir parti üyesi başka bir Amiral Battı odasında.'),{status:409});
+  const code=makeCode(), until=Date.now()+REJOIN_GRACE_MS;
+  const players=members.map(member=>({id:crypto.randomUUID(),accountId:member.id,name:member.username,
+    disconnectedUntil:until,ready:false,ships:[],shots:[],hits:[],sunk:[]}));
+  const room={code,party:true,visibility:'private',chatId:crypto.randomUUID(),players,
+    phase:'waiting',turn:null,winner:null,lastShot:null,shotCount:0};
+  rooms.set(code,room);
+  for(const player of players){
+    player.rejoinTimer=setTimeout(()=>{if(player.disconnectedUntil)removeRoomPlayer(room,player,'rejoin_expired');},REJOIN_GRACE_MS+25);
+    player.rejoinTimer.unref?.();
+  }
+  return '/?partyRoom='+code;
+}
 const publicState = room => ({
   code: room.code,
   serverNow: Date.now(),
@@ -356,6 +378,7 @@ io.on('connection', socket => {
     expireReservations();
     if(accountInOtherSocket(account))return cb({ok:false,error:'Bu hesap başka bir sekmede odada. Önce oradan ayrıl.'});
     const room = rooms.get(String(code || '').toUpperCase().trim());
+    if(room?.party)return cb({ok:false,error:'Bu oda parti üyelerine ayrıldı. Parti sayfasından geçiş yap.'});
     if(room?.players.some(p=>p.disconnectedUntil))return cb({ok:false,error:'Odada bağlantısı kesilmiş oyuncu bekleniyor.'});
     if(publicOnly){
       if(!account)return cb({ok:false,error:'Önce hesabına giriş yap.'});

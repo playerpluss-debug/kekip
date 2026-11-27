@@ -178,7 +178,7 @@ function attachLateAnswer(io, accounts, {
       if(typeof data.code!=='string'||!CODE.test(data.code))return fail(ack,'Oda kodu geçersiz.');
       if(members.has(who.id))return fail(ack,'Bu hesap zaten bir Gecikmeli Cevap odasında.');
       const room=rooms.get(data.code);
-      if(!room||room.phase!=='lobby'||room.players.length>=game.MAX_PLAYERS||room.kicked.has(who.id))
+      if(!room||room.party||room.phase!=='lobby'||room.players.length>=game.MAX_PLAYERS||room.kicked.has(who.id))
         return fail(ack,'Odaya katılınamıyor. Oda kapanmış, başlamış veya dolu olabilir.');
       room.players.push(makePlayer());room.touched=t;members.set(who.id,room);
       ack({ok:true,code:room.code,voice});broadcast(room,t);
@@ -195,7 +195,7 @@ function attachLateAnswer(io, accounts, {
     bind('leave',[],(_,ack,room,t)=>{ack({ok:true});remove(room,who.id,t,'Odadan ayrıldın.');},{roomOnly:true});
     bind('settings',['questions','seconds','visibility'],(data,ack,room,t)=>{
       const settings=game.validateSettings(data);
-      if(!settings||room.phase!=='lobby'||room.host!==who.id)return fail(ack,'Oda ayarları değiştirilemedi.');
+      if(!settings||room.phase!=='lobby'||room.host!==who.id||(room.party&&settings.visibility!=='private'))return fail(ack,'Oda ayarları değiştirilemedi.');
       room.settings=settings;ack({ok:true});broadcast(room,t);
     },{roomOnly:true});
     bind('ready',['ready'],(data,ack,room,t)=>{
@@ -251,9 +251,25 @@ function attachLateAnswer(io, accounts, {
   });
 
   return {
+    reserveParty(accounts){
+      sweep();
+      const error=message=>{throw Object.assign(new Error(message),{status:409});};
+      if(accounts.length<game.MIN_PLAYERS||accounts.length>game.MAX_PLAYERS||accounts.some(a=>members.has(a.id)))
+        error('En az bir parti üyesi başka bir Gecikmeli Cevap odasında.');
+      const key=rooms.size<MAX_ROOMS?code():null;
+      if(!key)error('Şu anda yeni oda açılamıyor.');
+      const t=now(), players=accounts.map(a=>({id:a.id,username:a.username,socketId:null,
+        online:false,ready:false,microphone:false,until:t+game.RESUME_MS,session:null}));
+      const room=game.createRoom(key,players[0],game.DEFAULT_SETTINGS);
+      room.players=players;
+      Object.assign(room,{party:true,rates:new Map(),touched:t,chatId:uuid(),retryAt:0,kicked:new Set()});
+      rooms.set(key,room);
+      for(const a of accounts)members.set(a.id,room);
+      return '/late-answer.html?partyRoom='+key;
+    },
     inviteOpen(code,sender,recipient){
       const room=rooms.get(code);
-      return Boolean(room?.phase==='lobby'&&room.players.length<game.MAX_PLAYERS&&find(room,sender)?.online&&
+      return Boolean(room?.phase==='lobby'&&!room.party&&room.players.length<game.MAX_PLAYERS&&find(room,sender)?.online&&
         !find(room,recipient)&&!room.kicked.has(recipient)&&!members.has(recipient));
     },
     chatRoom(code,id){

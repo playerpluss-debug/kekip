@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#160f22"><title>Parti | KEKIP Games</title>
+<link rel="stylesheet" href="/kekip-navigation.css?v=05122">
+<link rel="stylesheet" href="/party.css?v=1">
+<script src="/experience-settings.js?v=05195" defer></script><script src="/party-client.js?v=1" defer></script>
+</head>
+<body>
+<main>
+<header class="kp-page-header">
+ <a class="kp-site-brand" href="/" aria-label="KEKIP Games ana sayfa"><span class="kp-site-mark" aria-hidden="true">K</span><span class="kp-site-word">KEKIP<em>.</em> GAMES</span></a>
+ <nav aria-label="Sayfa bağlantıları"><a href="/friends.html" data-kp-header-link>Arkadaşlar</a> <a href="/" data-kp-header-link>Ana sayfa</a></nav>
+</header>
+<div class="party-title">
+ <h1>Parti</h1><p>Arkadaşlarınla grup kur ve aynı oyun odasına birlikte geç.</p>
+</div>
+<p id="status" role="status" class="notice"></p>
+<section class="panel" id="partyEntry" hidden>
+ <h2>Parti oluştur</h2><button id="create" type="button" class="primary">Parti oluştur</button>
+</section>
+<section class="panel" id="invites" hidden>
+ <h2>Parti davetleri</h2><ul class="rows" id="inviteList"></ul>
+</section>
+<div class="layout" id="party" hidden>
+ <section class="panel">
+  <div class="section-head"><h2>Parti üyeleri</h2><span id="memberCount"></span></div>
+  <ul class="rows" id="members"></ul>
+  <div class="actions"><button id="ready" class="primary" type="button">Hazırım</button><button id="leave" type="button">Partiden ayrıl</button></div>
+  <form id="inviteForm" hidden>
+   <label>Arkadaş davet et<select id="friend"></select></label><button type="submit">Davet gönder</button>
+  </form>
+ </section>
+ <section class="panel">
+  <h2>Birlikte oyna</h2>
+  <div id="leaderGames" hidden>
+   <label>Oyun<select id="game">
+    <option value="battleship">Amiral Battı · 2 oyuncu</option>
+    <option value="football">Futbol Kariyer · 2–8 oyuncu</option>
+    <option value="late_answer">Gecikmeli Cevap · 3–8 oyuncu</option>
+   </select></label>
+   <p id="gameNote"></p><button id="launch" class="primary" type="button">Partiyi oyuna geçir</button>
+  </div>
+  <p id="memberGameNote" hidden>Herkes hazır olduğunda parti lideri oyunu seçip geçişi başlatabilir.</p>
+  <a class="button" id="returnToGame" hidden>Parti odasına dön</a>
+ </section>
+ <section class="panel chat">
+  <h2>Parti sohbeti</h2>
+  <ol class="rows messages" id="messages" aria-label="Parti mesajları" tabindex="0"></ol>
+  <p id="chatEmpty">Henüz mesaj yok.</p>
+  <form id="chatForm"><label class="sr-only" for="chat">Parti mesajı</label><input id="chat" maxlength="240" placeholder="Partine mesaj yaz" required><button type="submit">Gönder</button></form>
+ </section>
+</div>
+</main>
+</body>
+</html>

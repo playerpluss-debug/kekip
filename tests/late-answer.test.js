@@ -257,3 +257,23 @@ test('an expired next contestant is skipped while the room waits for the followi
   assert.equal(sockets[2].state().contestant,'player2');
   assert.equal(sockets[2].state().deadline,null);
 });
+
+test('party seats share one private lobby and can only be resumed by reserved accounts',async()=>{
+ const h=harness(), members=[0,1,2].map(player);
+ const url=h.backend.reserveParty(members);
+ assert.match(url,/^\/late-answer\.html\?partyRoom=[A-Z2-9]{5}$/);
+ const code=url.split('=').at(-1);
+ const [host,first,second,outsider]=await Promise.all([0,1,2,3].map(i=>h.connect(i)));
+ assert.equal(outsider.send('join',{code}).ok,false);
+ assert.equal(outsider.send('resume',{code}).ok,false);
+ assert.equal(host.send('resume',{code}).ok,true);
+ assert.equal(host.send('settings',{...settings,visibility:'public'}).ok,false);
+ assert.equal(host.send('start').ok,false);
+ for(const s of [first,second])assert.equal(s.send('resume',{code}).ok,true);
+ assert.equal(host.state().players.length,3);
+ assert.equal(host.state().players.every(p=>p.online),true);
+ assert.equal(h.backend.inviteOpen(code,'id0','id3'),false);
+ for(const s of [host,first,second])assert.equal(s.send('ready',{ready:true}).ok,true);
+ assert.equal(host.send('start').ok,true);
+ h.backend.close();
+});

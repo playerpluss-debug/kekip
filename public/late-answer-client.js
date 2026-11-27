@@ -6,6 +6,7 @@
   const codePattern=/^[A-Z2-9]{5}$/;
   const params=new URLSearchParams(location.search);
   const invite=params.get('room')?.toUpperCase();
+  const partyRoom=params.get('partyRoom');
   const storageKey='kekip.late-answer.room';
   const readRoom=()=>{try{return sessionStorage.getItem(storageKey)}catch{return null}};
   const remember=code=>{try{if(code)sessionStorage.setItem(storageKey,code);else sessionStorage.removeItem(storageKey)}catch{}};
@@ -56,6 +57,7 @@
   async function enter(event,data){
     const result=await emit(event,data);
     remember(result.code);
+    if(params.has('partyRoom')){params.delete('partyRoom');const url=new URL(location.href);url.search=params.toString();history.replaceState(history.state,'',url);}
     config=result.voice;
     if(state){voice.initialize(state.me,config);voice.sync(state.players);}
     if(voice.track&&!voice.muted)voice.onMicrophone(true);
@@ -187,7 +189,7 @@
     }
   }
   socket.on('connect',()=>{
-    setConnected(true);note('');const saved=readRoom();
+    setConnected(true);note('');const saved=params.has('partyRoom')?partyRoom:readRoom();
     if(saved&&codePattern.test(saved))enter('resume',{code:saved}).catch(()=>{clearRoom();note('Önceki odaya yeniden bağlanılamadı.');});
     else publicRooms().catch(e=>note(e.message));
   });

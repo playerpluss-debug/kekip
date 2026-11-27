@@ -461,7 +461,7 @@ async function socialRoomOpen(db,game,code,sender,receiver,options){
  if(game==='battleship')return !!options.battleInviteOpen?.(code,sender,receiver);
  if(game==='late_answer')return !!options.lateInviteOpen?.(code,sender,receiver);
  const q=await db.query('SELECT data FROM kekip_football_rooms WHERE code=$1',[code]);const r=q.rows[0]?.data;
- return !!(r?.stage==='lobby'&&Array.isArray(r.players)&&r.players.length<8&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));
+ return !!(r?.stage==='lobby'&&!r.partyPending&&Array.isArray(r.players)&&r.players.length<8&&r.players.some(p=>p.accountId===sender)&&!r.players.some(p=>p.accountId===receiver));
 }
 async function socialAction(db,req,a,action,b,options){
  if(action==='social-pulse'){
