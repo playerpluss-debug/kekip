@@ -60,3 +60,30 @@ function init(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
+
+
+/* 0.51.21.10 — Home typography only. No game, wallet or reward changes. */
+(()=>{'use strict';
+function homeTypography(){
+ if(document.body?.dataset.kpLayout!=='home'||document.getElementById('kp-home-typography'))return;
+ const fonts=document.createElement('link');fonts.rel='stylesheet';fonts.id='kp-home-fonts';fonts.href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap';document.head.append(fonts);
+ const style=document.createElement('style');style.id='kp-home-typography';style.textContent=`
+ body[data-kp-layout="home"]{--kp-home-font:'Inter','Segoe UI',system-ui,sans-serif;--kp-home-heading:'Manrope','Inter','Segoe UI',system-ui,sans-serif;font-family:var(--kp-home-font)!important;font-weight:400;-webkit-font-smoothing:antialiased;}
+ body[data-kp-layout="home"] :is(button,input,select,textarea){font-family:var(--kp-home-font)!important;}
+ body[data-kp-layout="home"] :is(h1,h2,h3,h4){font-family:var(--kp-home-heading)!important;font-weight:700!important;letter-spacing:-.025em!important;line-height:1.24;}
+ body[data-kp-layout="home"] :is(.hero,.home-launch,.kp-focus-hero) h1{font-weight:800!important;letter-spacing:-.035em!important;line-height:1.12;}
+ body[data-kp-layout="home"] :is(.brand-name,.game-home-brand,.kp-brand-text){font-family:var(--kp-home-heading)!important;font-weight:800!important;letter-spacing:.025em!important;}
+ body[data-kp-layout="home"] :is(.brand-sub,.kp-brand-sub,.nav-label,.home-eyebrow,.home-section-kicker,.home-art-caption,.battleship-eyebrow,.launch-kicker,.launch-actions-heading,.kp-social-eyebrow,.kp-rooms-kicker,.kp-studio-overline,.khw-kicker,.side-card .mini,.kicker){font-weight:600!important;letter-spacing:.065em!important;}
+ body[data-kp-layout="home"] :is(.btn,.battleship-cta,.launch-explore,.launch-reward-cta,.kp-room-join,.kp-social-manage,.kp-account-trigger,.nav button,.kp-home-nav button,.side-card button,.lobby-tabs button,.setup-tools button,#kpHomeDailyWheel button){font-weight:600!important;letter-spacing:0!important;}
+ body[data-kp-layout="home"] :is(.nav-copy,.kp-home-nav button) strong{font-weight:600!important;}
+ body[data-kp-layout="home"] :is(.nav-copy small,.kp-hero-actions .btn small,.home-hero-meta small,.side-card p,.battleship-copy p,.home-section p,.hero p,.khw-status){font-weight:400!important;line-height:1.55;}
+ body[data-kp-layout="home"] :is(.home-hero-meta,.kp-wallet strong,.kp-xp-level strong,.rank,.game-code,.invite-code,.khw-result){font-family:var(--kp-home-heading)!important;font-weight:700!important;font-variant-numeric:tabular-nums;}
+ body[data-kp-layout="home"] :is(.kp-wallet small,.kp-xp-level small,.kp-account-top small,.kp-profile-identity small,.kp-coin-panel-head small,.kp-room-type,.kp-room-state,.kp-room-capacity,.tag){font-weight:600!important;}
+ body[data-kp-layout="home"] #kpHomeDailyWheel :is(.khw-pet,.khw-actions a){font-weight:500!important;}
+ body[data-kp-layout="home"] :is(.kp-kc-celebration){font-family:var(--kp-home-font)!important;}
+ body[data-kp-layout="home"] .kp-kc-celebration strong{font-family:var(--kp-home-heading)!important;font-weight:800!important;}
+ @media(max-width:600px){body[data-kp-layout="home"] :is(h1,h2,h3,h4){letter-spacing:-.02em!important;}body[data-kp-layout="home"] :is(.hero,.home-launch,.kp-focus-hero) h1{letter-spacing:-.03em!important;}}
+ `;document.head.append(style);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',homeTypography,{once:true});else homeTypography();
+})();
