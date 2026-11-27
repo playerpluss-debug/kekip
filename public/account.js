@@ -59,5 +59,5 @@ dialog.addEventListener('close',()=>el('kpChangePassword').reset());
 socket.on('statsSaved',r=>{if(r.ok){stats();}else error('Oyun tamamlandı ancak hesap istatistikleri kaydedilemedi.');});
 window.addEventListener('kekip:match-card-claimed',()=>stats());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user){stats();if(el('kpProfileEditor').hidden)loadIdentity()}});
-window.addEventListener('pageshow',e=>{if(e.persisted&&!joined)location.reload()});init();
+window.addEventListener('pageshow',e=>{if(e.persisted&&!joined)location.reload()});const initialLoad=init();window.KEKIPLoading?.track(initialLoad);
 })();
