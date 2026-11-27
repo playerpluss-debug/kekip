@@ -73,13 +73,13 @@
   },
   {
     "id": "bg_motion_aurora",
-    "name": "Kutup Işıkları",
-    "price": 450,
-    "rarity": "Epik",
-    "background": "url(\"/avatar-background-motion/aurora.svg\") center / cover no-repeat",
+    "name": "Kızıl Tutulma",
+    "price": 2400,
+    "rarity": "Efsanevi",
+    "background": "url(\"/avatar-background-motion/crimson-eclipse.svg\") center / cover no-repeat",
     "slot": "background",
     "collection": "motion",
-    "description": "Gökyüzünde süzülen turkuaz ve mor ışıklar."
+    "description": "Kızıl koronası dönen bir tutulma, volkanik vadide akan lav ve yükselen közler."
   },
   {
     "id": "bg_motion_neon_rain",
@@ -93,12 +93,12 @@
   },
   {
     "id": "bg_motion_moon_tides",
-    "name": "Ay Gelgiti",
-    "price": 550,
-    "rarity": "Epik",
-    "background": "url(\"/avatar-background-motion/moon-tides.svg\") center / cover no-repeat",
+    "name": "Yıldız Geçidi",
+    "price": 3000,
+    "rarity": "Mitik",
+    "background": "url(\"/avatar-background-motion/astral-gate.svg\") center / cover no-repeat",
     "slot": "background",
     "collection": "motion",
-    "description": "Gece denizinde dalgalar ve titreşen ay yansımaları."
+    "description": "Dönen rün halkaları, titreşen bir yıldız kapısı ve zeminde ilerleyen enerji hatları."
   }
 ]
