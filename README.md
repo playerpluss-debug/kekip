@@ -2,7 +2,7 @@
 
 - Oyun: `/late-answer.html`. 3–8 KEKIP hesabı, oda kodu veya açık oda. Oda sahibi 5/7/10 soru, 7/10/15 saniye ve görünürlük seçer.
 - Soru bankası: `late-answer-questions.json`. Soru, kategori ve kabul edilen cevaplar sunucuda kalır. Beklenen cevap yalnızca jüriye gönderilir. Bir oda kodu altında sorular tekrar kullanılmaz. Tekrar oyunda kalan benzersiz sorular yetmezse aynı grup yeni oda koduyla devam eder.
-- Jüri cevap süresi içinde tek oy verir. Tüm oylar gelirse sunucu hemen ilerler. Süre dolduğunda geçerli oylar değerlendirilir. Geçerli oylar eşitse doğru, hiç oy yoksa yanlış. Jüride kararla aynı oyu veren oyuncu 0,5 puan, doğru cevap veren yarışmacı 1 puan alır. Finalde en yüksek puanı paylaşan uygun oyuncular birlikte kazanır.
+- Jüri cevap süresi içinde tek oy verir. Tüm oylar gelirse sunucu hemen ilerler. Bir tur bitince sıradaki yarışmacı stüdyodaki tahtada Hazırım’a basar. Yeni sorular ve sayaç bu onayla açılır. Süre dolduğunda geçerli oylar değerlendirilir. Geçerli oylar eşitse doğru, hiç oy yoksa yanlış. Jüride kararla aynı oyu veren oyuncu 0,5 puan, doğru cevap veren yarışmacı 1 puan alır. Finalde en yüksek puanı paylaşan uygun oyuncular birlikte kazanır.
 - Yarışmacının bağlantısı kesilirse sayaç 60 saniyelik dönüş süresinde durur. Süre dolarsa yarım tur geri alınır. Ayrılan oyuncu sonuçta işaretlenir ve tamamlama ödüllerini alamaz. Diğer oyuncuların tamamladığı turlar korunur.
 - Sonuçlar `kekip_game_results` tablosunda `late_answer` olarak saklanır. Tamamlanan maç 20 XP ve mevcut günlük tavan içinde 10 KC verir. Kazanan 10 ek XP alır. Tamamlayan hesaplara mevcut kart drop kuralları uygulanır. Oda, oylar ve bağlantı rezervasyonları tek sunucu örneğinin belleğindedir.
 

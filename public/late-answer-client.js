@@ -72,7 +72,9 @@
     const actor=node('div');actor.className='actor';
     const portrait=node('div',p.username.slice(0,2).toUpperCase());portrait.className='late-portrait';
     portrait.dataset.kpAvatar=p.username;portrait.dataset.kpAvatarMode='body';portrait.setAttribute('aria-hidden','true');
-    actor.append(portrait);
+    const chair=node('span');chair.className='studio-chair';chair.setAttribute('aria-hidden','true');
+    actor.append(chair,portrait);
+    const role=node('span');role.className='seat-role';role.hidden=true;
     const name=node('strong','@'+p.username), status=node('small');
     status.className='player-status';
     const controls=node('div');controls.className='voice-controls';
@@ -87,8 +89,9 @@
     const kick=node('button','Odadan çıkar');kick.type='button';
     kick.setAttribute('aria-label','@'+p.username+' oyuncusunu odadan çıkar');
     kick.onclick=()=>{if(confirm('@'+p.username+' odadan çıkarılsın mı?'))run(()=>emit('kick',{username:p.username}));};
-    card.append(actor,name,status,controls,kick);
-    card.parts={status,controls,kick};
+    const identity=node('div');identity.className='seat-identity';identity.append(name,role);
+    card.append(actor,identity,status,controls,kick);
+    card.parts={status,controls,kick,role};
     return card;
   }
   function paintPlayers(){
@@ -98,7 +101,14 @@
     for(const p of sorted){
       let card=cards.get(p.username);
       if(!card){card=playerCard(p);cards.set(p.username,card);}
-      card.dataset.contestant=String(p.username===state.contestant&&['intro','answer'].includes(state.phase));
+      const onStage=['turn_ready','intro','answer'].includes(state.phase)&&!p.left;
+      const contestant=onStage&&p.username===state.contestant;
+      card.dataset.contestant=String(contestant);
+      card.dataset.jury=String(onStage&&!contestant);
+      card.dataset.seat=String(i);
+      card.parts.role.hidden=!onStage;
+      const role=contestant?'Yarışmacı':'Jüri';
+      if(card.parts.role.textContent!==role)card.parts.role.textContent=role;
       card.dataset.online=String(p.online);
       const status=p.left?'Ayrıldı':!p.online?'Bağlantı bekleniyor':p.win?'Kazanan':state.phase==='lobby'?(p.ready?'Hazır':'Hazırlanıyor'):(p.microphone?'Mikrofon açık':'Mikrofon kapalı');
       const line=status+' · '+p.score.toLocaleString('tr-TR')+' puan'+(p.username===state.host?' · Oda sahibi':'');
@@ -112,11 +122,13 @@
   function paintQuestion(){
     const isContestant=state.contestant===state.me, playing=['intro','answer'].includes(state.phase);
     $('play').hidden=state.phase==='lobby';
-    const label=state.phase==='final'?'Maç sonucu':state.phase==='summary'?'Tur özeti':isContestant?'Yarışmacısın':'Jüri üyesisin';
+    const waiting=state.phase==='turn_ready';
+    const label=state.phase==='final'?'Maç sonucu':state.phase==='summary'?'Tur özeti':waiting?'Sıradaki tur':isContestant?'Yarışmacısın':'Jüri üyesisin';
     text('role',label);
     text('questionMeta',state.phase==='final'?'':state.turn+' / '+state.turns+' tur'+(state.category?' · '+state.category:''));
-    text('prompt',state.phase==='final'?'Final sıralaması':state.phase==='summary'?(state.last?.kind==='cancelled'?'Tur iptal edildi':'Tur tamamlandı'):(state.question??'Son cevap'));
+    text('prompt',state.phase==='final'?'Final sıralaması':state.phase==='summary'?(state.last?.kind==='cancelled'?'Tur iptal edildi':'Tur tamamlandı'):waiting?'Sıra @'+state.contestant+' oyuncusunda':(state.question??'Son cevap'));
     let instruction='';
+    if(waiting)instruction=isContestant?'Hazır olduğunda tahtadaki düğmeye bas.':'Sıradaki yarışmacının hazır olması bekleniyor.';
     if(state.phase==='intro')instruction='Bu soruyu aklında tut. Şimdi cevap verme.';
     if(state.phase==='answer')instruction=isContestant?'Bir önceki sorunun cevabını sesli söyle.':'Yarışmacının önceki soruya verdiği cevabı süre içinde değerlendir.';
     if(playing&&!state.deadline)instruction='Yarışmacının yeniden bağlanması bekleniyor.';
@@ -128,6 +140,8 @@
     const voteDisabled=state.voted||!state.deadline||Date.now()+offset>=state.deadline;
     $('yes').disabled=voteDisabled;$('no').disabled=voteDisabled;
     text('lastResult',state.phase==='final'||!state.last?'':state.last.kind==='cancelled'?'Bu turdaki puanlar geri alındı.':state.last.votes===0?'Önceki cevap için oy gelmedi.':state.last.correct?'Önceki cevap doğru.':'Önceki cevap yanlış.');
+    $('turnReady').hidden=!waiting||!isContestant;
+    $('turnReady').disabled=!socket.connected;
     $('rematch').hidden=state.phase!=='final'||state.host!==state.me;
     $('rematch').disabled=!state.persisted;
   }
@@ -138,6 +152,9 @@
     if(oldCode&&oldCode!==next.code)note('Yeni soru havuzu için oda kodu yenilendi.');
     $('entry').hidden=true;$('room').hidden=false;
     const lobby=next.phase==='lobby', host=next.host===next.me, me=next.players.find(p=>p.username===next.me);
+    $('gameStudio').dataset.active=String(!lobby);
+    $('gameStudio').dataset.phase=next.phase;
+    $('players').dataset.count=String(next.players.length);
     $('lobbyActions').hidden=!lobby;$('settingsForm').hidden=!lobby||!host;$('inviteAnchor').hidden=!lobby;
     text('roomTitle','Oda '+next.code);
     text('roomInfo',next.players.filter(p=>!p.left).length+'/8 oyuncu · '+next.settings.questions+' soru · '+next.settings.seconds+' sn · '+(next.settings.visibility==='public'?'Açık':'Özel'));
@@ -148,9 +165,10 @@
     paintQuestion();paintPlayers();
     if(config){voice.initialize(next.me,config);voice.sync(next.players);}
     if(joined)$('roomTitle').focus();
-    else if(previous!==next.phase&&['intro','summary','final'].includes(next.phase)) {
+    else if(previous!==next.phase&&['turn_ready','intro','summary','final'].includes(next.phase)) {
       const selected=document.activeElement;
-      if(selected===document.body||selected=== $('yes')||selected===$('no')||selected===$('start'))$('prompt').focus();
+      if(next.phase==='turn_ready'&&!$('turnReady').hidden)$('turnReady').focus();
+      else if(selected===document.body||selected=== $('yes')||selected===$('no')||selected===$('start')||selected===$('turnReady'))$('prompt').focus();
     }
     if(sequence!==next.sequence||previous!==next.phase){sequence=next.sequence;announced=null;}
     countdown();
@@ -159,6 +177,8 @@
     if(!state||!socket.connected)return;
     const remaining=state.deadline===null?null:Math.max(0,Math.ceil((state.deadline-Date.now()-offset)/1000));
     text('timer',remaining==null?'':remaining+' sn');
+    const board=$('play');
+    board.dataset.urgent=String(state.phase==='answer'&&remaining!==null&&remaining<=3);
     if(remaining===0&&state.phase==='answer'){$('yes').disabled=true;$('no').disabled=true;}
     if(remaining!==null&&remaining!==announced&&[10,5,3,0].includes(remaining)){
       announced=remaining;text('timerLive',remaining===0?'Süre doldu.':remaining+' saniye kaldı.');
@@ -183,6 +203,7 @@
   $('ready').onclick=()=>run(()=>emit('ready',{ready:!state?.players.find(p=>p.username===state.me)?.ready}));
   $('start').onclick=()=>run(()=>emit('start'));
   $('rematch').onclick=()=>run(()=>emit('rematch'));
+  $('turnReady').onclick=()=>run(()=>emit('turn-ready',{sequence:state.sequence}));
   for(const [id,correct] of [['yes',true],['no',false]])$(id).onclick=()=>run(()=>emit('vote',{correct,sequence:state.sequence}));
   $('copyInvite').onclick=async()=>{const url=new URL('/late-answer.html',location.origin);url.searchParams.set('room',state.code);try{await navigator.clipboard.writeText(url.href);note('Davet bağlantısı kopyalandı.');}catch{note('Oda kodunu paylaş: '+state.code);}};
   voice.onMicrophone=enabled=>{

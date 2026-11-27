@@ -60,12 +60,27 @@ function nextTurn(room, now) {
     room.deadline = null;
     return;
   }
-  checkpoint(room);
-  room.phase = 'intro';
   room.step = 0;
   room.sequence++;
   room.last = null;
+  if (room.turn === 0) beginTurn(room, now);
+  else {
+    room.phase = 'turn_ready';
+    room.deadline = null;
+  }
+}
+
+function beginTurn(room, now) {
+  checkpoint(room);
+  room.phase = 'intro';
   room.deadline = now + INTRO_MS;
+}
+
+function readyTurn(room, playerId, sequence, now) {
+  const player = contestant(room);
+  if (room.phase !== 'turn_ready' || !player?.online || player.id !== playerId || sequence !== room.sequence) return false;
+  beginTurn(room, now);
+  return true;
 }
 
 function contestant(room) {
@@ -142,6 +157,8 @@ function removePlayer(room, id, now) {
       room.last = {kind:'cancelled'};
       room.phase = 'summary';
       room.deadline = now + SUMMARY_MS;
+    } else if (contestant(room) === player && room.phase === 'turn_ready') {
+      nextTurn(room, now);
     } else if (room.phase === 'answer' && jury(room).length &&
                jury(room).every(p => room.votes.has(p.id))) resolveAnswer(room, now);
     if (room.players.filter(p => !p.left).length < 2) {
@@ -189,4 +206,4 @@ function snapshot(room, id, now) {
 }
 
 module.exports = { MIN_PLAYERS, MAX_PLAYERS, RESUME_MS, DEFAULT_SETTINGS, validateSettings,
-  drawQuestions, createRoom, canStart, needsNewRoom, start, advance, vote, removePlayer, snapshot, rows };
+  drawQuestions, createRoom, canStart, needsNewRoom, start, readyTurn, advance, vote, removePlayer, snapshot, rows };

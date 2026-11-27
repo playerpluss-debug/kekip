@@ -100,6 +100,7 @@ for(const count of [3,8])test('complete '+count+' player match on fake sockets',
   const h=harness(),opts={...settings,questions:count===8?10:5};const {sockets,code}=await open(h,count,opts);
   const seen=new Set();
   for(const contestant of sockets){
+    if(contestant.state().phase==='turn_ready')assert.equal(contestant.send('turn-ready',{sequence:contestant.state().sequence}).ok,true);
     assert.equal(contestant.state().phase,'intro');
     seen.add(contestant.state().question);
     h.advance(3000);
@@ -207,6 +208,7 @@ test('ten Gece and Gölge appearances round-trip through wardrobe and the room p
 test('final recording retries and uses the same snapshot and match ID',async()=>{
   const h=harness({failOnce:true});const {sockets}=await open(h,3);
   for(const contestant of sockets){
+    if(contestant.state().phase==='turn_ready')assert.equal(contestant.send('turn-ready',{sequence:contestant.state().sequence}).ok,true);
     h.advance(3000);
     for(let i=0;i<settings.questions;i++)h.advance(7000);
     assert.equal(contestant.state().phase,'summary');
@@ -220,4 +222,38 @@ test('final recording retries and uses the same snapshot and match ID',async()=>
   assert.equal(h.records.length,2);
   assert.deepEqual(h.records[0],h.records[1]);
   assert.equal(sockets[0].state().persisted,true);
+});
+
+test('only the next contestant can start the next round, and waiting does not reveal prompts',async()=>{
+  const h=harness(),{sockets}=await open(h,3);
+  h.advance(3000);
+  for(let i=0;i<settings.questions;i++)h.advance(7000);
+  assert.equal(sockets[0].state().phase,'summary');
+  h.advance(4000);
+  const [first,next,other]=sockets;
+  const state=next.state();
+  assert.equal(state.phase,'turn_ready');
+  assert.equal(state.contestant,'player1');
+  assert.equal(state.deadline,null);
+  assert.ok(sockets.every(s=>s.state().question===null&&s.state().answers===null));
+  assert.equal(first.send('turn-ready',{sequence:state.sequence}).ok,false);
+  assert.equal(next.send('turn-ready',{sequence:state.sequence-1}).ok,false);
+  h.advance(30000);
+  assert.equal(other.state().phase,'turn_ready');
+  assert.equal(next.send('turn-ready',{sequence:state.sequence}).ok,true);
+  assert.equal(next.send('turn-ready',{sequence:state.sequence}).ok,false);
+  assert.equal(next.state().phase,'intro');
+  assert.equal(next.state().deadline-h.now(),3000);
+  assert.ok(next.state().question);
+});
+test('an expired next contestant is skipped while the room waits for the following one',async()=>{
+  const h=harness(),{sockets}=await open(h,3);
+  h.advance(3000);
+  for(let i=0;i<settings.questions;i++)h.advance(7000);
+  h.advance(4000);
+  sockets[1].disconnect();
+  h.advance(60000);
+  assert.equal(sockets[2].state().phase,'turn_ready');
+  assert.equal(sockets[2].state().contestant,'player2');
+  assert.equal(sockets[2].state().deadline,null);
 });

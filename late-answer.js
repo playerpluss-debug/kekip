@@ -124,7 +124,7 @@ function attachLateAnswer(io, accounts, {
   function sweep() {
     const t=now();
     for(const room of rooms.values()){
-      if((room.phase==='lobby'||(room.phase==='final'&&room.persisted))&&t-room.touched>IDLE_MS){
+      if((room.phase==='lobby'||room.phase==='turn_ready'||(room.phase==='final'&&room.persisted))&&t-room.touched>IDLE_MS){
         for(const p of [...room.players])remove(room,p.id,t,'Oda hareketsizlik nedeniyle kapandı.');
         continue;
       }
@@ -211,6 +211,10 @@ function attachLateAnswer(io, accounts, {
         rooms.delete(room.code);room.code=next;room.chatId=uuid();room.usedQuestions.clear();rooms.set(next,room);
       }
       game.start(room,t,uuid(),rng);
+      ack({ok:true});broadcast(room,t);
+    },{roomOnly:true});
+    bind('turn-ready',['sequence'],(data,ack,room,t)=>{
+      if(!game.readyTurn(room,who.id,data.sequence,t))return fail(ack,'Hazırım düğmesini yalnızca sıradaki yarışmacı kullanabilir.');
       ack({ok:true});broadcast(room,t);
     },{roomOnly:true});
     bind('vote',['correct','sequence'],(data,ack,room,t)=>{
