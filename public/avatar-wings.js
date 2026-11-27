@@ -27,7 +27,7 @@ style.textContent = `
 .kp-wing-right{transform-origin:2% 39%}
 .kp-wing-layer[data-motion] .kp-wing-left{animation:kp-wing-sweep 2.7s ease-in-out infinite}
 .kp-wing-layer[data-motion] .kp-wing-right{animation:kp-wing-sweep-right 2.7s ease-in-out infinite}
-.kp-wing-layer[data-motion="wing_nova"] canvas{animation-duration:4.2s}
+.kp-wing-layer[data-motion="wing_nova"] .kp-wing-left,.kp-wing-layer[data-motion="wing_nova"] .kp-wing-right{animation-duration:4.2s}
 @keyframes kp-wing-sweep{0%,100%{transform:rotate(-4deg) scaleX(.88);filter:brightness(.95)}50%{transform:rotate(7deg) scaleX(1.05);filter:brightness(1.35)}}
 @keyframes kp-wing-sweep-right{0%,100%{transform:rotate(4deg) scaleX(.88);filter:brightness(.95)}50%{transform:rotate(-7deg) scaleX(1.05);filter:brightness(1.35)}}
 @media(prefers-reduced-motion:reduce){.kp-wing-layer[data-motion] canvas{animation:none}}
