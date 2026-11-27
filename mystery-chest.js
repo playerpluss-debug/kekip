@@ -2,6 +2,7 @@
 // 0.51.18.5.2 – Server-side KC-only chest ownership and receipts.
 // Activation is intentionally disabled in accounts.js until the approved assets/UI exist.
 const crypto=require('node:crypto');
+const {strongestPet}=require('./pets.js');
 const PRICE=100;
 const CHARACTERS=Object.freeze(['gece','golge']);
 const TIERS=Object.freeze([
@@ -28,12 +29,26 @@ function eligibleItems(collections,character){
  return marked;
 }
 function groups(items,owned){const set=new Set(owned);return TIERS.map(t=>({...t,items:items.filter(i=>i.chestRarity===t.id&&!set.has(i.id))}));}
-// Rarity is drawn from the full fixed distribution, even when a tier is exhausted.
-function effectiveOdds(grouped){return grouped.map(t=>({id:t.id,label:t.label,basePercent:t.weight,remaining:t.items.length,percent:t.weight,refundKC:t.refund,refundOnly:t.items.length===0}));}
-function draw(grouped,randomInt=crypto.randomInt){
+// Keep all tiers in the distribution, including tiers that now award KC refunds.
+function drawWeights(grouped,pet){
+ if(!pet)return grouped.map(t=>t.weight);
+ const weights=grouped.map(t=>t.id==='rare'?0:t.weight*pet.chestMultiplier);
+ const rare=grouped.findIndex(t=>t.id==='rare');
+ weights[rare]=10000-weights.reduce((sum,weight)=>sum+weight,0);
+ return weights;
+}
+function effectiveOdds(grouped,pet=null){
+ const weights=drawWeights(grouped,pet),scale=pet?100:1;
+ return grouped.map((t,i)=>({id:t.id,label:t.label,basePercent:t.weight,remaining:t.items.length,percent:weights[i]/scale,refundKC:t.refund,refundOnly:t.items.length===0}));
+}
+function draw(grouped,randomInt=crypto.randomInt,pet=null){
  if(!grouped.some(t=>t.items.length))fail('Bu koleksiyondaki tüm ürünlere sahipsin.',409);
- let roll=randomInt(100);
- for(const t of grouped){if(roll<t.weight){return t.items.length?{item:t.items[randomInt(t.items.length)],rewardType:'cosmetic'}:{item:null,rewardType:'refund',rarity:t.id,rarityLabel:t.label,refundKC:t.refund};}roll-=t.weight;}
+ const weights=drawWeights(grouped,pet);
+ let roll=randomInt(pet?10000:100);
+ for(const [i,t] of grouped.entries()){
+  if(roll<weights[i])return t.items.length?{item:t.items[randomInt(t.items.length)],rewardType:'cosmetic'}:{item:null,rewardType:'refund',rarity:t.id,rarityLabel:t.label,refundKC:t.refund};
+  roll-=weights[i];
+ }
  throw new Error('Invalid random roll');
 }
 function publicItem(i){const tier=TIERS.find(t=>t.id===i.chestRarity);return {id:i.id,character:i.character,name:i.name,slot:i.slot,thumbnail:i.thumbnail,rarity:tier.id,rarityLabel:tier.label,completeSet:i.completeSet===true,visualApprovalPending:i.visualApprovalPending===true};}
@@ -56,18 +71,18 @@ function ownedRewards(collections,owned,character=null){
  return (character===null?CHARACTERS:[character]).flatMap(k=>eligibleItems(collections,k).filter(i=>ids.has(i.id)).map(publicItem));
 }
 function createService({collections,coinBalance,write,enabled=false,randomInt=crypto.randomInt}){
- function describe(character,owned){
+ function describe(character,owned,pet){
   const items=eligibleItems(collections,character),grouped=groups(items,owned);
   // At first launch every tier must be represented in the full approved collection.
   const ready=TIERS.every(t=>items.filter(i=>i.chestRarity===t.id).length===(t.id==='mythic'?1:3))&&!items.some(i=>i.visualApprovalPending===true);
   const remaining=grouped.reduce((n,t)=>n+t.items.length,0);
-  return {character,price:PRICE,ready,enabled:enabled===true&&ready&&remaining>0,total:items.length,remaining,items:items.map(i=>({...publicItem(i),owned:owned.includes(i.id)})),odds:effectiveOdds(grouped)};
+  return {character,price:PRICE,ready,enabled:enabled===true&&ready&&remaining>0,total:items.length,remaining,items:items.map(i=>({...publicItem(i),owned:owned.includes(i.id)})),odds:effectiveOdds(grouped,pet)};
  }
  return async function action(db,a,kind,b,verify){
   if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
   if(kind==='chest-status'){
-   const owned=await inventory(db,a);
-   return {username:a.username,price:PRICE,enabled:enabled===true,balance:await coinBalance(db,a),chests:CHARACTERS.map(k=>describe(k,owned))};
+   const owned=await inventory(db,a),activePet=strongestPet(owned);
+   return {username:a.username,price:PRICE,enabled:enabled===true,balance:await coinBalance(db,a),activePet,chests:CHARACTERS.map(k=>describe(k,owned,activePet))};
   }
   if(kind==='chest-inventory'){
    if(b.character!==undefined)validateCharacter(b.character);
@@ -87,11 +102,11 @@ function createService({collections,coinBalance,write,enabled=false,randomInt=cr
    const prior=await c.query('SELECT character,price,reward FROM kekip_chest_openings WHERE account_id=$1 AND request_id=$2',[a.id,b.requestId]);
    if(prior.rows.length){const p=prior.rows[0];if(p.character!==b.character||p.price!==b.expectedPrice)fail('İşlem anahtarı başka bir sandığa ait.',409);return {ok:true,username:a.username,requestId:b.requestId,price:p.price,reward:p.reward,balance:await coinBalance(c,a),duplicate:true};}
    if(enabled!==true)fail('Gizemli Sandık henüz açılmadı.',409);
-   const owned=await inventory(c,a),state=describe(b.character,owned);
+   const owned=await inventory(c,a),pet=strongestPet(owned),state=describe(b.character,owned,pet);
    if(!state.ready)fail('Sandık koleksiyonu henüz hazır değil.',409);
    if(!state.remaining)fail('Bu koleksiyondaki tüm ürünlere sahipsin.',409);
    if(await coinBalance(c,a)<PRICE)fail('Yeterli KC yok.',409);
-   const result=draw(groups(eligibleItems(collections,b.character),owned),randomInt),item=result.item;
+   const result=draw(groups(eligibleItems(collections,b.character),owned),randomInt,pet),item=result.item;
    const reward=item?{...publicItem(item),type:'cosmetic'}:{type:'refund',character:b.character,rarity:result.rarity,rarityLabel:result.rarityLabel,refundKC:result.refundKC};
    if(item)await c.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) VALUES($1,$2)',[a.id,item.id]);
    await c.query("INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'mystery_chest',$2,$3,$4)",[a.id,b.requestId,'Gizemli Sandık · '+(b.character==='gece'?'Gece':'Gölge'),-PRICE]);

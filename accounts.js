@@ -3,6 +3,7 @@ const crypto=require('crypto');
 const GeceCollection=require('./gece-catalog.json');
 const Wardrobe=require('./wardrobe.js');
 const MysteryChest=require('./mystery-chest.js');
+const Pets=require('./pets.js');
 const ChestCollections=require('./chest-collections.json');
 const GolgeCollection=require('./golge-catalog.json');
 const hash=x=>crypto.createHash('sha256').update(String(x)).digest('hex');
@@ -102,19 +103,19 @@ async function recordGameResults(game,matchId,rows,transaction=null,allowCards=f
 async function recordBattle(matchId,players,winner){return recordGameResults('battleship',matchId,players.filter(p=>p.accountId).map(p=>({accountId:p.accountId,result:{win:p.id===winner,shots:p.shots.length,hits:p.shots.filter(s=>s.hit).length,shipsSunk:players.find(q=>q.id!==p.id)?.sunk.length||0}})),null,players.length===2&&players.every(p=>p.accountId)&&players[0].accountId!==players[1].accountId)}
 // 0.51.17.2: only fresh, eligible server-recorded game results can create card offers.
 const MATCH_CARD_DAILY_CAP=20;
-const MATCH_CARD_CHANCE_PERCENT=20;
 function shuffledMatchPrizes(){const prizes=['kc5','kc15','spin','empty'];for(let i=prizes.length-1;i>0;i--){const j=crypto.randomInt(i+1);[prizes[i],prizes[j]]=[prizes[j],prizes[i]]}return prizes}
 async function createMatchCard(db,accountId,game,matchId){
  const count=await db.query(`SELECT count(*)::int AS n FROM kekip_match_cards WHERE account_id=$1 AND (created_at AT TIME ZONE 'Europe/Istanbul')::date=(now() AT TIME ZONE 'Europe/Istanbul')::date`,[accountId]);
  if(count.rows[0].n>=MATCH_CARD_DAILY_CAP)return;
  // Each fresh eligible account result is evaluated once in the same transaction.
- if(crypto.randomInt(100)>=MATCH_CARD_CHANCE_PERCENT)return;
+ const pet=await Pets.accountPet(db,accountId);
+ if(crypto.randomInt(100)>=Pets.cardChance(pet))return;
  await db.query(`INSERT INTO kekip_match_cards(id,account_id,game,match_id,prizes) VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT(account_id,game,match_id) DO NOTHING`,[crypto.randomUUID(),accountId,game,matchId,JSON.stringify(shuffledMatchPrizes())]);
 }
 function validMatchDeck(prizes){return Array.isArray(prizes)&&[3,4].includes(prizes.length)&&prizes.every(p=>typeof p==='string')&&prizes.slice().sort().join(',')===(prizes.length===4?'empty,kc15,kc5,spin':'kc15,kc5,spin');}
 function cardPrizeText(prize){return prize==='spin'?'1 ekstra çark hakkı':prize==='kc5'?'+5 KC':prize==='kc15'?'+15 KC':'Bu kart boş çıktı. Bir sonraki maçta bol şans!'}
 async function matchCardsAction(db,a,action,b){
- if(action==='match-cards'){const q=await db.query(`SELECT id,game,match_id AS "matchId",jsonb_array_length(prizes) AS "cardCount" FROM kekip_match_cards WHERE account_id=$1 AND chosen IS NULL ORDER BY (game=$3 AND match_id=$2) DESC NULLS LAST,created_at,id LIMIT 20`,[a.id,typeof b.matchId==='string'&&b.matchId.length<=100?b.matchId:null,b.game==='football'?'football':'battleship']);return {username:a.username,offers:q.rows,dailyCap:MATCH_CARD_DAILY_CAP,chancePercent:MATCH_CARD_CHANCE_PERCENT};}
+ if(action==='match-cards'){const q=await db.query(`SELECT id,game,match_id AS "matchId",jsonb_array_length(prizes) AS "cardCount" FROM kekip_match_cards WHERE account_id=$1 AND chosen IS NULL ORDER BY (game=$3 AND match_id=$2) DESC NULLS LAST,created_at,id LIMIT 20`,[a.id,typeof b.matchId==='string'&&b.matchId.length<=100?b.matchId:null,b.game==='football'?'football':'battleship']);return {username:a.username,offers:q.rows,dailyCap:MATCH_CARD_DAILY_CAP,chancePercent:Pets.cardChance(await Pets.accountPet(db,a.id))};}
  if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
  if(typeof b.id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(b.id)||!Number.isInteger(b.choice)||b.choice<0||b.choice>3)fail('Kart seçimi geçersiz.');
  const c=await db.connect();try{await c.query('BEGIN');
@@ -561,6 +562,7 @@ async function wallet(db,a){const q=await db.query(`SELECT COALESCE(sum(amount),
 const BACKGROUNDS=require('./avatar-backgrounds.json');
 const COSMETICS=Object.freeze([
  ...BACKGROUNDS.filter(i=>i.price>0),
+ ...Pets.PETS,
  {id:'frame_violet',slot:'frame',name:'Neon Çember',description:'Mor ışıklı profil çerçevesi',price:80},
  {id:'frame_gold',slot:'frame',name:'Altın Seri',description:'Altın renkli profil çerçevesi',price:180},
  {id:'cover_nebula',slot:'cover',name:'Nebula',description:'Yavaş hareketli mor galaksi kapağı',price:150},
@@ -573,9 +575,9 @@ const COSMETICS=Object.freeze([
  {id:'chat_violet',slot:'chat',name:'Mor Mürekkep',description:'Mor sohbet balonu ve renkli kenar',price:90},
  {id:'chat_gold',slot:'chat',name:'Altın Sohbet',description:'Altın çizgili sohbet balonu',price:130}
 ]);
-const COSMETIC_SLOTS=[...new Set(COSMETICS.map(x=>x.slot))];
+const COSMETIC_SLOTS=[...new Set(COSMETICS.filter(x=>x.slot!=='pet').map(x=>x.slot))];
 async function equippedCosmetics(db,id){const q=await db.query('SELECT slot,item_id FROM kekip_cosmetic_equipped WHERE account_id=$1',[id]);return Object.fromEntries(q.rows.filter(r=>COSMETICS.some(c=>c.id===r.item_id&&c.slot===r.slot)).map(r=>[r.slot,r.item_id]));}
-async function shopList(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);const activeIds=new Set([...COSMETICS,...GeceCollection.items,...GolgeCollection.items].map(i=>i.id));const owned=q.rows.map(r=>r.item_id).filter(id=>activeIds.has(id));return {username:a.username,balance:await coinBalance(db,a),catalog:COSMETICS,backgrounds:BACKGROUNDS,geceCollection:GeceCollection,golgeCollection:GolgeCollection,owned,equipped:await equippedCosmetics(db,a.id)};}
+async function shopList(db,a){const q=await db.query('SELECT item_id FROM kekip_cosmetic_inventory WHERE account_id=$1',[a.id]);const activeIds=new Set([...COSMETICS,...GeceCollection.items,...GolgeCollection.items].map(i=>i.id));const owned=q.rows.map(r=>r.item_id).filter(id=>activeIds.has(id));return {username:a.username,balance:await coinBalance(db,a),catalog:COSMETICS,backgrounds:BACKGROUNDS,activePet:Pets.strongestPet(owned),baseCardChance:Pets.cardChance(null),geceCollection:GeceCollection,golgeCollection:GolgeCollection,owned,equipped:await equippedCosmetics(db,a.id)};}
 async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);if(action==='shop')return shopList(db,a);if(!['shop-buy','shop-equip'].includes(action))fail('İşlem bulunamadı.',404);
  if(b.username!==a.username)fail('Hesap değişti. Sayfayı yenile.',409);
  const modularCollection=Object.values(Wardrobe.collections).find(c=>c.items.some(x=>x.id===b.id));
@@ -587,7 +589,7 @@ async function shopAction(db,a,action,b){if(b.username!==undefined&&b.username!=
   if(modular.chestOnly===true||!modularCollection.saleEnabled||modular.starter||modular.status!=='available'||!Number.isSafeInteger(modular.price)||modular.price<=0)fail('Bu ürün satışta değil.',409);
  }else{
   if(action==='shop-buy'&&(item?.legacy||item?.slot.startsWith('av_')))fail('Bu ürün eski koleksiyona ait ve artık satışta değil.',409);
-  if(!COSMETIC_SLOTS.includes(slot)||(action==='shop-buy'&&!item)||(action==='shop-equip'&&b.id!==''&&(!item||item.slot!==slot)))fail('Kozmetik geçersiz.');
+  if((!COSMETIC_SLOTS.includes(slot)&&!(action==='shop-buy'&&slot==='pet'))||(action==='shop-buy'&&!item)||(action==='shop-equip'&&b.id!==''&&(!item||item.slot!==slot)))fail('Kozmetik geçersiz.');
  }
  if(action==='shop-buy'){if(!Number.isSafeInteger(item.price)||item.price<=0)fail('Bu ürün satışta değil.',409);if(b.expectedPrice!==item.price)fail('Fiyat değişti. Mağazayı yenileyip tekrar dene.',409);}
  const c=await db.connect();try{await c.query('BEGIN');const lock=await c.query('SELECT id FROM kekip_football_accounts WHERE id=$1 AND blocked_at IS NULL FOR UPDATE',[a.id]);if(!lock.rows.length)fail('Hesap erişimi kapalı.',403);
