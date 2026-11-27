@@ -59,11 +59,13 @@
     remember(result.code);
     if(params.has('partyRoom')){params.delete('partyRoom');const url=new URL(location.href);url.search=params.toString();history.replaceState(history.state,'',url);}
     config=result.voice;
+    $('voiceNetwork').hidden=false;
+    text('voiceNetwork',config?.hasTurn===true?'TURN yapılandırıldı. Gerekirse ses rölesi kullanılabilir.':'TURN yapılandırılmadı. Oyun doğrudan ses bağlantısı kurmayı dener.');
     if(state){voice.initialize(state.me,config);voice.sync(state.players);}
     if(voice.track&&!voice.muted)voice.onMicrophone(true);
   }
   function clearRoom(){
-    remember(null);state=null;config=null;sequence=-1;lastSettings='';microphoneEpoch++;
+    remember(null);state=null;config=null;$('voiceNetwork').hidden=true;sequence=-1;lastSettings='';microphoneEpoch++;
     voice.stop();voice.onMicrophone?.(false);cards.clear();$('players').replaceChildren();
     $('room').hidden=true;$('entry').hidden=false;
     $('roomCode').focus();
