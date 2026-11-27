@@ -15,7 +15,8 @@
  const socket=io('/arena',{autoConnect:false,forceNew:true});
  let current=null,offset=0,viewKey='',submitted=new Set(),inputRound=0;
  let useInvite=Boolean(invite);
- const notified=new Set();
+ const notified=new Set(),playerCards=new Map();
+ let rosterKey='';
  const status=message=>{$('arenaStatus').textContent=message;};
  const node=(tag,text)=>{const element=document.createElement(tag);element.textContent=text;return element;};
  const emit=(event,data={})=>new Promise((resolve,reject)=>{
@@ -220,12 +221,33 @@
   stage.hidden=data.phase==='lobby';$('arenaRoomTitle').textContent='Arena lobisi · '+data.code;
   $('arenaRoomInfo').textContent=data.players.length+'/8 oyuncu · '+(data.settings.selected?'Özel Liste':'Karma Arena');
   const players=[...data.players].sort((a,b)=>b.total-a.total||a.username.localeCompare(b.username));
-  $('arenaPlayers').replaceChildren(...players.map(player=>{
-   const item=node('li','');
-   item.append(node('strong','@'+player.username+(player.online?'':' · Çevrimdışı')),
-    node('span',data.phase==='summary'?'+'+player.last+' · '+player.total+' puan':player.total+' puan'));
-   return item;
-  }));
+  const displayKey=JSON.stringify([data.phase==='summary',players]);
+  if(displayKey!==rosterKey){
+   const active=new Set(players.map(player=>player.username));
+   for(const username of playerCards.keys())if(!active.has(username))playerCards.delete(username);
+   const list=$('arenaPlayers');
+   players.forEach((player,index)=>{
+    let card=playerCards.get(player.username);
+    if(!card){
+     const item=node('li',''),portrait=node('div',''),info=node('div','');
+     portrait.className='arena-player-portrait';
+     portrait.dataset.kpAvatar=player.username;
+     portrait.dataset.kpAvatarMode='body';
+     portrait.setAttribute('aria-hidden','true');
+     portrait.append(node('span',player.username.slice(0,2).toUpperCase()));
+     info.className='arena-player-info';
+     const name=node('strong',''),score=node('span','');
+     info.append(name,score);item.append(portrait,info);
+     card={item,name,score};playerCards.set(player.username,card);
+    }
+    card.name.textContent='@'+player.username+(player.online?'':' · Çevrimdışı');
+    card.score.textContent=(data.phase==='summary'?'+'+player.last+' · ':'')+player.total+' puan';
+    if(list.children[index]!==card.item)list.insertBefore(card.item,list.children[index]||null);
+   });
+   while(list.children.length>players.length)list.lastElementChild.remove();
+   rosterKey=displayKey;
+   window.KEKIPPortraits?.refresh?.();
+  }
   const start=$('arenaStart');
   start.hidden=data.phase!=='lobby'||data.host!==data.you;
   start.disabled=data.players.length<2||players.some(player=>!player.online);
