@@ -42,10 +42,19 @@ async function main(){
   await check('onboarding-complete',{username:'qa_player',character:'gece',draft},player);
   const shop=(await check('shop',{},player)).data;
   const neon=[...shop.geceCollection.items,...shop.golgeCollection.items].filter(i=>i.collection==='Neon Arcade');assert.equal(neon.length,14);assert.equal(neon.reduce((n,i)=>n+i.price,0),3870);
-  for(const item of neon)await check('shop-buy',{username:'qa_player',id:item.id,expectedPrice:item.price},player,409);
-  const after=(await check('shop',{},player)).data;assert.equal(after.balance,shop.balance);assert.deepEqual(after.owned.slice().sort(),shop.owned.slice().sort());
+  assert.ok(neon.every(i=>i.status==='available'&&!i.starter&&!i.onboardingEligible));
+  assert.ok(shop.geceCollection.saleEnabled&&shop.golgeCollection.saleEnabled);
+  const before=(await check('shop',{},player)).data;
+  await check('shop-buy',{username:'qa_player',id:neon[0].id,expectedPrice:neon[0].price+1},player,409);
+  await check('shop-buy',{username:'qa_player',id:neon[0].id,expectedPrice:neon[0].price},'',401);
+  const unchanged=(await check('shop',{},player)).data;assert.equal(unchanged.balance,before.balance);assert.deepEqual(unchanged.owned.slice().sort(),before.owned.slice().sort());
+  await db.query("INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'qa','neon-release','Isolated QA credit',4000)",[row.rows[0].id]);
+  const funded=(await check('shop',{},player)).data;
+  for(const item of neon){await check('shop-buy',{username:'qa_player',id:item.id,expectedPrice:item.price},player);await check('shop-buy',{username:'qa_player',id:item.id,expectedPrice:item.price},player,409);}
+  const after=(await check('shop',{},player)).data;assert.equal(after.balance,funded.balance-3870);assert.deepEqual(after.owned.slice().sort(),[...new Set([...funded.owned,...neon.map(i=>i.id)])].sort());
+  const purchases=await db.query("SELECT source_id,amount FROM kekip_coin_ledger WHERE account_id=$1 AND source_kind='cosmetic'",[row.rows[0].id]);for(const i of neon){const entry=purchases.rows.filter(p=>p.source_id===i.id);assert.equal(entry.length,1);assert.equal(entry[0].amount,-i.price);assert.ok(Wardrobe.access(i.character,after.owned).includes(i.id));}
   const audit=await db.query("SELECT action FROM kekip_admin_audit WHERE username IN ('qa_player','qa_rejected')");assert.ok(audit.rows.some(r=>r.action==='admin-registration-approve'));assert.ok(audit.rows.some(r=>r.action==='admin-registration-reject'));
-  console.log('PASS: real PostgreSQL registration, authorization, onboarding, catalog and blocked purchases');
+  console.log('PASS: real PostgreSQL registration, authorization, onboarding, catalog and 14 purchases with exact debits and duplicate protection');
   browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:1280,height:800}});await context.addCookies([{name:'kekip_session',value:player.split('=')[1],url:base}]);const page=await context.newPage();
   const fs=require('node:fs/promises');await fs.mkdir('qa-neon',{recursive:true});
   async function imageReady(id){await page.waitForFunction(id=>{const i=document.getElementById(id);return i&&!i.hidden&&i.complete&&i.naturalWidth>0},id,{timeout:30000});return page.locator('#'+id).evaluate(async i=>{await i.decode();return {width:i.naturalWidth,height:i.naturalHeight,src:i.src};});}
