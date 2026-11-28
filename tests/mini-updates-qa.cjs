@@ -20,7 +20,7 @@ async function main(){
  assert.equal(process.env.KEKIP_ADMIN_USERNAMES,'qa_admin');
  const db=await accounts.database();
  await db.query('INSERT INTO kekip_football_accounts(id,username,password_hash) VALUES($1,$2,$3)',['qa-admin-id','qa_admin',await accounts.passwordHash(password)]);
- const server=spawn(process.execPath,['server.js'],{stdio:'inherit'});
+ const server=spawn(process.execPath,['server.js'],{stdio:'inherit',env:{...process.env,KEKIP_CHESTS_ENABLED:'true'}});
  let browser;
  try{
   for(let n=0;;n++){try{const r=await fetch(base);if(r.ok)break}catch{}if(n===59)throw Error('Server did not start');await new Promise(r=>setTimeout(r,1000));}
@@ -90,6 +90,37 @@ async function main(){
   browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:1280,height:800}});await context.addCookies([{name:'kekip_session',value:player.split('=')[1],url:base}]);const page=await context.newPage();
   await page.goto(base+'/mystery-chest.html');await page.waitForFunction(()=>document.getElementById('ticketText')?.textContent.includes('Sandık biletleri: 1')===false&&document.getElementById('ticketText')?.textContent.includes('ücretsiz açılış'));assert.ok(await page.locator('#pityBar').count());assert.ok(await page.locator('#ticketBar').count());
   const fs=require('node:fs/promises');await fs.mkdir('qa-neon',{recursive:true});
+  assert.equal(await page.locator('#demo,#tier').count(),0);
+  // Real authenticated opening in the isolated database. Force a ticket by owning all but one tier,
+  // and exercise both the motion and reduced-motion path using deterministic server receipts.
+  // Use Gölge for paid opening; Gece's prior mythic receipt is unique and must remain intact.
+  await db.query("DELETE FROM kekip_chest_openings WHERE account_id=$1 AND character='gece' AND reward->>'rarity'='mythic'",[id]);
+  await db.query("DELETE FROM kekip_cosmetic_inventory WHERE account_id=$1 AND item_id LIKE 'gece_chest_%'",[id]);
+  await db.query("UPDATE kekip_chest_progress SET pity=99,tickets=3 WHERE account_id=$1",[id]);
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.goto(base+'/mystery-chest.html');
+  await page.waitForFunction(()=>document.getElementById('ticketText')?.textContent.includes('Sandık biletleri: 3'));
+  await page.waitForFunction(()=>window.KEKIPPreferences?.status().ready===true);
+  const beforeSpin=await status();
+  page.once('dialog',d=>d.accept());
+  await page.locator('#purchase').click();
+  await page.locator('#reel .winner').waitFor({timeout:15000});
+  await page.locator('#result').waitFor({timeout:15000});
+  const won=await page.locator('#reel .winner').getAttribute('data-reward-id');
+  assert.equal(won,chestItems.find(i=>i.chestRarity==='mythic').id);
+  assert.ok(await page.locator('#reel .winner').evaluate(el=>{const a=el.getBoundingClientRect(),b=document.getElementById('reelViewport').getBoundingClientRect();return Math.abs((a.left+a.width/2)-(b.left+b.width/2))<2;}));
+  const afterSpin=await status();assert.equal(afterSpin.tickets,beforeSpin.tickets-3);assert.equal(afterSpin.balance,beforeSpin.balance);assert.equal(afterSpin.pity,0);
+  await page.screenshot({path:'qa-neon/chest-reel-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto(base+'/mystery-chest.html');await page.waitForFunction(()=>!document.getElementById('purchase').disabled);
+  page.once('dialog',d=>d.accept());await page.locator('#purchase').click();await page.locator('#result').waitFor({timeout:15000});
+  const last=(await service(db,a,'chest-history',body)).history[0].reward;
+  assert.equal(await page.locator('#reel .winner').getAttribute('data-reward-id'),last.type==='cosmetic'?last.id:last.type);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3));
+  await page.screenshot({path:'qa-neon/chest-reel-mobile.png',fullPage:true});
+  await page.setViewportSize({width:1280,height:800});await page.emulateMedia({reducedMotion:'no-preference'});
+  console.log('PASS real chest reel receipt, centered winner, free ticket debit, mobile and reduced motion');
+
   async function imageReady(id){await page.waitForFunction(id=>{const i=document.getElementById(id);return i&&!i.hidden&&i.complete&&i.naturalWidth>0},id,{timeout:30000});return page.locator('#'+id).evaluate(async i=>{await i.decode();return {width:i.naturalWidth,height:i.naturalHeight,src:i.src};});}
   for(const item of neon){
    await page.goto(base+item.previewPath);
