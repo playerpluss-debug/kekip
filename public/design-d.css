@@ -342,3 +342,35 @@ body.kd-theme[data-kp-layout=admin] :is(.dashboard-summary,.grant-panel,.member-
 body.kd-theme[data-kp-layout=admin] .panel{background:linear-gradient(145deg,#221337,#170d28);border-color:#8151b4;border-radius:11px}
 body.kd-theme[data-kp-layout=admin] .section-label{color:#d7a3ff}
 @media(max-width:600px){.kd-social-hero{padding:15px;min-height:160px}.kd-social-art{position:absolute;right:-7px;bottom:6px;opacity:.3;width:125px}.kd-social-hero>div{padding-right:32px}.kd-social-refresh{right:7px;top:7px;font-size:10px;padding:6px}.kd-social-actions .kd-store-cta{min-height:36px}body.kd-theme[data-kp-layout=messages] .kd-section-nav{margin-bottom:6px}body.kd-theme[data-kp-layout=messages] .workspace{min-height:0}body.kd-theme[data-kp-layout=admin] .hero{padding:12px}}
+
+/* Design D game shell: UI surfaces only; playfield, timing targets, board cells and controls retain their original sizing and state colors. */
+body.kd-theme .kp-lobby-hero{border-radius:14px;border-color:#a460e0;box-shadow:inset 0 0 25px #aa55ee1e,0 8px 24px #07031180}
+body.kd-theme .kp-lobby-hero :is(h1,h3){font-style:italic;font-weight:950;letter-spacing:-.035em;text-shadow:0 2px 12px #0b051a}
+body.kd-theme :is(.kp-lobby-card,.kp-battle-shell .lobby-card,.kp-battle-shell .rules-lobby){background:linear-gradient(145deg,#26143f,#160d29);border-color:#8951bc;border-radius:11px;box-shadow:inset 0 1px 0 #e0baff14,var(--kd-shadow)}
+body.kd-theme :is(#lateAnswer,#kpPartyShell) .primary:not(:disabled),body.kd-theme #onlinePanel[data-lobby=true] :is(#onlineStart,#onlineCreate):not(:disabled),body.kd-theme .kp-battle-shell #lobbySubmit:not(:disabled){background:var(--kd-gradient);color:#fff;border-color:#d087ff;border-radius:8px;box-shadow:0 0 15px #b052ff40}
+body.kd-theme .kd-battle-shell{background:linear-gradient(145deg,#201137,#110a22);border-color:#9a56d5;border-radius:14px;box-shadow:0 18px 70px #03010cbf,0 0 24px #b050ef25}
+body.kd-theme .kd-battle-shell .game-head{border-bottom:1px solid #8251b55e;padding-bottom:10px}
+body.kd-theme .kd-battle-shell :is(.board-panel,.invite-panel,.setup-card,.lobby-slot){border-color:#8854be;background:linear-gradient(145deg,#201333,#150d28);border-radius:10px;box-shadow:inset 0 1px 0 #d8b2ff11}
+body.kd-theme .kd-battle-shell .game-status{background:linear-gradient(110deg,#4e2578,#25143e);border-color:#b271e4;border-radius:8px}
+body.kd-theme .kd-battle-shell .lobby-card .kp-room-choice{border-color:#7c4eaf;border-radius:9px}
+body.kd-theme .kd-battle-shell .lobby-card .kp-room-choice:has(input:checked){background:#402064;border-color:#d18bff}
+body.kd-theme .kd-battle-shell :is(.lobby-tabs button,.game-actions button,.game-close){border-radius:8px}
+body.kd-theme .kd-battle-shell #readyBtn:not(:disabled){background:var(--kd-gradient);border-color:#d48cff;color:#fff}
+body.kd-theme[data-kp-layout=football] #intro.kd-foot-intro{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 78% 30%,#7332b565,transparent 60%),linear-gradient(120deg,#291646,#160d2a);border-color:#a45be1}
+body.kd-theme[data-kp-layout=football] #intro h1{font-weight:950;font-style:italic;letter-spacing:-.035em}
+.kd-game-emblem{position:absolute;right:15%;top:50%;width:clamp(95px,14vw,185px);height:auto;transform:translateY(-50%) rotate(-12deg);stroke:#d6a1ff;stroke-width:2.5;stroke-linejoin:round;opacity:.23;filter:drop-shadow(0 0 9px #bd67ff);z-index:-1;pointer-events:none}
+body.kd-theme[data-kp-layout=football] .foot-hub{border-color:#8050b3;background:#160d2b;border-radius:10px}
+body.kd-theme[data-kp-layout=football] .foot-hub button{background:#251439;border-color:#6c429c5c;border-radius:8px}
+body.kd-theme[data-kp-layout=football] .foot-hub button.active{background:linear-gradient(110deg,#7834be,#44216e);border-color:#c67df9;box-shadow:0 0 14px #a94fff35}
+body.kd-theme[data-kp-layout=football] :is(.career-card,.career-next,.account-box){background:linear-gradient(145deg,#25143d,#170d2b);border-color:#8250b2;border-radius:10px}
+body.kd-theme[data-kp-layout=football] .profile-banner{background:radial-gradient(ellipse at 18% 25%,#783cb16e,transparent 65%),linear-gradient(120deg,#2a1644,#160d2b);border-color:#a45ad6;border-radius:11px}
+body.kd-theme[data-kp-layout=football] .career-nav{background:#130b25;border-color:#7545a6;border-radius:10px}
+body.kd-theme[data-kp-layout=football] .career-nav button.active{background:linear-gradient(110deg,#7531b8,#44216c);border:1px solid #b970f5}
+body.kd-theme[data-kp-layout=football] :is(#playMatch,#createCareer):not(:disabled){background:var(--kd-gradient);border:1px solid #d28bff;color:white;border-radius:8px;box-shadow:0 0 14px #aa4ff140}
+body.kd-theme[data-kp-layout=football] .scoreboard{background:#170d2be8;border-color:#9a60d4a0;border-radius:8px;box-shadow:0 5px 20px #05020d99}
+body.kd-theme[data-kp-layout=late-answer] :is(#entry,.room-header,.voice-panel){border-color:#8650b9;background:linear-gradient(145deg,#25143d,#160d29);border-radius:11px}
+body.kd-theme[data-kp-layout=late-answer] .game-studio[data-active=true] .studio-board{background:radial-gradient(ellipse at 30% 0,#5c2c8255,transparent 65%),linear-gradient(148deg,#281640,#160e2b);border-color:#bc79f4}
+body.kd-theme[data-kp-layout=arena] :is(#arenaEntry .arena-panel,#arenaRoom>.arena-panel,#arenaResults){border-color:#8950bf;border-radius:11px;background:linear-gradient(145deg,#25143e,#170d2a)}
+body.kd-theme[data-kp-layout=arena] #arenaStage{border-color:#a66ade;border-radius:11px}
+body.kd-theme[data-kp-layout=arena] :is(#arenaCreate button,#arenaStart):not(:disabled){background:var(--kd-gradient);color:white;border-color:#d28bff}
+@media(max-width:600px){.kd-game-emblem{right:8%;opacity:.16}body.kd-theme .kp-lobby-hero{border-radius:11px}body.kd-theme .kd-battle-shell{border-radius:10px}}

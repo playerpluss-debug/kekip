@@ -132,6 +132,9 @@ async function main(){
       if(route==='/messages.html'){await page.locator('#workspace').waitFor({state:'visible'});assert.equal(await page.locator('.kd-message-art').count(),1);}
       if(route==='/wallet.html'){await page.locator('#content').waitFor({state:'visible'});assert.ok(await page.locator('#balance').textContent());}
       if(route==='/settings.html'){assert.ok(await page.locator('#prefSound').count());assert.ok(await page.locator('#prefEffects').count());}
+      if(route==='/football.html'){assert.equal(await page.locator('#intro.kd-foot-intro').count(),1);assert.equal(await page.locator('#footHub').count(),1);}
+      if(route==='/late-answer.html'){assert.equal(await page.locator('#createForm,#joinForm').count(),2);}
+      if(route==='/arena.html'){assert.equal(await page.locator('#arenaCreate,#arenaJoin').count(),2);}
       if(route==='/avatar.html'){assert.equal(await page.locator('.kd-avatar-card .portrait-layers').count(),2);}
       if(route==='/'){
         assert.equal(await page.locator('#kdWheelSlot #kpHomeDailyWheel').count(),1);assert.equal(await page.locator('.kd-hero-figure').count(),2);await page.locator('#kdLeaderboardRows').waitFor({state:'visible'});await page.locator('[data-kd-filter="sport"]').click();assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),1);
