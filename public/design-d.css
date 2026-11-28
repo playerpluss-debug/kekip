@@ -236,3 +236,56 @@ body.kd-theme[data-kp-layout=stats] .row-stat b{color:#e0bbff}
 @media(max-width:620px){body.kd-theme[data-kp-layout=profile] #hero.kd-profile-hero{grid-template-columns:minmax(0,1fr);padding:14px;gap:10px;min-height:0}body.kd-theme[data-kp-layout=profile] #portrait:not([hidden]){grid-row:1;height:220px}body.kd-theme[data-kp-layout=profile] #hero .kd-profile-kicker{font-size:9px}.kd-rank-trophy{left:auto;right:0;top:0;height:64%;max-width:52%;opacity:.22}body.kd-theme[data-kp-layout=stats] .podium-card{padding:10px 8px}}
 /* Correct invalid mobile banner property. */
 @media(max-width:540px){.kd-shop-feature-art{left:38%}}
+
+/* Reward centre — shared stage design, authentic reward art and original odds. */
+body.kd-theme:is([data-kp-layout=daily-rewards],[data-kp-layout=mystery-chest],[data-kp-layout=missions],[data-kp-layout=achievements]) main{max-width:1450px}
+.kd-reward-heading{position:relative;isolation:isolate;overflow:hidden;padding:19px 22px!important;border:1px solid #a460de!important;border-radius:13px!important;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:radial-gradient(ellipse at 82% 20%,#6e36a85c,transparent 62%),linear-gradient(115deg,#291544,#140b29);box-shadow:var(--kd-shadow)}
+.kd-reward-heading:before{content:"";position:absolute;inset:0;z-index:-1;background:repeating-linear-gradient(135deg,transparent 0 44px,#ad63ee13 45px 46px);mask-image:linear-gradient(90deg,transparent,#000)}
+.kd-reward-heading h1{font-style:italic;font-weight:950;letter-spacing:-.04em;color:#f9eeff;margin:6px 0}
+.kd-reward-heading .eyebrow{font-size:10px;font-weight:850;color:#ddb5ff;letter-spacing:.13em}
+.kd-reward-heading .balance{min-width:130px;border-color:#d1aa65;background:linear-gradient(130deg,#4a302f,#211329);box-shadow:inset 0 0 16px #cf9d4022;border-radius:9px}
+body.kd-theme[data-kp-layout=daily-rewards] .layout{gap:12px;margin-top:12px;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+body.kd-theme[data-kp-layout=daily-rewards] .wheel-panel{border-color:#ad65ec;background:radial-gradient(ellipse at 50% 42%,#7135b45c,transparent 66%),linear-gradient(155deg,#26123f,#130b27 80%);box-shadow:inset 0 0 25px #aa55ee24,0 8px 25px #0703119e}
+.kd-wheel-stage{position:relative;isolation:isolate;padding:1px 11px;margin:8px auto;max-width:510px}
+.kd-wheel-orbit{position:absolute;inset:6% 0 0;z-index:-1;border:1px solid #d492ff55;border-radius:50%;box-shadow:0 0 28px #9c45ed45,inset 0 0 25px #9c45ed25;background:repeating-conic-gradient(from 0deg,#c182fa11 0deg 1deg,transparent 1deg 15deg);transform:rotate(-7deg)}
+body.kd-theme[data-kp-layout=daily-rewards] .wheel-shell{border-color:#f4d291;background:radial-gradient(circle,#27153f 64%,#170c2b 65%,#aa7942 70%,#f6d7a3 72%,#8b4eb8 76%);box-shadow:0 0 0 5px #4c2569,0 0 0 7px #bb78ec,0 16px 36px #080412aa,0 0 32px #c05cff55}
+body.kd-theme[data-kp-layout=daily-rewards] .wheel-panel #spin:not(:disabled),body.kd-theme[data-kp-layout=daily-rewards] #claim:not(:disabled){background:var(--kd-gradient);border:1px solid #d88fff;border-radius:9px;box-shadow:0 0 17px #b04eff48}
+body.kd-theme[data-kp-layout=daily-rewards] .side>.panel{border-color:#8651b9;background:linear-gradient(145deg,#23153d,#160c2a);border-radius:11px}
+body.kd-theme[data-kp-layout=daily-rewards] .kp-fox-prize{background:radial-gradient(ellipse at 12% 20%,#ae593843,transparent 64%),linear-gradient(145deg,#34203d,#1a0f2c);border-color:#cc975b}
+body.kd-theme[data-kp-layout=daily-rewards] .kp-fox-art{filter:drop-shadow(0 0 13px #ffac6360)}
+body.kd-theme[data-kp-layout=daily-rewards] .reward-value{color:#f6d898;font-variant-numeric:tabular-nums}
+body.kd-theme[data-kp-layout=daily-rewards] .progress span{background:linear-gradient(90deg,#8f3dd7,#e0a4ff)}
+body.kd-theme[data-kp-layout=mystery-chest] .chest-main{border-color:#a461df;background:linear-gradient(150deg,#25143c,#150c29);border-radius:13px}
+body.kd-theme[data-kp-layout=mystery-chest] #stage{border-color:#b77be36b;background:radial-gradient(ellipse at 50% 40%,#8436c666,transparent 68%),repeating-linear-gradient(135deg,transparent 0 40px,#bf77f113 41px 42px),#11091f;box-shadow:inset 0 0 40px #08020f88}
+body.kd-theme[data-kp-layout=mystery-chest] #stage[data-character=golge]{background:radial-gradient(ellipse at 50% 40%,#4167bd60,transparent 68%),repeating-linear-gradient(135deg,transparent 0 40px,#829df113 41px 42px),#100d25}
+body.kd-theme[data-kp-layout=mystery-chest] #stage:not(.reeling):not(.reel-done):after{content:"";position:absolute;width:73%;height:24%;left:13.5%;bottom:5%;border:1px solid color-mix(in srgb,var(--glow) 70%,transparent);border-radius:50%;box-shadow:0 0 20px color-mix(in srgb,var(--glow) 30%,transparent),inset 0 0 17px color-mix(in srgb,var(--glow) 24%,transparent);pointer-events:none;z-index:-1}
+body.kd-theme[data-kp-layout=mystery-chest] #chestArt{filter:drop-shadow(0 9px 12px #070211) drop-shadow(0 0 15px color-mix(in srgb,var(--glow) 35%,transparent))}
+body.kd-theme[data-kp-layout=mystery-chest] .mythic-feature{border-color:#c69b61;background:radial-gradient(ellipse at 50% 32%,#bb854331,transparent 65%),linear-gradient(155deg,#332141,#180e2b);box-shadow:0 0 22px #e5ad5020}
+body.kd-theme[data-kp-layout=mystery-chest] .mythic-feature[data-character=golge]{background:radial-gradient(ellipse at 50% 32%,#4785b94b,transparent 65%),linear-gradient(155deg,#27203e,#160f29)}
+body.kd-theme[data-kp-layout=mystery-chest] .chest-opening-info{border-color:#9657c9;background:linear-gradient(145deg,#25143e,#160c29)}
+body.kd-theme[data-kp-layout=mystery-chest] #pityBar,body.kd-theme[data-kp-layout=mystery-chest] #ticketBar{height:10px;accent-color:#ce86ff;border-radius:8px}
+body.kd-theme[data-kp-layout=mystery-chest] .chest-rules{border-color:#694294;background:#180e2b}
+body.kd-theme[data-kp-layout=missions] .kd-mission-hero,body.kd-theme[data-kp-layout=achievements] .kd-achievement-hero{position:relative;isolation:isolate;background:radial-gradient(ellipse at 88% 0,#7b39b963,transparent 60%),linear-gradient(120deg,#281542,#160c29);overflow:hidden}
+.kd-mission-hero:after,.kd-achievement-hero:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:repeating-linear-gradient(135deg,transparent 0 40px,#b777ee12 41px 42px);mask-image:linear-gradient(90deg,transparent,#000)}
+body.kd-theme:is([data-kp-layout=missions],[data-kp-layout=achievements]) .hero h1{font-style:italic;font-weight:950;letter-spacing:-.04em}
+body.kd-theme[data-kp-layout=missions] .hero-icon{color:#e4b4ff;border-color:#c28afc;background:radial-gradient(ellipse,#8b49d266,#2a1744);box-shadow:0 0 24px #aa56ef55}
+body.kd-theme[data-kp-layout=missions] .summary article{border-color:#8e55bf;background:linear-gradient(145deg,#2a1744,#180d2b);border-radius:9px}
+body.kd-theme[data-kp-layout=missions] .summary article strong{color:#e5b7ff}
+body.kd-theme[data-kp-layout=missions] .mission-tabs .mission-tab{border-color:#7447a2;background:#201131;border-radius:9px}
+body.kd-theme[data-kp-layout=missions] .mission-tabs .mission-tab[aria-selected=true]{border-color:#c582ff;background:linear-gradient(115deg,#7631bb,#42206d);box-shadow:0 0 16px #a04bee3c}
+body.kd-theme[data-kp-layout=missions] .mission{border-radius:11px;border-color:#8150b3;background:linear-gradient(145deg,#27143e,#180d2b);box-shadow:var(--kd-shadow)}
+body.kd-theme[data-kp-layout=missions] .mission.ready{border-color:#deb46d;box-shadow:0 0 18px #d4a45722}
+body.kd-theme[data-kp-layout=missions] .mission.done{border-color:#5a987f}
+body.kd-theme[data-kp-layout=missions] .mission .icon{border-color:#b877f1;background:radial-gradient(ellipse,#8543cb66,#26123e);box-shadow:0 0 11px #b04eff32}
+body.kd-theme[data-kp-layout=missions] .mission .bar>span{background:linear-gradient(90deg,#923fe3,#df9bff)}
+body.kd-theme[data-kp-layout=missions] .timer{background:#1c102f;border-color:#9260c6}
+body.kd-theme[data-kp-layout=achievements] .hero .summary{border:1px solid #8954bd;border-radius:10px;padding:13px;background:#180d2ca8}
+body.kd-theme[data-kp-layout=achievements] .ring{background:conic-gradient(#d487ff var(--pct,0%),#35204c 0);box-shadow:0 0 15px #b956ff40}
+body.kd-theme[data-kp-layout=achievements] .ring span{background:#1b0e32;color:#f2d4ff}
+body.kd-theme[data-kp-layout=achievements] .count{background:#23123b;border-color:#7646a6}
+body.kd-theme[data-kp-layout=achievements] .title-collection,body.kd-theme[data-kp-layout=achievements] .collection{border-color:#8851b8;background:linear-gradient(145deg,#211237,#160c2a);border-radius:11px}
+body.kd-theme[data-kp-layout=achievements] .badge-card[data-rarity]{border-radius:11px;box-shadow:inset 0 0 16px color-mix(in srgb,var(--rc) 10%,transparent)}
+body.kd-theme[data-kp-layout=achievements] .badge-card.earned[data-rarity]{box-shadow:inset 0 0 20px color-mix(in srgb,var(--rc) 12%,transparent),0 0 14px color-mix(in srgb,var(--rc) 16%,transparent)}
+body.kd-theme[data-kp-layout=achievements] .badge-card .symbol{border-radius:13px}
+@media(max-width:760px){body.kd-theme[data-kp-layout=daily-rewards] .layout{grid-template-columns:1fr}.kd-reward-heading{padding:12px 14px!important}.kd-wheel-stage{padding-inline:8px}.kd-reward-heading .balance{min-width:100px}.kd-reward-heading h1{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.kd-wheel-orbit{transform:none}}
