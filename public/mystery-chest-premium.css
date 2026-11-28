@@ -1,0 +1,192 @@
+body {
+  color-scheme: dark;
+  background: radial-gradient(ellipse at 50% -12rem, #442763 0%, transparent 52rem), #110c1b;
+}
+main { max-width: 1160px; padding-bottom: 32px; }
+header.kp-page-header { margin-bottom: 20px; }
+.intro { gap: 8px 16px; }
+.intro h1 { margin-block: 0; letter-spacing: -.045em; }
+.intro p { margin: 4px 0 0; }
+.balance {
+  min-width: 0;
+  padding: 8px 15px;
+  border-color: #a480516e;
+  background: linear-gradient(150deg, #422e43, #261d30);
+}
+.balance strong { font-size: clamp(16px, 3vw, 22px); white-space: nowrap; }
+.layout { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 14px; }
+.panel {
+  border-color: #ad84d252;
+  background: linear-gradient(145deg, #291e3a, #191223);
+  box-shadow: 0 12px 36px #08040f40;
+}
+.tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tabs button { min-height: 44px; background: #241931; padding: 8px; }
+.tabs button[aria-pressed=true] {
+  border-color: #c49ce4;
+  background: linear-gradient(140deg, #65458b, #44305c);
+}
+.stage,.stage.reeling,.stage.reel-done {
+  min-height: 0;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  margin: 10px 0 8px;
+  height: clamp(260px, 30vw, 345px);
+  --spectral: #c49aff;
+  --spark-light: #ffd897;
+  background:
+    radial-gradient(ellipse at 50% 37%, #623e8e8c, transparent 66%),
+    radial-gradient(ellipse at 50% 87%, #995fd132, transparent 48%),
+    linear-gradient(153deg, #231533, #0d0a16);
+}
+.stage[data-character=golge] {
+  --spectral: #75cdff;
+  --spark-light: #cdf4ff;
+  background:
+    radial-gradient(ellipse at 50% 37%, #2c577d9e, transparent 66%),
+    radial-gradient(ellipse at 50% 87%, #649dd932, transparent 48%),
+    linear-gradient(153deg, #1a253c, #0d0c18);
+}
+.chest-art {
+  grid-area: 1 / 1;
+  width: min(100%, 490px);
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 13px 11px #08050e);
+}
+.reel { grid-area: 1 / 1; }
+.chest-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  margin-bottom: 10px;
+}
+.chest-caption h2 { font-size: clamp(16px, 3vw, 22px); }
+.chest-caption p { margin: 0; font-size: 13px; }
+.purchase { gap: 4px; }
+#purchase {
+  background: linear-gradient(110deg, #7846ad, #60358d);
+  color: #fff6ff;
+  border-color: #ceabf1;
+}
+#purchase:not(:disabled):hover { background: linear-gradient(110deg, #8b55bf, #7546a3); }
+.purchase-note { color: #dfc8ec; overflow-wrap: anywhere; }
+.chest-opening-info { margin: 0; align-content: start; }
+.chest-opening-info .chest-compact-odds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.chest-compact-odds .odds-label { gap: 1px 6px; }
+.chest-rules h2 { margin-bottom: 8px; }
+.mythic-feature {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 8px;
+  overflow: hidden;
+  border-color: #d0a56594;
+  --portrait-light: #a961d7;
+  background:
+    radial-gradient(ellipse at 50% 39%, #562f6d 0%, transparent 70%),
+    linear-gradient(155deg, #2a1b39, #161020);
+  box-shadow: inset 0 0 48px #c084d219, 0 12px 36px #08040f40;
+}
+.mythic-feature[data-character=golge] {
+  --portrait-light: #65c6ff;
+  background:
+    radial-gradient(ellipse at 50% 39%, #285274 0%, transparent 70%),
+    linear-gradient(155deg, #211a37, #121222);
+}
+.mythic-portrait {
+  display: grid;
+  place-items: center;
+  position: relative;
+  min-height: 275px;
+  isolation: isolate;
+}
+.mythic-portrait::before {
+  position: absolute;
+  content: "";
+  width: min(72%, 230px);
+  aspect-ratio: 1;
+  border: 1px solid #e9bc9b52;
+  border-radius: 50%;
+  box-shadow: 0 0 0 12px #d0a9690d, inset 0 0 40px #d9a9a626;
+  background: radial-gradient(circle, color-mix(in srgb,var(--portrait-light) 45%,transparent), transparent 72%);
+  z-index: -1;
+}
+.mythic-portrait::after {
+  position: absolute;
+  content: "";
+  inset: 8% 10%;
+  background: radial-gradient(circle at 12% 31%, #ffe4a8 0 2px, transparent 4px),
+    radial-gradient(circle at 83% 23%, #ffe5b5 0 2px, transparent 5px),
+    radial-gradient(circle at 75% 68%, #fff4cf 0 1px, transparent 4px),
+    radial-gradient(circle at 25% 76%, #ffe1a0 0 1px, transparent 4px);
+  animation: mythic-shimmer 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.mythic-portrait img {
+  display: block;
+  width: 100%;
+  height: clamp(270px, 31vw, 394px);
+  object-fit: contain;
+  filter: drop-shadow(0 10px 18px #0c061a);
+  transform: translate3d(var(--portrait-x, 0px),var(--portrait-y, 0px),0);
+  transition: transform .22s ease-out;
+}
+.mythic-copy { text-align: center; min-width: 0; }
+.mythic-copy h2 { font-size: clamp(20px, 2.6vw, 28px); line-height: 1.12; margin-top: 8px; }
+.mythic-copy p { margin: 4px 0; }
+.mythic-badge {
+  display: inline-block;
+  padding: 5px 11px;
+  border-radius: 20px;
+  color: #ffe5a8;
+  border: 1px solid #d8a75d9c;
+  background: #513a36;
+  font-size: 12px;
+  font-weight: 800;
+}
+.mythic-copy .mythic-ownership { color: #f0d6a1; font-size: 13px; }
+.chest-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 52%, #fff5cc, var(--glow) 20%, transparent 69%);
+}
+.stage.unsealing .chest-flash { animation: chest-flash .36s ease-out both; }
+.stage.opening .aura { animation: chest-charge .35s ease-out both; }
+.stage.opening .chest-art { animation: chest-anticipation .35s ease-out both; }
+.stage.unsealing .spark,.stage.revealed .spark { animation: spark .62s ease-out both; animation-delay: var(--delay); }
+.stage.unsealing .spark { z-index: 4; background: var(--spectral); }
+.stage.unsealing .spark:nth-of-type(even) { background: var(--spark-light); }
+.stage[data-tier=mythic].revealed .chest-flash { animation: mythic-flash .8s ease-out both; }
+.mythic-feature:hover { border-color: #e6bf80; }
+@keyframes chest-flash { 0%,100% { opacity: 0; } 18% { opacity: .85; } }
+@keyframes mythic-flash { 0%,100% { opacity: 0; } 14% { opacity: .55; } 45% { opacity: .22; } }
+@keyframes chest-charge { from { opacity: .08; transform: scale(.7); } to { opacity: .42; transform: scale(1.1); } }
+@keyframes chest-anticipation { 50% { transform: translateY(-3px) scale(1.02); } }
+@keyframes mythic-shimmer { from { opacity: .35; } to { opacity: .92; } }
+@media (max-width: 720px) {
+  header.kp-page-header { margin-bottom: 12px; }
+  .intro { align-items: end; }
+  .intro > div { min-width: 0; flex: 1 1 170px; }
+  .intro p { font-size: 13px; }
+  .balance { padding: 6px 9px; }
+  .layout { grid-template-columns: minmax(0, 1fr); margin-top: 10px; gap: 10px; }
+  .panel { padding: 12px; }
+  .stage,.stage.reeling,.stage.reel-done { height: clamp(230px, 59vw, 275px); }
+  .mythic-feature { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; align-items: center; }
+  .mythic-portrait { min-height: 176px; }
+  .mythic-portrait img { height: clamp(176px, 48vw, 250px); }
+  .mythic-copy { text-align: start; }
+  .mythic-copy p { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mythic-portrait img,.mythic-portrait::after { transform: none; animation: none; transition: none; }
+}
+html[data-kp-effects=off] .mythic-portrait img,
+html[data-kp-effects=off] .mythic-portrait::after { transform: none; animation: none; transition: none; }
