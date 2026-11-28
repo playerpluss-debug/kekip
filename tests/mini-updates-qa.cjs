@@ -128,6 +128,12 @@ async function main(){
   }finally{await audioPage.close();}
 
   const designRoutes=['/','/shop.html','/profile.html','/avatar.html','/gece-gardirop.html','/golge-gardirop.html','/daily-rewards.html','/mystery-chest.html','/stats.html','/missions.html','/achievements.html','/wallet.html','/settings.html','/friends.html','/messages.html','/favorites.html','/party.html','/football.html','/late-answer.html','/arena.html','/admin.html'];
+  // Studio preview and workshop must open without changing the equipped avatar.
+  await page.goto(base+'/?settings=profile');await page.locator('#kpProfileEditor').waitFor({state:'visible',timeout:20000});
+  assert.ok(await page.locator('#kpStudioCard').isVisible());assert.ok(await page.locator('#kpSaveProfile').isVisible());
+  await page.screenshot({path:'qa-design-d/profile-studio.png',fullPage:true,animations:'disabled'});
+  await page.goto(base+'/golge-gardirop.html?preview=1');await page.waitForFunction(()=>document.body.classList.contains('kd-workshop'));assert.ok(await page.locator('.workshop-header').isVisible());
+  await page.screenshot({path:'qa-design-d/golge-workshop.png',fullPage:true,animations:'disabled'});
   for(const viewport of [{width:1920,height:1080},{width:390,height:844}]){
     const fresh=(await check('login',{username:'qa_player',password})).cookie;
     assert.ok(fresh,'Fresh authenticated viewport session');
