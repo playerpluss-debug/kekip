@@ -34,7 +34,7 @@
 .reel-card .ticket-symbol{font-size:40px;font-weight:950;color:var(--card-color);text-shadow:0 0 13px var(--card-color)}
 .reel-card strong{font-size:12px;line-height:1.2;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .reel-card small{font-size:10px;color:var(--card-color);font-weight:850;text-transform:uppercase;letter-spacing:.6px}
-.reel-card.winner{z-index:2;transform:scale(1.045);box-shadow:0 0 22px var(--card-color),inset 0 0 18px color-mix(in srgb,var(--card-color) 32%,transparent);border-width:2px}
+.reel-card.winner{z-index:2;transform:scale(1.045);transition:transform .18s ease-out;box-shadow:0 0 22px var(--card-color),inset 0 0 18px color-mix(in srgb,var(--card-color) 32%,transparent);border-width:2px}
 .reel-card.winner[data-tier=mythic]{background:radial-gradient(ellipse,#6c345d,#25142f);box-shadow:0 0 25px #ff92b1,0 0 42px #ffcf7d66}
 .stage.reel-done .reel-pointer{opacity:.65}.stage.reel-done .spark{z-index:4}
 .reel-caption{position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:11px;color:#cdbbdf;z-index:4}
@@ -102,6 +102,16 @@ function waitForFlash(){
   rollCancel=finish;
  });
 }
+function reelTravel(progress){
+ const accelerationEnd=.14;
+ const brakingStart=.50;
+ const brakingDuration=1-brakingStart;
+ // Integrate the speed across acceleration, cruising and braking, then normalize to one full trip.
+ const total=accelerationEnd/2+(brakingStart-accelerationEnd)+brakingDuration/2;
+ if(progress<accelerationEnd)return progress**2/(2*accelerationEnd*total);
+ if(progress<brakingStart)return (progress-accelerationEnd/2)/total;
+ return 1-(1-progress)**2/(2*brakingDuration*total);
+}
 async function animateReward(reward,stamp,chargedAt){
  if(motion.matches||!allowed('effects'))return true;
  const reel=$('reel'),track=$('reelTrack'),actual=rewardCard(reward);
@@ -130,7 +140,7 @@ async function animateReward(reward,stamp,chargedAt){
  stage.classList.add('reeling');
  return new Promise(resolve=>{
   let frame=0,finished=false,start=null,last=-1;
-  const duration=1650;
+  const duration=3200;
   const position=i=>cards[i].offsetLeft+cards[i].offsetWidth/2-reel.clientWidth/2;
   const stride=Math.max(1,cards[1].offsetLeft-cards[0].offsetLeft);
   function finish(ok){
@@ -151,12 +161,14 @@ async function animateReward(reward,stamp,chargedAt){
    if(motion.matches||!allowed('effects')){finish(true);return}
    if(start===null)start=now;
    const progress=Math.min(1,(now-start)/duration);
-   const distance=position(2)+(position(stop)-position(2))*(1-Math.pow(1-progress,3));
+   const startPosition=position(2);
+   const distance=startPosition+(position(stop)-startPosition)*reelTravel(progress);
    track.style.transform='translate3d('+(-distance)+'px,0,0)';
    const index=Math.floor((distance-position(0))/stride+.5);
    if(index!==last){if(last>=0&&progress<1)tickSound(index,progress>.68);last=index}
    if(progress>=1)finish(true);else frame=requestAnimationFrame(step);
   }
+  track.style.transform='translate3d('+(-position(2))+'px,0,0)';
   frame=requestAnimationFrame(step);
  });
 }
