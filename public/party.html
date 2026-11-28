@@ -11,14 +11,14 @@
 <link rel="stylesheet" href="/lobby-voice.css?v=1">
 <script src="/late-answer-voice.js?v=lobbies" defer></script>
 <script src="/lobby-voice-client.js?v=1" defer></script>
-</head>
-<body>
+<link rel="stylesheet" href="/design-d.css?v=1"></head>
+<body data-kp-layout="party">
 <main id="kpPartyShell" class="kp-lobby-shell">
 <header class="kp-page-header">
  <a class="kp-site-brand" href="/" aria-label="KEKIP Games ana sayfa"><span class="kp-site-mark" aria-hidden="true">K</span><span class="kp-site-word">KEKIP<em>.</em> GAMES</span></a>
  <nav aria-label="Sayfa bağlantıları"><a href="/friends.html" data-kp-header-link>Arkadaşlar</a> <a href="/" data-kp-header-link>Ana sayfa</a></nav>
 </header>
-<div class="kp-lobby-hero kp-lobby-party"><div class="kp-lobby-copy"><p class="kp-lobby-meta">En fazla 8 oyuncu</p><h1>Parti</h1><p>Arkadaşlarını davet et, birlikte hazır ol ve aynı oyun odasına geç.</p></div><span class="kp-lobby-emblem" aria-hidden="true">✦</span></div>
+<div class="kp-lobby-hero kp-lobby-party"><div class="kp-lobby-copy"><p class="kp-lobby-meta">En fazla 8 oyuncu</p><h1>Parti</h1><p>Arkadaşlarını davet et, birlikte hazır ol ve aynı oyun odasına geç.</p></div><span class="kp-lobby-emblem kd-party-emblem" aria-hidden="true"><svg viewBox="0 0 100 100" fill="none"><path d="M33 33h34a20 20 0 0 1 18 14l8 24a10 10 0 0 1-16 11L65 70H35L23 82A10 10 0 0 1 7 71l8-24a20 20 0 0 1 18-14Z"/><path d="M28 45v16m-8-8h16M63 46h1m9 9h1M50 14v10m-15-8 5 9m25-9-5 9"/></svg></span></div>
 <p id="status" role="status" class="notice"></p>
 <section class="panel" id="partyEntry" hidden>
  <h2>Ekibini topla</h2><button id="create" type="button" class="primary">Parti oluştur</button>
@@ -64,5 +64,5 @@
  </section>
 </div>
 </main>
-</body>
+<script src="/design-d.js?v=1" defer></script></body>
 </html>

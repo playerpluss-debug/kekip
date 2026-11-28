@@ -108,6 +108,43 @@ async function main(){
    console.log('PASS collection comparison '+character);
   }
   for(const viewport of [{width:1280,height:800},{width:390,height:844}]){await page.setViewportSize(viewport);for(const route of ['/','/profile.html','/shop.html']){await page.goto(base+route);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(1000);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),route+' horizontal overflow '+viewport.width);console.log('PASS viewport '+viewport.width+' '+route);}}
+  await fs.mkdir('qa-design-d',{recursive:true});
+  const designRoutes=['/','/shop.html','/profile.html','/avatar.html','/gece-gardirop.html','/golge-gardirop.html','/daily-rewards.html','/mystery-chest.html','/stats.html','/missions.html','/achievements.html','/wallet.html','/settings.html','/friends.html','/messages.html','/favorites.html','/party.html','/football.html','/late-answer.html','/arena.html','/admin.html'];
+  for(const viewport of [{width:1920,height:1080},{width:390,height:844}]){
+    const fresh=(await check('login',{username:'qa_player',password})).cookie;
+    assert.ok(fresh,'Fresh authenticated viewport session');
+    await context.clearCookies();await context.addCookies([{name:'kekip_session',value:fresh.split('=')[1],url:base}]);
+    await page.setViewportSize(viewport);
+    for(const route of designRoutes){
+      const response=await page.goto(base+route,{waitUntil:'domcontentloaded'});assert.ok(response?.ok(),route+' response');
+      await page.waitForFunction(()=>document.body.classList.contains('kd-theme')&&window.KEKIPDesignD===true);
+      assert.ok(await page.evaluate(()=>!![...document.styleSheets].find(s=>s.href?.includes('/design-d.css'))),route+' theme sheet');
+      await page.waitForTimeout(350);
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),route+' Design D horizontal overflow '+viewport.width);
+      if(route==='/shop.html'){try{await page.locator('#grid .modular-card').first().waitFor({state:'visible',timeout:15000});}catch(e){await page.screenshot({path:'qa-design-d/'+viewport.width+'-shop-failed.png',fullPage:true});console.log('SHOP DIAGNOSTIC '+JSON.stringify(await page.evaluate(()=>({url:location.href,notice:document.getElementById('notice')?.textContent,heading:document.getElementById('heading')?.textContent,cardCount:document.querySelectorAll('#grid .modular-card').length,navHidden:document.getElementById('shopNav')?.hidden,query:document.getElementById('itemSearch')?.value,body:document.body.className}))));throw e;}assert.equal(await page.locator('.kd-shop-feature').count(),1);await page.locator('#itemSearch').fill('Neon Arcade');await page.waitForFunction(()=>document.querySelectorAll('#grid .modular-card').length===7);assert.equal(await page.locator('#grid [data-kd-collection="neon"]').count(),7);await page.locator('#itemSearch').fill('');}
+      if(route==='/profile.html'){await page.locator('#content').waitFor({state:'visible',timeout:15000});assert.ok(await page.locator('#username').textContent());assert.equal(await page.locator('#hero.kd-profile-hero').count(),1);}
+      if(route==='/stats.html'){await page.locator('#podiumContent .podium-card').first().waitFor({state:'visible',timeout:15000});assert.ok(await page.locator('.kd-podium-link').count());}
+      if(route==='/daily-rewards.html'){await page.waitForFunction(()=>document.querySelectorAll('#wheel path').length>0);assert.equal(await page.locator('.kd-wheel-stage #wheel').count(),1);}
+      if(route==='/mystery-chest.html'){assert.equal(await page.locator('#stage #chestArt').count(),1);await page.waitForFunction(()=>document.getElementById('ticketText')?.textContent.includes('ücretsiz açılış'));assert.ok(await page.locator('#pityBar').count());}
+      if(route==='/missions.html'){await page.locator('#content').waitFor({state:'visible'});await page.locator('#mission-tab-week').click();assert.equal(await page.locator('#mission-panel-week').isVisible(),true);await page.locator('#mission-tab-day').click();}
+      if(route==='/achievements.html'){await page.locator('#cards').waitFor({state:'visible'});assert.ok(await page.locator('#cards .badge-card').count());}
+      if(route==='/friends.html'){await page.locator('#member').waitFor({state:'visible'});assert.equal(await page.locator('.kd-social-hero').count(),1);await page.locator('#friendTab-search').click();assert.ok(await page.locator('#searchForm').isVisible());await page.locator('#friendTab-list').click();}
+      if(route==='/messages.html'){await page.locator('#workspace').waitFor({state:'visible'});assert.equal(await page.locator('.kd-message-art').count(),1);}
+      if(route==='/wallet.html'){await page.locator('#content').waitFor({state:'visible'});assert.ok(await page.locator('#balance').textContent());}
+      if(route==='/settings.html'){assert.ok(await page.locator('#prefSound').count());assert.ok(await page.locator('#prefEffects').count());}
+      if(route==='/football.html'){assert.equal(await page.locator('#intro.kd-foot-intro').count(),1);assert.equal(await page.locator('#footHub').count(),1);}
+      if(route==='/late-answer.html'){assert.equal(await page.locator('#createForm,#joinForm').count(),2);}
+      if(route==='/arena.html'){assert.equal(await page.locator('#arenaCreate,#arenaJoin').count(),2);}
+      if(route==='/avatar.html'){assert.equal(await page.locator('.kd-avatar-card .portrait-layers').count(),2);}
+      if(route==='/'){
+        assert.equal(await page.locator('#kdWheelSlot #kpHomeDailyWheel').count(),1);assert.equal(await page.locator('.kd-hero-figure').count(),2);await page.locator('#kdLeaderboardRows').waitFor({state:'visible'});await page.locator('[data-kd-filter="sport"]').click();assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),1);
+        await page.locator('[data-kd-filter="all"]').click();await page.locator('#kdGameSearch').fill('bulunmayan oyun');assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),0);
+        await page.locator('#kdGameSearch').fill('');assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),4);await page.locator('#kdGameSearch').blur();await page.locator('#homeGameLibrary .battleship-cta').first().click();await page.locator('#lobbyControls').waitFor({state:'visible'});await page.screenshot({path:'qa-design-d/'+viewport.width+'-battleship-lobby.png',fullPage:true,animations:'disabled'});await page.locator('.game-close').click();
+      }
+      await page.screenshot({path:'qa-design-d/'+viewport.width+'-'+(route==='/'?'home':route.slice(1,-5))+'.png',fullPage:true,animations:'disabled'});
+      console.log('PASS Design D '+viewport.width+' '+route);
+    }
+  }
  }finally{await browser?.close();server.kill('SIGTERM');await db.end();}
 }
 main().then(()=>process.exit(0),e=>{console.error(e);process.exit(1)});

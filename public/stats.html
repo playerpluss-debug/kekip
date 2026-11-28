@@ -202,7 +202,7 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
 #statsFilters .toolbar-group{min-width:0;max-width:100%}#statsFilters .chips{gap:6px}#statsFilters .chip,#badgeChips .chip{min-height:42px;max-width:100%;white-space:normal}#statsFilters .toolbar:has(#statsMetricGroup[hidden]){margin-bottom:0}
 #statsFilters .summary-grid{margin-top:8px}.stats-view{min-width:0}.stats-view .panel{min-width:0}.stats-view .panel-note{max-width:100%;overflow-wrap:anywhere}.stats-view .compare-select{max-width:100%;min-width:0}.row-stat b,.podium-score strong,.podium-meta b,.me-rank strong{overflow-wrap:anywhere}
 @media(max-width:620px){.stats-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;border-radius:13px}.stats-tabs button{min-height:44px;font-size:12px}.stats-view .panel-head{margin-bottom:12px}#statsFilters .toolbar{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}#statsFilters .chips{display:flex;flex-wrap:wrap}#statsFilters .chip,#badgeChips .chip{min-height:44px;padding:8px 10px}.stats-view .row{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.stats-view .row .row-user{grid-column:2;grid-row:1;grid-template-columns:36px minmax(0,1fr);gap:6px}.stats-view .row .row-avatar{width:36px;height:36px}.stats-view .row .rank-pill{grid-column:1;grid-row:1}.stats-view .row-stat{display:flex;flex-direction:column;align-items:flex-start;text-align:left;padding:8px;min-width:0}.stats-view .row-stat span{white-space:normal;overflow-wrap:anywhere}.stats-view .row-stat.extra{grid-column:1/-1}.stats-view .me-card{min-width:0}.stats-view .compare-head{min-width:0}.stats-view .compare-head strong{overflow-wrap:anywhere}}
-</style><link rel="stylesheet" href="/kekip-navigation.css?v=05122"></head>
+</style><link rel="stylesheet" href="/kekip-navigation.css?v=05122"><link rel="stylesheet" href="/design-d.css?v=1"></head>
 <body data-kp-layout="stats" class="kp-motion-page kp-motion-legacy-pseudo"><div class="kp-live-backdrop" aria-hidden="true"><span class="kp-light kp-light-a"></span><span class="kp-light kp-light-b"></span><span class="kp-rays"></span><span class="kp-stars"></span><span class="kp-vignette"></span></div>
 <div class="page">
   <header class="topbar kp-page-header">
@@ -217,8 +217,9 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
   </header>
 
   <section class="hero">
-    <div class="hero-card">
-      <span class="kicker">🏆 Liderlik Tablosu</span>
+    <div class="hero-card kd-rank-hero">
+      <svg class="kd-rank-trophy" viewBox="0 0 200 190" fill="none" aria-hidden="true"><defs><linearGradient id="kdTrophyGold" x1="0" y1="0" x2="200" y2="190" gradientUnits="userSpaceOnUse"><stop stop-color="#fff2b0"/><stop offset=".45" stop-color="#db9a43"/><stop offset="1" stop-color="#734e85"/></linearGradient></defs><path d="M58 21h84v48c0 27-18 48-42 48S58 96 58 69V21Z" fill="#c8964738" stroke="url(#kdTrophyGold)" stroke-width="5"/><path d="M58 38H30v21c0 22 13 35 35 35m77-56h28v21c0 22-13 35-35 35M100 117v30m-27 3h54l10 18H63l10-18Z" stroke="url(#kdTrophyGold)" stroke-width="5" stroke-linejoin="round"/><path d="m100 43 8 14 17 3-12 12 3 17-16-8-16 8 3-17-12-12 17-3 8-14Z" fill="#ffe4a6" stroke="#e4b163" stroke-width="1.5"/><ellipse cx="100" cy="168" rx="83" ry="12" stroke="#a952e6" stroke-opacity=".6" stroke-width="2"/></svg>
+      <span class="kicker">KEKIP / HALL OF FAME</span>
       <h1 class="hero-title">Zirveye <span>adını yaz.</span></h1>
       <p class="hero-text">KEKIP topluluğunun en iyi oyuncuları. Dönemini ve sıralama ölçütünü seç, zirvedeki yerini keşfet.</p>
       <div class="hero-stats" id="heroStats">
@@ -452,7 +453,7 @@ function podiumCard(player,rank){
       ${rank===1?'<div class="champion-crown" aria-hidden="true"><svg viewBox="0 0 64 40" fill="none"><path d="M7 8L20 20 32 3 44 20 57 8 50 33H14Z" fill="#cba34b" stroke="#ffe7a0" stroke-width="2" stroke-linejoin="round"/><path d="M15 34H49" stroke="#fff1b5" stroke-width="3" stroke-linecap="round"/><path d="M32 13l5 7-5 7-5-7z" fill="#fff6ce"/><circle cx="7" cy="8" r="3" fill="#ffe7a0"/><circle cx="57" cy="8" r="3" fill="#ffe7a0"/></svg></div>':''}
       <div class="podium-avatar" data-kp-avatar="${escapeHtml(player.username)}" data-kp-avatar-mode="body"></div>
       <div class="podium-info">
-        <div class="podium-name">@${escapeHtml(player.username)} ${isViewer?'<span>Sen</span>':''}</div>
+        <div class="podium-name"><a class="kd-podium-link" href="/profile.html?user=${encodeURIComponent(player.username)}">@${escapeHtml(player.username)}</a> ${isViewer?'<span>Sen</span>':''}</div>
         <div class="podium-user">${state.period==='all'?'Seviye '+fmt(progress.level):'Dönem XP '+fmt(playerXp(player,state.period))}</div>
         <div class="podium-score"><strong>${scoreFmt(score)}</strong><small>${escapeHtml(metricText(state.metric))}</small></div>
         <div class="podium-meta">
@@ -574,5 +575,5 @@ async function load(){
 
 load();
 </script>
-</body>
+<script src="/design-d.js?v=1" defer></script></body>
 </html>
