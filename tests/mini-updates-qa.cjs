@@ -111,6 +111,9 @@ async function main(){
   await fs.mkdir('qa-design-d',{recursive:true});
   const designRoutes=['/','/shop.html','/profile.html','/avatar.html','/gece-gardirop.html','/golge-gardirop.html','/daily-rewards.html','/mystery-chest.html','/stats.html','/missions.html','/achievements.html','/wallet.html','/settings.html','/friends.html','/messages.html','/favorites.html','/party.html','/football.html','/late-answer.html','/arena.html','/admin.html'];
   for(const viewport of [{width:1920,height:1080},{width:390,height:844}]){
+    const fresh=(await check('login',{username:'qa_player',password})).cookie;
+    assert.ok(fresh,'Fresh authenticated viewport session');
+    await context.clearCookies();await context.addCookies([{name:'kekip_session',value:fresh.split('=')[1],url:base}]);
     await page.setViewportSize(viewport);
     for(const route of designRoutes){
       const response=await page.goto(base+route,{waitUntil:'domcontentloaded'});assert.ok(response?.ok(),route+' response');
@@ -118,7 +121,9 @@ async function main(){
       assert.ok(await page.evaluate(()=>!![...document.styleSheets].find(s=>s.href?.includes('/design-d.css'))),route+' theme sheet');
       await page.waitForTimeout(350);
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),route+' Design D horizontal overflow '+viewport.width);
-      if(route==='/shop.html'){await page.locator('#grid .modular-card').first().waitFor({state:'visible',timeout:15000});assert.equal(await page.locator('.kd-shop-feature').count(),1);await page.locator('#itemSearch').fill('Neon Arcade');await page.waitForFunction(()=>document.querySelectorAll('#grid .modular-card').length===7);assert.equal(await page.locator('#grid [data-kd-collection="neon"]').count(),7);await page.locator('#itemSearch').fill('');}
+      if(route==='/shop.html'){try{await page.locator('#grid .modular-card').first().waitFor({state:'visible',timeout:15000});}catch(e){await page.screenshot({path:'qa-design-d/'+viewport.width+'-shop-failed.png',fullPage:true});console.log('SHOP DIAGNOSTIC '+JSON.stringify(await page.evaluate(()=>({url:location.href,notice:document.getElementById('notice')?.textContent,heading:document.getElementById('heading')?.textContent,cardCount:document.querySelectorAll('#grid .modular-card').length,navHidden:document.getElementById('shopNav')?.hidden,query:document.getElementById('itemSearch')?.value,body:document.body.className}))));throw e;}assert.equal(await page.locator('.kd-shop-feature').count(),1);await page.locator('#itemSearch').fill('Neon Arcade');await page.waitForFunction(()=>document.querySelectorAll('#grid .modular-card').length===7);assert.equal(await page.locator('#grid [data-kd-collection="neon"]').count(),7);await page.locator('#itemSearch').fill('');}
+      if(route==='/profile.html'){await page.locator('#content').waitFor({state:'visible',timeout:15000});assert.ok(await page.locator('#username').textContent());assert.equal(await page.locator('#hero.kd-profile-hero').count(),1);}
+      if(route==='/stats.html'){await page.locator('#podiumContent .podium-card').first().waitFor({state:'visible',timeout:15000});assert.ok(await page.locator('.kd-podium-link').count());}
       if(route==='/avatar.html'){assert.equal(await page.locator('.kd-avatar-card .portrait-layers').count(),2);}
       if(route==='/'){
         assert.equal(await page.locator('#kdWheelSlot #kpHomeDailyWheel').count(),1);assert.equal(await page.locator('.kd-hero-figure').count(),2);await page.locator('#kdLeaderboardRows').waitFor({state:'visible'});await page.locator('[data-kd-filter="sport"]').click();assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),1);

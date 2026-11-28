@@ -217,8 +217,9 @@ body:after{background-image:linear-gradient(#b58cff05 1px,transparent 1px),linea
   </header>
 
   <section class="hero">
-    <div class="hero-card">
-      <span class="kicker">🏆 Liderlik Tablosu</span>
+    <div class="hero-card kd-rank-hero">
+      <svg class="kd-rank-trophy" viewBox="0 0 200 190" fill="none" aria-hidden="true"><defs><linearGradient id="kdTrophyGold" x1="0" y1="0" x2="200" y2="190" gradientUnits="userSpaceOnUse"><stop stop-color="#fff2b0"/><stop offset=".45" stop-color="#db9a43"/><stop offset="1" stop-color="#734e85"/></linearGradient></defs><path d="M58 21h84v48c0 27-18 48-42 48S58 96 58 69V21Z" fill="#c8964738" stroke="url(#kdTrophyGold)" stroke-width="5"/><path d="M58 38H30v21c0 22 13 35 35 35m77-56h28v21c0 22-13 35-35 35M100 117v30m-27 3h54l10 18H63l10-18Z" stroke="url(#kdTrophyGold)" stroke-width="5" stroke-linejoin="round"/><path d="m100 43 8 14 17 3-12 12 3 17-16-8-16 8 3-17-12-12 17-3 8-14Z" fill="#ffe4a6" stroke="#e4b163" stroke-width="1.5"/><ellipse cx="100" cy="168" rx="83" ry="12" stroke="#a952e6" stroke-opacity=".6" stroke-width="2"/></svg>
+      <span class="kicker">KEKIP / HALL OF FAME</span>
       <h1 class="hero-title">Zirveye <span>adını yaz.</span></h1>
       <p class="hero-text">KEKIP topluluğunun en iyi oyuncuları. Dönemini ve sıralama ölçütünü seç, zirvedeki yerini keşfet.</p>
       <div class="hero-stats" id="heroStats">
@@ -452,7 +453,7 @@ function podiumCard(player,rank){
       ${rank===1?'<div class="champion-crown" aria-hidden="true"><svg viewBox="0 0 64 40" fill="none"><path d="M7 8L20 20 32 3 44 20 57 8 50 33H14Z" fill="#cba34b" stroke="#ffe7a0" stroke-width="2" stroke-linejoin="round"/><path d="M15 34H49" stroke="#fff1b5" stroke-width="3" stroke-linecap="round"/><path d="M32 13l5 7-5 7-5-7z" fill="#fff6ce"/><circle cx="7" cy="8" r="3" fill="#ffe7a0"/><circle cx="57" cy="8" r="3" fill="#ffe7a0"/></svg></div>':''}
       <div class="podium-avatar" data-kp-avatar="${escapeHtml(player.username)}" data-kp-avatar-mode="body"></div>
       <div class="podium-info">
-        <div class="podium-name">@${escapeHtml(player.username)} ${isViewer?'<span>Sen</span>':''}</div>
+        <div class="podium-name"><a class="kd-podium-link" href="/profile.html?user=${encodeURIComponent(player.username)}">@${escapeHtml(player.username)}</a> ${isViewer?'<span>Sen</span>':''}</div>
         <div class="podium-user">${state.period==='all'?'Seviye '+fmt(progress.level):'Dönem XP '+fmt(playerXp(player,state.period))}</div>
         <div class="podium-score"><strong>${scoreFmt(score)}</strong><small>${escapeHtml(metricText(state.metric))}</small></div>
         <div class="podium-meta">
