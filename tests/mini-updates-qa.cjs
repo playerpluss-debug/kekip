@@ -118,6 +118,8 @@ async function main(){
       assert.ok(await page.evaluate(()=>!![...document.styleSheets].find(s=>s.href?.includes('/design-d.css'))),route+' theme sheet');
       await page.waitForTimeout(350);
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),route+' Design D horizontal overflow '+viewport.width);
+      if(route==='/shop.html'){await page.locator('#grid .modular-card').first().waitFor({state:'visible',timeout:15000});assert.equal(await page.locator('.kd-shop-feature').count(),1);await page.locator('#itemSearch').fill('Neon Arcade');await page.waitForFunction(()=>document.querySelectorAll('#grid .modular-card').length===7);assert.equal(await page.locator('#grid [data-kd-collection="neon"]').count(),7);await page.locator('#itemSearch').fill('');}
+      if(route==='/avatar.html'){assert.equal(await page.locator('.kd-avatar-card .portrait-layers').count(),2);}
       if(route==='/'){
         assert.equal(await page.locator('#kdWheelSlot #kpHomeDailyWheel').count(),1);assert.equal(await page.locator('.kd-hero-figure').count(),2);await page.locator('#kdLeaderboardRows').waitFor({state:'visible'});await page.locator('[data-kd-filter="sport"]').click();assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),1);
         await page.locator('[data-kd-filter="all"]').click();await page.locator('#kdGameSearch').fill('bulunmayan oyun');assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),0);
