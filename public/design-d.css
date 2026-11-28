@@ -42,3 +42,6 @@ body.kd-theme .kd-section-nav svg{width:17px;height:17px;flex:none}
 @media(max-width:600px){body.kd-theme:not([data-kp-layout=home]) .kp-page-header{padding:8px 10px;margin-bottom:10px}body.kd-theme .kd-section-nav{flex-wrap:nowrap;overflow:auto;max-width:100%;scrollbar-width:thin}body.kd-theme .kd-section-nav a{flex:none;padding:7px 9px}}
 @media(prefers-reduced-motion:reduce){body.kd-theme :is(.btn,.header-btn,.secondary,.primary,.arena-primary,.kp-room-join,.shop-card,.grid>.card){transition:none!important;transform:none!important}}
 html[data-kp-effects=off] body.kd-theme :is(.btn,.header-btn,.secondary,.primary,.arena-primary,.kp-room-join,.shop-card,.grid>.card){transition:none!important}
+
+/* Real collection and chest artwork, not placeholder glyphs. */
+.kd-collection>span{overflow:hidden}.kd-collection>span img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 5px #0c061c)}.kd-chest-art{transform:none!important;width:108px!important;height:83px!important}.kd-chest-art img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 12px #bb58ff80)}@media(max-width:540px){.kd-chest-art{width:65px!important;height:55px!important}}

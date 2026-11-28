@@ -108,6 +108,25 @@ async function main(){
    console.log('PASS collection comparison '+character);
   }
   for(const viewport of [{width:1280,height:800},{width:390,height:844}]){await page.setViewportSize(viewport);for(const route of ['/','/profile.html','/shop.html']){await page.goto(base+route);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(1000);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),route+' horizontal overflow '+viewport.width);console.log('PASS viewport '+viewport.width+' '+route);}}
+  await fs.mkdir('qa-design-d',{recursive:true});
+  const designRoutes=['/','/shop.html','/profile.html','/avatar.html','/gece-gardirop.html','/golge-gardirop.html','/daily-rewards.html','/mystery-chest.html','/stats.html','/missions.html','/achievements.html','/wallet.html','/settings.html','/friends.html','/messages.html','/favorites.html','/party.html','/football.html','/late-answer.html','/arena.html','/admin.html'];
+  for(const viewport of [{width:1920,height:1080},{width:390,height:844}]){
+    await page.setViewportSize(viewport);
+    for(const route of designRoutes){
+      const response=await page.goto(base+route,{waitUntil:'domcontentloaded'});assert.ok(response?.ok(),route+' response');
+      await page.waitForFunction(()=>document.body.classList.contains('kd-theme')&&window.KEKIPDesignD===true);
+      assert.ok(await page.evaluate(()=>!![...document.styleSheets].find(s=>s.href?.includes('/design-d.css'))),route+' theme sheet');
+      await page.waitForTimeout(350);
+      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),route+' Design D horizontal overflow '+viewport.width);
+      if(route==='/'){
+        await page.locator('[data-kd-filter="sport"]').click();assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),1);
+        await page.locator('[data-kd-filter="all"]').click();await page.locator('#kdGameSearch').fill('bulunmayan oyun');assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),0);
+        await page.locator('#kdGameSearch').fill('');assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),4);
+      }
+      await page.screenshot({path:'qa-design-d/'+viewport.width+'-'+(route==='/'?'home':route.slice(1,-5))+'.png',fullPage:true,animations:'disabled'});
+      console.log('PASS Design D '+viewport.width+' '+route);
+    }
+  }
  }finally{await browser?.close();server.kill('SIGTERM');await db.end();}
 }
 main().then(()=>process.exit(0),e=>{console.error(e);process.exit(1)});
