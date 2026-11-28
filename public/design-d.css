@@ -374,3 +374,48 @@ body.kd-theme[data-kp-layout=arena] :is(#arenaEntry .arena-panel,#arenaRoom>.are
 body.kd-theme[data-kp-layout=arena] #arenaStage{border-color:#a66ade;border-radius:11px}
 body.kd-theme[data-kp-layout=arena] :is(#arenaCreate button,#arenaStart):not(:disabled){background:var(--kd-gradient);color:white;border-color:#d28bff}
 @media(max-width:600px){.kd-game-emblem{right:8%;opacity:.16}body.kd-theme .kp-lobby-hero{border-radius:11px}body.kd-theme .kd-battle-shell{border-radius:10px}}
+
+/* Final visual calibration against the Design D reference: deeper violet-black canvas, stronger neon edge and compact mobile controls. */
+body.kd-theme[data-kp-layout=home]{background:radial-gradient(ellipse at 65% 9%,#20103d 0%,#0e091e 45%,#090611 90%)!important}
+body.kd-theme[data-kp-layout=home] .kp-live-backdrop{opacity:.42}
+body.kd-theme[data-kp-layout=home] .ambient-scene{opacity:.38}
+.shell>.side{background:linear-gradient(155deg,#1d1035,#110a21 58%,#22103a)!important;border-color:#9251cd86!important;box-shadow:inset 0 1px 0 #d4a0ff20,0 0 18px #9c39ed19}
+.shell .top{border-color:#8050b65c!important;background:#110b21!important}
+.shell .hero.home-launch.kd-hero{border-color:#cb80ff!important;box-shadow:inset 0 0 24px #aa46ff36,0 0 20px #8e2fd32d,0 7px 26px #05030c80}
+.shell .kd-hero .kd-hero-crown{opacity:.65;filter:drop-shadow(0 0 13px #dd66ff) drop-shadow(0 0 25px #be37ff)}
+.kd-hero-grid{background:repeating-linear-gradient(135deg,transparent 0 38px,#b05afa1b 39px 40px,transparent 41px 65px),radial-gradient(ellipse at 80% 90%,#a44dff70,transparent 44%),radial-gradient(ellipse at 73% 40%,#842eb866,transparent 60%)}
+#homeGameLibrary .battleship-feature{border-color:#bf71fb!important;box-shadow:inset 0 0 10px #b055ff22,0 0 10px #9634ed20,0 6px 18px #08041180}
+#homeGameLibrary .battleship-feature:hover{box-shadow:inset 0 0 12px #cc78ff44,0 0 18px #bb4fff55}
+#homeGameLibrary .battleship-visual:after{background:linear-gradient(90deg,#100921ed 0%,#130b27b0 33%,#170c3310 85%),linear-gradient(0deg,#12091de0,transparent 55%)}
+.kd-widget,#kdWheelSlot #kpHomeDailyWheel{border-color:#ab68dc!important;box-shadow:inset 0 1px 0 #d4a8ff20,0 0 12px #9b40df1f,0 6px 16px #06030e60!important}
+.kd-primary,.shell #homeGameLibrary .battleship-cta:not(.kp-battle-join){background:linear-gradient(115deg,#b747f2,#7628c8 75%,#9f39e3);box-shadow:inset 0 1px 1px #f1c6ff88,0 0 12px #c053ff50}
+.kd-filterbar button[aria-pressed=true]{box-shadow:inset 0 0 10px #d481ff33,0 0 10px #ba4aff35}
+.kd-collection>span{border-color:#c479fa;box-shadow:inset 0 0 13px #b85eff40,0 0 5px #a14cf32a}
+.kd-chest-art{filter:drop-shadow(0 0 9px #c748ff65)}
+body.kd-theme[data-kp-layout=shop] .shop-header-intro{min-width:0}
+@media(max-width:760px){
+body.kd-theme[data-kp-layout=shop] .simple-header.kp-page-header{display:flex;flex-wrap:wrap;gap:8px;padding:10px!important}
+body.kd-theme[data-kp-layout=shop] .simple-header .shop-header-intro{flex:1 1 100%;width:100%;display:flex;flex-wrap:wrap;gap:8px}
+body.kd-theme[data-kp-layout=shop] .simple-header .shop-page-title{flex:1;min-width:110px}
+body.kd-theme[data-kp-layout=shop] .simple-header .shop-page-title h1{font-size:23px;margin:2px 0}
+body.kd-theme[data-kp-layout=shop] .simple-header .shop-page-title p{display:none}
+body.kd-theme[data-kp-layout=shop] .simple-header .header-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;width:100%;min-width:0;flex:1 1 100%}
+body.kd-theme[data-kp-layout=shop] .simple-header .header-actions>:is(a,details){width:100%!important;min-width:0;max-width:100%;margin:0;align-self:stretch}
+body.kd-theme[data-kp-layout=shop] .simple-header .header-actions :is(a[data-kp-header-link],summary[data-kp-header-link]){min-height:36px;width:100%;font-size:11px;padding:6px;white-space:normal;overflow-wrap:anywhere}
+body.kd-theme[data-kp-layout=shop] .simple-header .header-actions .balance{min-height:36px;display:flex;align-items:center;justify-content:center;gap:6px;padding:5px!important}
+body.kd-theme[data-kp-layout=shop] .simple-header .header-actions .balance small{font-size:10px}
+body.kd-theme[data-kp-layout=shop] .simple-header .header-actions .balance strong{font-size:13px}
+body.kd-theme[data-kp-layout=shop] .kd-store-top{margin-bottom:9px}
+body.kd-theme[data-kp-layout=shop] .kd-shop-feature{min-height:182px}
+}
+@media(max-width:540px){
+body.kd-theme[data-kp-layout=home] .shell{padding:7px}
+.shell .kd-hero .kp-hero-art{opacity:.79!important;mask-image:linear-gradient(90deg,transparent,#000 22%,#000)}
+.shell .kd-hero .kp-hero-copy{width:78%}
+.shell .kd-hero h1{font-size:clamp(26px,8vw,31px)!important;text-shadow:0 2px 13px #110522}
+.shell .kd-hero p{text-shadow:0 1px 5px #080313}
+.shell .kd-hero .kp-hero-art .kd-figure-gece{left:-13%}
+.shell .kd-hero .kp-hero-art .kd-figure-golge{left:32%}
+}
+
+@media(max-width:1500px){.kd-topnav .kd-top-extra{display:none}}

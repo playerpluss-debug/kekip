@@ -139,7 +139,7 @@ async function main(){
       if(route==='/'){
         assert.equal(await page.locator('#kdWheelSlot #kpHomeDailyWheel').count(),1);assert.equal(await page.locator('.kd-hero-figure').count(),2);await page.locator('#kdLeaderboardRows').waitFor({state:'visible'});await page.locator('[data-kd-filter="sport"]').click();assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),1);
         await page.locator('[data-kd-filter="all"]').click();await page.locator('#kdGameSearch').fill('bulunmayan oyun');assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),0);
-        await page.locator('#kdGameSearch').fill('');assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),4);
+        await page.locator('#kdGameSearch').fill('');assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),4);await page.locator('#kdGameSearch').blur();await page.locator('#homeGameLibrary .battleship-cta').first().click();await page.locator('#lobbyControls').waitFor({state:'visible'});await page.screenshot({path:'qa-design-d/'+viewport.width+'-battleship-lobby.png',fullPage:true,animations:'disabled'});await page.locator('.game-close').click();
       }
       await page.screenshot({path:'qa-design-d/'+viewport.width+'-'+(route==='/'?'home':route.slice(1,-5))+'.png',fullPage:true,animations:'disabled'});
       console.log('PASS Design D '+viewport.width+' '+route);
