@@ -128,6 +128,10 @@ async function main(){
       if(route==='/mystery-chest.html'){assert.equal(await page.locator('#stage #chestArt').count(),1);await page.waitForFunction(()=>document.getElementById('ticketText')?.textContent.includes('ücretsiz açılış'));assert.ok(await page.locator('#pityBar').count());}
       if(route==='/missions.html'){await page.locator('#content').waitFor({state:'visible'});await page.locator('#mission-tab-week').click();assert.equal(await page.locator('#mission-panel-week').isVisible(),true);await page.locator('#mission-tab-day').click();}
       if(route==='/achievements.html'){await page.locator('#cards').waitFor({state:'visible'});assert.ok(await page.locator('#cards .badge-card').count());}
+      if(route==='/friends.html'){await page.locator('#member').waitFor({state:'visible'});assert.equal(await page.locator('.kd-social-hero').count(),1);await page.locator('#friendTab-search').click();assert.ok(await page.locator('#searchForm').isVisible());await page.locator('#friendTab-list').click();}
+      if(route==='/messages.html'){await page.locator('#workspace').waitFor({state:'visible'});assert.equal(await page.locator('.kd-message-art').count(),1);}
+      if(route==='/wallet.html'){await page.locator('#content').waitFor({state:'visible'});assert.ok(await page.locator('#balance').textContent());}
+      if(route==='/settings.html'){assert.ok(await page.locator('#prefSound').count());assert.ok(await page.locator('#prefEffects').count());}
       if(route==='/avatar.html'){assert.equal(await page.locator('.kd-avatar-card .portrait-layers').count(),2);}
       if(route==='/'){
         assert.equal(await page.locator('#kdWheelSlot #kpHomeDailyWheel').count(),1);assert.equal(await page.locator('.kd-hero-figure').count(),2);await page.locator('#kdLeaderboardRows').waitFor({state:'visible'});await page.locator('[data-kd-filter="sport"]').click();assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),1);

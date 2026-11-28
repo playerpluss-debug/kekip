@@ -289,3 +289,56 @@ body.kd-theme[data-kp-layout=achievements] .badge-card.earned[data-rarity]{box-s
 body.kd-theme[data-kp-layout=achievements] .badge-card .symbol{border-radius:13px}
 @media(max-width:760px){body.kd-theme[data-kp-layout=daily-rewards] .layout{grid-template-columns:1fr}.kd-reward-heading{padding:12px 14px!important}.kd-wheel-stage{padding-inline:8px}.kd-reward-heading .balance{min-width:100px}.kd-reward-heading h1{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.kd-wheel-orbit{transform:none}}
+
+/* Social hub, wallet and control centre. Preserve real account and chat state. */
+body.kd-theme:is([data-kp-layout=friends],[data-kp-layout=wallet],[data-kp-layout=settings],[data-kp-layout=admin]) main{max-width:1380px}
+.kd-social-hero{display:flex;align-items:center;position:relative;isolation:isolate;overflow:hidden;min-height:170px;gap:12px;padding:22px 25px;border:1px solid #a45be4;border-radius:13px;background:radial-gradient(ellipse at 80% 35%,#7330bb65,transparent 60%),linear-gradient(115deg,#281542,#130b27);box-shadow:var(--kd-shadow)}
+.kd-social-hero>div{z-index:2;min-width:0;flex:1}.kd-social-hero .kicker{color:#ddb4ff;letter-spacing:.13em;font-size:10px;font-weight:800}.kd-social-hero h1{font-weight:950;font-style:italic;letter-spacing:-.04em;font-size:clamp(29px,4vw,48px);line-height:1;margin:10px 0}.kd-social-hero h1 em{font-style:inherit;color:#e3a6ff}.kd-social-hero p{color:#dac5ef;font-size:13px;margin:8px 0 14px}.kd-social-actions{display:flex;flex-wrap:wrap;gap:6px}
+.kd-social-art{width:clamp(120px,22vw,245px);height:auto;stroke:#e0abff;stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 12px #b54eff99);opacity:.8;flex:none}
+.kd-social-refresh{position:absolute;right:10px;top:10px;z-index:3;border-color:#8552bc!important;background:#22143b!important}
+body.kd-theme[data-kp-layout=friends] .count{border-color:#9055cb;background:linear-gradient(145deg,#2b1746,#170d2a);border-radius:10px;box-shadow:var(--kd-shadow)}
+body.kd-theme[data-kp-layout=friends] .count strong{color:#e4baff}
+body.kd-theme[data-kp-layout=friends] .friend-tabs{background:#180e2c;border-color:#8450b2;border-radius:10px}
+body.kd-theme[data-kp-layout=friends] .friend-tabs button[aria-selected=true]{background:linear-gradient(120deg,#7732bf,#442170);border-color:#c881ff}
+body.kd-theme[data-kp-layout=friends] .person{border-bottom-color:#7744a84d}
+body.kd-theme[data-kp-layout=friends] .person .actions button:not(:disabled):hover{border-color:#d594ff}
+body.kd-theme[data-kp-layout=messages] .workspace{border-radius:12px;border-color:#995ad1;box-shadow:0 10px 35px #06020e9e;min-width:0}
+body.kd-theme[data-kp-layout=messages] .people{background:linear-gradient(150deg,#24143a,#170d29);border-right-color:#7c4cac66;border-radius:0}
+body.kd-theme[data-kp-layout=messages] .chat{border-radius:0;background:radial-gradient(ellipse at 85% 0,#48217840,transparent 60%),#140c26}
+body.kd-theme[data-kp-layout=messages] .chathead{background:#211337;border-bottom-color:#8b55bc65}
+body.kd-theme[data-kp-layout=messages] .person{border-radius:8px}
+body.kd-theme[data-kp-layout=messages] .person[aria-current=true]{background:linear-gradient(105deg,#64319b,#3b1e60);border-color:#bb79f4;box-shadow:inset 3px 0 #e09cff}
+body.kd-theme[data-kp-layout=messages] .person:hover{background:#382052}
+body.kd-theme[data-kp-layout=messages] .bubble{background:#2c1a46;border-color:#8752ba70}
+body.kd-theme[data-kp-layout=messages] .mine .bubble{background:linear-gradient(130deg,#7635b7,#54238e);border-color:#b46ae9}
+body.kd-theme[data-kp-layout=messages] .composer{border-top-color:#8c54bf65;background:#1c102f}
+body.kd-theme[data-kp-layout=messages] .composer textarea{background:#120b23}
+.kd-message-art{width:88px!important;height:88px!important;margin:0 auto 14px;display:grid;place-items:center;border:1px solid #b774f3;border-radius:18px;background:radial-gradient(ellipse,#7838b755,#25143f);box-shadow:0 0 25px #ad4cff35}
+.kd-message-art svg{width:56px;height:56px;stroke:#e5b6ff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px #c05dff)}
+body.kd-theme[data-kp-layout=party] .kp-lobby-party{border-color:#b272ed;background:radial-gradient(ellipse at 85% 30%,#8645bd6b,transparent 63%),linear-gradient(115deg,#2b1744,#170c2d)}
+.kd-party-emblem{background:radial-gradient(ellipse,#6e34a866,#26143f)!important;border:1px solid #bb78f0!important;box-shadow:0 0 19px #a94dfb45!important}
+.kd-party-emblem svg{width:66%;height:66%;stroke:#e8bfff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px #bd67ff)}
+body.kd-theme[data-kp-layout=party] .rows li+li{border-top-color:#8351b64d}
+body.kd-theme[data-kp-layout=party] .primary:not(:disabled){background:var(--kd-gradient);border-color:#d08bff}
+body.kd-theme[data-kp-layout=wallet] .kd-wallet-hero{background:radial-gradient(ellipse at 85% 30%,#b37d474c,transparent 60%),linear-gradient(120deg,#30203f,#160d28);border-color:#b38c56!important}
+body.kd-theme[data-kp-layout=wallet] .kd-wallet-hero h1{font-style:italic;font-weight:950;letter-spacing:-.04em}
+body.kd-theme[data-kp-layout=wallet] .coin{filter:drop-shadow(0 0 14px #e4af5b6b)}
+body.kd-theme[data-kp-layout=wallet] .balance{color:#ffe0a1;font-variant-numeric:tabular-nums}
+body.kd-theme[data-kp-layout=wallet] :is(.card,.list,.rules){background:linear-gradient(145deg,#24143b,#170d2a);border-color:#8551b9;border-radius:11px;box-shadow:var(--kd-shadow)}
+body.kd-theme[data-kp-layout=wallet] .entry{border-bottom-color:#7d4aa94d}
+body.kd-theme[data-kp-layout=wallet] .card strong{color:#e5c1ff}
+body.kd-theme[data-kp-layout=settings] .hero{background:radial-gradient(ellipse at 85% 0,#8242b45c,transparent 64%),linear-gradient(120deg,#291545,#160d2a)}
+body.kd-theme[data-kp-layout=settings] .hero h1{font-weight:950;font-style:italic;letter-spacing:-.04em}
+body.kd-theme[data-kp-layout=settings] .panel{background:linear-gradient(145deg,#24143b,#160c29);border-color:#8351b9;border-radius:11px}
+body.kd-theme[data-kp-layout=settings] .glyph{border-color:#bd82f6;background:radial-gradient(ellipse,#7a3eba66,#26143e);color:#edcaff;box-shadow:0 0 12px #b35bff2e}
+body.kd-theme[data-kp-layout=settings] :is(.item,.pref-row,.security-details){background:#201133;border-color:#7444a4;border-radius:8px}
+body.kd-theme[data-kp-layout=settings] .item:hover{background:#392057;border-color:#c882ff}
+body.kd-theme[data-kp-layout=settings] .pref-row input:checked{background:linear-gradient(105deg,#8f39d9,#b775f4);border-color:#dfb2ff;box-shadow:0 0 10px #ad56ed33}
+body.kd-theme[data-kp-layout=admin] .hero{padding:18px 22px;background:radial-gradient(ellipse at 85% 15%,#743cb257,transparent 65%),linear-gradient(115deg,#2a1546,#170d2a);border:1px solid #a25de0;border-radius:12px}
+body.kd-theme[data-kp-layout=admin] .hero h1{font-weight:950;font-style:italic;letter-spacing:-.04em}
+body.kd-theme[data-kp-layout=admin] .admin-tabs{background:#1b102e;border-color:#8952bd;border-radius:10px}
+body.kd-theme[data-kp-layout=admin] .admin-tabs button[aria-selected=true]{background:linear-gradient(110deg,#6f30b0,#44206e);border-color:#c17bf4}
+body.kd-theme[data-kp-layout=admin] :is(.dashboard-summary,.grant-panel,.member-detail){border-color:#8050af;background-color:#1d1130;border-radius:10px}
+body.kd-theme[data-kp-layout=admin] .panel{background:linear-gradient(145deg,#221337,#170d28);border-color:#8151b4;border-radius:11px}
+body.kd-theme[data-kp-layout=admin] .section-label{color:#d7a3ff}
+@media(max-width:600px){.kd-social-hero{padding:15px;min-height:160px}.kd-social-art{position:absolute;right:-7px;bottom:6px;opacity:.3;width:125px}.kd-social-hero>div{padding-right:32px}.kd-social-refresh{right:7px;top:7px;font-size:10px;padding:6px}.kd-social-actions .kd-store-cta{min-height:36px}body.kd-theme[data-kp-layout=messages] .kd-section-nav{margin-bottom:6px}body.kd-theme[data-kp-layout=messages] .workspace{min-height:0}body.kd-theme[data-kp-layout=admin] .hero{padding:12px}}
