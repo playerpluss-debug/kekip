@@ -109,6 +109,24 @@ async function main(){
   }
   for(const viewport of [{width:1280,height:800},{width:390,height:844}]){await page.setViewportSize(viewport);for(const route of ['/','/profile.html','/shop.html']){await page.goto(base+route);await page.waitForLoadState('domcontentloaded');await page.waitForTimeout(1000);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),route+' horizontal overflow '+viewport.width);console.log('PASS viewport '+viewport.width+' '+route);}}
   await fs.mkdir('qa-design-d',{recursive:true});
+  // Observe the real browser oscillator start calls without changing sound generation or production data.
+  const audioPage=await context.newPage();
+  try{
+    await audioPage.addInitScript(()=>{window.__qaToneCount=0;const proto=window.OscillatorNode?.prototype;if(proto){const start=proto.start;proto.start=function(...args){window.__qaToneCount++;return start.apply(this,args)}}});
+    await audioPage.goto(base+'/');await audioPage.waitForFunction(()=>window.KEKIPPreferences?.status()?.ready===true);
+    const originalSound=await audioPage.evaluate(()=>window.KEKIPExperience.get().sound);
+    try{
+      await audioPage.evaluate(()=>window.KEKIPExperience.set({sound:true}));await audioPage.waitForFunction(()=>window.KEKIPPreferences.status().ready&&window.KEKIPExperience.get().sound);
+      const sport=audioPage.locator('[data-kd-filter="sport"]'),all=audioPage.locator('[data-kd-filter="all"]');
+      await sport.click();await audioPage.waitForFunction(()=>window.__qaToneCount>0);
+      await audioPage.mouse.move(1,1);await audioPage.waitForTimeout(150);const clickCount=await audioPage.evaluate(()=>window.__qaToneCount);
+      await all.hover();await audioPage.waitForFunction(n=>window.__qaToneCount>n,clickCount);
+      await audioPage.evaluate(()=>window.KEKIPExperience.set({sound:false}));await audioPage.waitForFunction(()=>window.KEKIPPreferences.status().ready&&!window.KEKIPExperience.get().sound);
+      const muted=await audioPage.evaluate(()=>window.__qaToneCount);await sport.click();await all.hover();await audioPage.waitForTimeout(250);assert.equal(await audioPage.evaluate(()=>window.__qaToneCount),muted,'Muted UI must not start oscillators');
+      console.log('PASS Design D real Web Audio click, hover and mute');
+    }finally{await audioPage.evaluate(v=>window.KEKIPExperience.set({sound:v}),originalSound);await audioPage.waitForFunction(()=>window.KEKIPPreferences.status().ready);}
+  }finally{await audioPage.close();}
+
   const designRoutes=['/','/shop.html','/profile.html','/avatar.html','/gece-gardirop.html','/golge-gardirop.html','/daily-rewards.html','/mystery-chest.html','/stats.html','/missions.html','/achievements.html','/wallet.html','/settings.html','/friends.html','/messages.html','/favorites.html','/party.html','/football.html','/late-answer.html','/arena.html','/admin.html'];
   for(const viewport of [{width:1920,height:1080},{width:390,height:844}]){
     const fresh=(await check('login',{username:'qa_player',password})).cookie;

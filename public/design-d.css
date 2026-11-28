@@ -419,3 +419,14 @@ body.kd-theme[data-kp-layout=home] .shell{padding:7px}
 }
 
 @media(max-width:1500px){.kd-topnav .kd-top-extra{display:none}}
+/* Post-release details: wishlist and consistent accessible interactive states. */
+body.kd-theme[data-kp-layout=favorites] main{max-width:1320px}
+.kd-favorites-hero{position:relative;isolation:isolate;overflow:hidden;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:22px;border:1px solid #a966e3;border-radius:13px;background:radial-gradient(ellipse at 85% 20%,#8238b965,transparent 65%),linear-gradient(120deg,#291544,#150c29);box-shadow:var(--kd-shadow)}
+.kd-favorites-hero>div{min-width:0;max-width:80%}.kd-favorites-hero h1{font-size:clamp(26px,4vw,44px);line-height:1.08;letter-spacing:-.04em;font-style:italic;font-weight:950;margin:8px 0}.kd-favorites-hero h1 em{color:#e4abff;font-style:inherit}.kd-favorites-hero p{color:#dec7f0;font-size:13px}.kd-favorites-hero svg{width:clamp(70px,14vw,145px);flex:none;stroke:#e3b0ff;stroke-width:2.5;stroke-linejoin:round;filter:drop-shadow(0 0 12px #d26aff);opacity:.8}
+body.kd-theme[data-kp-layout=favorites] .toolbar{padding:10px;border:1px solid #8050b3;border-radius:10px;background:#180e2d;gap:8px}
+body.kd-theme[data-kp-layout=favorites] .wallet{background:linear-gradient(120deg,#392632,#201329);border-color:#b68b52;border-radius:8px}
+body.kd-theme[data-kp-layout=favorites] .view-tabs{padding:5px;border:1px solid #8351b7;border-radius:9px;background:#170d2a}
+body.kd-theme[data-kp-layout=favorites] .view-tabs button{flex:1;background:#211333;border-radius:7px}
+body.kd-theme[data-kp-layout=favorites] .view-tabs button[aria-pressed=true]{background:linear-gradient(110deg,#7d36c3,#48216f);border-color:#d38cff;box-shadow:0 0 12px #b456ff35}
+body.kd-theme[data-kp-layout=favorites] .card{border-color:#8f57c4;background:linear-gradient(145deg,#281640,#170d2a);border-radius:11px;box-shadow:var(--kd-shadow)}
+@media(max-width:600px){.kd-favorites-hero{padding:14px}.kd-favorites-hero>div{max-width:100%;position:relative;z-index:1}.kd-favorites-hero svg{position:absolute;right:8px;bottom:5px;opacity:.18;z-index:-1}.kd-favorites-hero p{font-size:12px}body.kd-theme[data-kp-layout=favorites] .toolbar .actions{min-width:0;gap:5px}}
