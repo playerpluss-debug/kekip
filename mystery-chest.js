@@ -64,7 +64,7 @@ async function ensureSchema(db){
  )`);
  // Preserve historical receipts and their KC refunds. Free openings use price=0.
  await db.query(`ALTER TABLE kekip_chest_openings ALTER COLUMN item_id DROP NOT NULL`);
- await db.query(`DO $ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='kekip_chest_openings'::regclass AND conname='kekip_chest_openings_nonnegative_price') THEN ALTER TABLE kekip_chest_openings ADD CONSTRAINT kekip_chest_openings_nonnegative_price CHECK(price>=0); END IF; END $`);
+ await db.query(`DO $chest$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='kekip_chest_openings'::regclass AND conname='kekip_chest_openings_nonnegative_price') THEN ALTER TABLE kekip_chest_openings ADD CONSTRAINT kekip_chest_openings_nonnegative_price CHECK(price>=0); END IF; EXCEPTION WHEN duplicate_object THEN NULL; END; $chest$`);
  await db.query(`ALTER TABLE kekip_chest_openings DROP CONSTRAINT IF EXISTS kekip_chest_openings_price_check`);
  await db.query(`CREATE TABLE IF NOT EXISTS kekip_chest_progress (account_id text PRIMARY KEY REFERENCES kekip_football_accounts(id) ON DELETE CASCADE,tickets integer NOT NULL DEFAULT 0 CHECK(tickets>=0),pity integer NOT NULL DEFAULT 0 CHECK(pity BETWEEN 0 AND 100))`);
 }
