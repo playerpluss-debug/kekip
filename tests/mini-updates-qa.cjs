@@ -93,6 +93,8 @@ async function main(){
   assert.equal(await page.locator('#demo,#tier').count(),0);
   // Real authenticated opening in the isolated database. Force a ticket by owning all but one tier,
   // and exercise both the motion and reduced-motion path using deterministic server receipts.
+  // Use Gölge for paid opening; Gece's prior mythic receipt is unique and must remain intact.
+  await db.query("DELETE FROM kekip_chest_openings WHERE account_id=$1 AND character='gece' AND reward->>'rarity'='mythic'",[id]);
   await db.query("DELETE FROM kekip_cosmetic_inventory WHERE account_id=$1 AND item_id LIKE 'gece_chest_%'",[id]);
   await db.query("UPDATE kekip_chest_progress SET pity=99,tickets=3 WHERE account_id=$1",[id]);
   await page.emulateMedia({reducedMotion:'no-preference'});
