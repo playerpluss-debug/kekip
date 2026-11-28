@@ -4,6 +4,8 @@ const {spawn}=require('node:child_process');
 const {chromium}=require('playwright');
 const accounts=require('../accounts');
 const Wardrobe=require('../wardrobe');
+const Chest=require('../mystery-chest');
+const Collections=require('../chest-collections.json');
 const base='http://127.0.0.1:3000';
 const key=process.env.KEKIP_ADMIN_KEY;
 const password='QA-test-password-2026';
@@ -55,7 +57,38 @@ async function main(){
   const purchases=await db.query("SELECT source_id,amount FROM kekip_coin_ledger WHERE account_id=$1 AND source_kind='cosmetic'",[row.rows[0].id]);for(const i of neon){const entry=purchases.rows.filter(p=>p.source_id===i.id);assert.equal(entry.length,1);assert.equal(entry[0].amount,-i.price);assert.ok(Wardrobe.access(i.character,after.owned).includes(i.id));}
   const audit=await db.query("SELECT action FROM kekip_admin_audit WHERE username IN ('qa_player','qa_rejected')");assert.ok(audit.rows.some(r=>r.action==='admin-registration-approve'));assert.ok(audit.rows.some(r=>r.action==='admin-registration-reject'));
   console.log('PASS: real PostgreSQL registration, authorization, onboarding, catalog and 14 purchases with exact debits and duplicate protection');
+  const chestItems=Chest.eligibleItems(Collections,'gece'),grouped=Chest.groups(chestItems,[]);
+  assert.deepEqual(Chest.effectiveOdds(grouped).map(t=>t.percent),[59,30,9,2]);
+  assert.equal(Chest.effectiveOdds(grouped,{chestMultiplier:150}).find(t=>t.id==='mythic').percent,2);
+  assert.equal(Chest.draw(grouped,()=>0,null,true).item.chestRarity,'mythic');
+  const id=row.rows[0].id, rare=chestItems.filter(i=>i.chestRarity==='rare');
+  for(const i of rare)await db.query('INSERT INTO kekip_cosmetic_inventory(account_id,item_id) VALUES($1,$2)',[id,i.id]);
+  const testWrite=async(db,a,fn)=>{const conn=await db.connect();try{await conn.query('BEGIN');await conn.query('SELECT id FROM kekip_football_accounts WHERE id=$1 FOR UPDATE',[a.id]);const r=await fn(conn);await conn.query('COMMIT');return r;}catch(e){await conn.query('ROLLBACK');throw e;}finally{conn.release();}};
+  const service=Chest.createService({collections:Collections,coinBalance:async(c,a)=>Number((await c.query('SELECT COALESCE(SUM(amount),0) AS balance FROM kekip_coin_ledger WHERE account_id=$1',[a.id])).rows[0].balance),write:testWrite,enabled:true,randomInt:()=>0});
+  const a={id,username:'qa_player'},body={username:a.username,character:'gece'};
+  await db.query("INSERT INTO kekip_coin_ledger(account_id,source_kind,source_id,label,amount) VALUES($1,'qa','chest-credit','QA only',1000)",[id]);
+  const status=()=>service(db,a,'chest-status',body);
+  const open=(n,price=100,character='gece')=>service(db,a,'chest-open',{...body,character,requestId:n.toString(16).padStart(32,'0'),expectedPrice:price});
+  const start=await status();assert.equal(start.tickets,0);assert.equal(start.pity,0);
+  await assert.rejects(()=>open(1,0),e=>e.status===409);
+  for(let n=1;n<=3;n++){const r=await open(n);assert.equal(r.reward.type,'ticket');assert.equal(r.reward.tickets,1);}
+  let s=await status();assert.equal(s.tickets,3);assert.equal(s.pity,3);assert.equal(s.balance,start.balance-300);
+  const free=await open(4,0);assert.equal(free.price,0);assert.equal(free.reward.type,'ticket');
+  assert.equal((await open(4,0)).duplicate,true);
+  s=await status();assert.equal(s.tickets,1);assert.equal(s.pity,4);assert.equal(s.balance,start.balance-300);
+  await db.query('UPDATE kekip_chest_progress SET pity=99,tickets=3 WHERE account_id=$1',[id]);
+  s=await status();assert.equal(s.chests.find(c=>c.character==='golge').guaranteed,true);
+  const mythic=await open(5,0,'golge');assert.equal(mythic.reward.rarity,'mythic');assert.equal(mythic.reward.completeSet,true);
+  s=await status();assert.equal(s.pity,0);assert.equal(s.tickets,0);assert.equal(s.balance,start.balance-300);
+  await db.query('UPDATE kekip_chest_progress SET pity=99 WHERE account_id=$1',[id]);
+  assert.equal((await status()).chests.find(c=>c.character==='golge').guaranteed,false);
+  await open(6,100,'golge');assert.equal((await status()).pity,100);
+  const guaranteed=await open(7);assert.equal(guaranteed.reward.rarity,'mythic');assert.equal((await status()).pity,0);
+  const receipts=(await service(db,a,'chest-history',body)).history;assert.equal(receipts.filter(x=>x.price===0).length,2);
+  assert.equal(Number((await db.query("SELECT COUNT(*) FROM kekip_coin_ledger WHERE account_id=$1 AND source_kind='mystery_chest_refund'",[id])).rows[0].count),0);
+  console.log('PASS chest odds, ticket awards, free openings, idempotency, shared guarantee and historical receipts');
   browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:1280,height:800}});await context.addCookies([{name:'kekip_session',value:player.split('=')[1],url:base}]);const page=await context.newPage();
+  await page.goto(base+'/mystery-chest.html');await page.waitForFunction(()=>document.getElementById('ticketText')?.textContent.includes('Sandık biletleri: 1')===false&&document.getElementById('ticketText')?.textContent.includes('ücretsiz açılış'));assert.ok(await page.locator('#pityBar').count());assert.ok(await page.locator('#ticketBar').count());
   const fs=require('node:fs/promises');await fs.mkdir('qa-neon',{recursive:true});
   async function imageReady(id){await page.waitForFunction(id=>{const i=document.getElementById(id);return i&&!i.hidden&&i.complete&&i.naturalWidth>0},id,{timeout:30000});return page.locator('#'+id).evaluate(async i=>{await i.decode();return {width:i.naturalWidth,height:i.naturalHeight,src:i.src};});}
   for(const item of neon){
