@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict');
 const {spawn}=require('node:child_process');
-const {chromium}=require('playwright');
+const {chromium,webkit}=require('playwright');
 const accounts=require('../accounts');
 const Wardrobe=require('../wardrobe');
 const Chest=require('../mystery-chest');
@@ -159,6 +159,10 @@ async function main(){
       if(route==='/football.html'){assert.equal(await page.locator('#intro.kd-foot-intro').count(),1);assert.equal(await page.locator('#footHub').count(),1);}
       if(route==='/late-answer.html'){assert.equal(await page.locator('#createForm,#joinForm').count(),2);}
       if(route==='/arena.html'){assert.equal(await page.locator('#arenaCreate,#arenaJoin').count(),2);}
+      if(viewport.width===390&&['/gece-gardirop.html','/golge-gardirop.html'].includes(route)){
+        await page.waitForFunction(()=>{const stage=document.querySelector('.kd-wardrobe-preview .stage'),base=stage?.querySelector('#base'),r=stage?.getBoundingClientRect();return r?.width>=140&&r.height>=190&&base?.complete&&base.naturalWidth>0&&base.getBoundingClientRect().height>=190;},null,{timeout:20000});
+        assert.ok(await page.locator('.kd-wardrobe-preview .stage #base').isVisible(),route+' visible base');
+      }
       if(route==='/avatar.html'){assert.equal(await page.locator('.kd-avatar-card .portrait-layers').count(),2);}
       if(route==='/'){
         assert.equal(await page.locator('#kdWheelSlot #kpHomeDailyWheel').count(),1);assert.equal(await page.locator('.kd-hero-figure').count(),2);await page.locator('#kdLeaderboardRows').waitFor({state:'visible'});await page.locator('[data-kd-filter="sport"]').click();assert.equal(await page.locator('#homeGameLibrary [data-kd-category]:visible').count(),1);
@@ -169,6 +173,22 @@ async function main(){
       console.log('PASS Design D '+viewport.width+' '+route);
     }
   }
+  // WebKit uses the same browser engine family as the iPhone Safari screenshot.
+  const ios=await webkit.launch({headless:true});
+  try{
+    const mobile=await ios.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2});
+    const fresh=(await check('login',{username:'qa_player',password})).cookie;
+    await mobile.addCookies([{name:'kekip_session',value:fresh.split('=')[1],url:base}]);
+    const p=await mobile.newPage();
+    for(const route of ['/gece-gardirop.html','/golge-gardirop.html']){
+      await p.goto(base+route,{waitUntil:'domcontentloaded'});
+      await p.waitForFunction(()=>{const stage=document.querySelector('.kd-wardrobe-preview .stage'),base=stage?.querySelector('#base'),r=stage?.getBoundingClientRect();return r?.width>=140&&r.height>=190&&base?.complete&&base.naturalWidth>0&&base.getBoundingClientRect().height>=190;},null,{timeout:30000});
+      assert.ok(await p.locator('.kd-wardrobe-preview .stage #base').isVisible());
+      await p.screenshot({path:'qa-design-d/webkit-390-'+route.slice(1,-5)+'.png',fullPage:true});
+      console.log('PASS WebKit mobile avatar visible '+route);
+    }
+    await mobile.close();
+  }finally{await ios.close();}
  }finally{await browser?.close();server.kill('SIGTERM');await db.end();}
 }
 main().then(()=>process.exit(0),e=>{console.error(e);process.exit(1)});
